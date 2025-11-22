@@ -1,0 +1,442 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Button from "@/components/Button";
+
+interface Item {
+    _id: string;
+    name: string;
+    description?: string;
+    price: number;
+    category?: string;
+    calories?: number;
+    available: boolean;
+    restaurantId: string;
+}
+
+export default function RestaurantItemsPage() {
+    const params = useParams();
+    const slug = params.slug as string;
+    const [restaurantId, setRestaurantId] = useState<string | null>(null);
+    const [items, setItems] = useState<Item[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        price: "",
+        category: "General",
+        calories: "",
+        available: true,
+    });
+
+    useEffect(() => {
+        if (slug) {
+            fetchRestaurantAndItems();
+        }
+    }, [slug]);
+
+    const fetchRestaurantAndItems = async () => {
+        try {
+            // 1. Get restaurant ID from slug
+            const restRes = await fetch(`/api/restaurant/by-slug/${slug}`);
+            const restData = await restRes.json();
+
+            if (!restData.success) {
+                console.error("Restaurant not found");
+                setLoading(false);
+                return;
+            }
+
+            const id = restData.restaurant._id;
+            setRestaurantId(id);
+
+            // 2. Fetch items using ID
+            const res = await fetch(`/api/items?restaurantId=${id}`);
+            const data = await res.json();
+            if (data.success) {
+                setItems(data.items);
+            }
+        } catch (error) {
+            console.error("Failed to fetch items:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!restaurantId) return;
+
+        try {
+            const res = await fetch("/api/items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.name,
+                    description: formData.description,
+                    price: parseFloat(formData.price),
+                    category: formData.category,
+                    calories: formData.calories ? parseInt(formData.calories) : undefined,
+                    available: formData.available,
+                    restaurantId,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                setItems([...items, data.item]);
+                setShowForm(false);
+                setFormData({
+                    name: "",
+                    description: "",
+                    price: "",
+                    category: "General",
+                    calories: "",
+                    available: true,
+                });
+            } else {
+                alert(data.error || "Failed to create item");
+            }
+        } catch (error) {
+            console.error("Failed to create item:", error);
+            alert("Failed to create item");
+        }
+    };
+
+    const toggleAvailability = async (itemId: string, currentStatus: boolean) => {
+        if (!restaurantId) return;
+        try {
+            setUpdatingItemId(itemId);
+
+            const response = await fetch(`/api/items/${itemId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ available: !currentStatus, restaurantId }),
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || "Failed to update item");
+            }
+
+            setItems(items.map(item =>
+                item._id === itemId ? { ...item, available: !currentStatus } : item
+            ));
+
+            console.log(`✅ Item ${itemId} availability updated to ${!currentStatus}`);
+        } catch (error: any) {
+            console.error("Failed to update item availability:", error);
+            alert(`Error: ${error.message || "Failed to update item"}`);
+        } finally {
+            setUpdatingItemId(null);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-gray-600">Loading menu items...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-6">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Menu Items</h1>
+                    <p className="text-gray-600 mt-2">
+                        Manage your restaurant menu ({items.length} {items.length === 1 ? 'item' : 'items'})
+                    </p>
+                </div>
+                <Button 
+                    variant="primary" 
+                    onClick={() => setShowForm(!showForm)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                    {showForm ? (
+                        <div className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel
+                        </div>
+                    ) : (
+                        <div className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add New Item
+                        </div>
+                    )}
+                </Button>
+            </div>
+
+            {/* Add Item Form */}
+            {showForm && (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+                    <div className="flex items-center mb-6">
+                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-semibold text-gray-900">Add New Menu Item</h2>
+                    </div>
+                    
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Item Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    placeholder="Enter item name"
+                                    value={formData.name}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, name: e.target.value })
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Category
+                                </label>
+                                <select
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    value={formData.category}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, category: e.target.value })
+                                    }
+                                >
+                                    <option value="General">General</option>
+                                    <option value="Starters">Starters</option>
+                                    <option value="Main Course">Main Course</option>
+                                    <option value="Beverages">Beverages</option>
+                                    <option value="Desserts">Desserts</option>
+                                    <option value="Appetizers">Appetizers</option>
+                                    <option value="Soups">Soups</option>
+                                    <option value="Salads">Salads</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none"
+                                placeholder="Enter item description"
+                                value={formData.description}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, description: e.target.value })
+                                }
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Price (₹) *
+                                </label>
+                                <input
+                                    type="number"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    placeholder="0.00"
+                                    value={formData.price}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, price: e.target.value })
+                                    }
+                                    required
+                                    min="0"
+                                    step="1"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Calories
+                                </label>
+                                <input
+                                    type="number"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    placeholder="Enter calories"
+                                    value={formData.calories}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, calories: e.target.value })
+                                    }
+                                    min="0"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-center">
+                                <div className="flex items-center space-x-3 bg-gray-50 p-4 rounded-lg w-full">
+                                    <input
+                                        type="checkbox"
+                                        id="available"
+                                        checked={formData.available}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, available: e.target.checked })
+                                        }
+                                        className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                                    />
+                                    <label htmlFor="available" className="text-sm font-medium text-gray-700">
+                                        Available for ordering
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 pt-4">
+                            <Button 
+                                type="submit" 
+                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                            >
+                                <div className="flex items-center">
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Create Item
+                                </div>
+                            </Button>
+                            <Button 
+                                type="button" 
+                                variant="secondary"
+                                onClick={() => setShowForm(false)}
+                                className="px-8 py-3 rounded-lg font-semibold transition-all duration-300"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {/* Items Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {items.map((item) => (
+                    <div key={item._id} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                            <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                    item.available 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-red-100 text-red-800'
+                                }`}
+                            >
+                                {item.available ? (
+                                    <div className="flex items-center">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                        Available
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center">
+                                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                        Unavailable
+                                    </div>
+                                )}
+                            </span>
+                        </div>
+
+                        {item.description && (
+                            <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
+                        )}
+
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-4">
+                                <span className="text-2xl font-bold text-green-600">
+                                    ₹{item.price}
+                                </span>
+                                {item.calories && (
+                                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                        {item.calories} kcal
+                                    </span>
+                                )}
+                            </div>
+                            <span className="text-sm font-medium text-gray-700 bg-blue-100 px-3 py-1 rounded-full">
+                                {item.category}
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={() => toggleAvailability(item._id, item.available)}
+                            disabled={updatingItemId === item._id}
+                            className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${
+                                item.available 
+                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl' 
+                                    : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                            {updatingItemId === item._id ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                    Updating...
+                                </div>
+                            ) : item.available ? (
+                                <div className="flex items-center justify-center">
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Mark Unavailable
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Mark Available
+                                </div>
+                            )}
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {/* Empty State */}
+            {items.length === 0 && !showForm && (
+                <div className="text-center py-16">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No Menu Items Yet</h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Start building your menu by adding your first item. Customers will see these items when they scan your QR codes.
+                    </p>
+                    <Button 
+                        onClick={() => setShowForm(true)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                        <div className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create Your First Item
+                        </div>
+                    </Button>
+                </div>
+            )}
+        </div>
+    );
+}

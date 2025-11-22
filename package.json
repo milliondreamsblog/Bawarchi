@@ -2,25 +2,40 @@
   "name": "orderbyqr",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.3",
+    "lucide-react": "^0.554.0",
+    "mongoose": "^8.19.4",
     "next": "16.0.3",
+    "next-auth": "^5.0.0-beta.25",
+    "openai": "^4.77.3",
+    "postcss": "^8.5.6",
+    "qrcode": "^1.5.4",
+    "razorpay": "^2.9.6",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "swr": "^2.2.5",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.19.25",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5"
   }
 }
