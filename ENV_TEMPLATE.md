@@ -13,17 +13,25 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
 # OpenAI Configuration
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+# Cloudinary Configuration (for image uploads)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
+# Cloudinary Public Config (exposed to frontend)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+
 # NextAuth Configuration
 NEXTAUTH_SECRET=your-generated-secret-key-here-min-32-chars
 NEXTAUTH_URL=http://localhost:3000
 
 # Super Admin Credentials (CHANGE THESE IN PRODUCTION!)
-SUPER_ADMIN_EMAIL=admin@orderbyqr.com
-SUPER_ADMIN_PASSWORD=admin123
+SUPER_ADMIN_EMAIL=papa@orderbyqr.com
+SUPER_ADMIN_PASSWORD=papa123
 
 # Public Super Admin Email (for client-side demo - REMOVE IN PRODUCTION!)
-NEXT_PUBLIC_SUPER_ADMIN_EMAIL=admin@orderbyqr.com
-NEXT_PUBLIC_SUPER_ADMIN_PASSWORD=admin123
+NEXT_PUBLIC_SUPER_ADMIN_EMAIL=papa@orderbyqr.com
+NEXT_PUBLIC_SUPER_ADMIN_PASSWORD=papa123
 
 # Instructions:
 # 1. Copy this file content to a new file named .env
@@ -33,3 +41,4 @@ NEXT_PUBLIC_SUPER_ADMIN_PASSWORD=admin123
 # 5. Never commit .env to version control
 # 6. For production, use live Razorpay keys (rzp_live_xxx)
 # 7. Remove NEXT_PUBLIC_SUPER_ADMIN_* variables in production
+# 8. Sign up for Cloudinary at https://cloudinary.com to get your credentials

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.8.0",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.554.0",
     "mongoose": "^8.19.4",

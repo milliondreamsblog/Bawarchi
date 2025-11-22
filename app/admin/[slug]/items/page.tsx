@@ -13,6 +13,7 @@ interface Item {
     price: number;
     category?: string;
     calories?: number;
+    image?: string;
     available: boolean;
     restaurantId: string;
 }
@@ -25,12 +26,16 @@ export default function RestaurantItemsPage() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>("");
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         description: "",
         price: "",
         category: "General",
         calories: "",
+        image: "",
         available: true,
     });
 
@@ -68,11 +73,69 @@ export default function RestaurantItemsPage() {
         }
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const uploadImageToCloudinary = async (): Promise<string> => {
+        if (!imageFile) return "";
+
+        setUploadingImage(true);
+        try {
+            const reader = new FileReader();
+            const base64Promise = new Promise<string>((resolve) => {
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(imageFile);
+            });
+
+            const base64 = await base64Promise;
+
+            const uploadRes = await fetch("/api/upload-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: base64 }),
+            });
+
+            const uploadData = await uploadRes.json();
+
+            if (!uploadData.success) {
+                throw new Error(uploadData.error || "Failed to upload image");
+            }
+
+            return uploadData.imageUrl;
+        } catch (error: any) {
+            console.error("Image upload error:", error);
+            alert(error.message || "Failed to upload image");
+            return "";
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!restaurantId) return;
 
         try {
+            // Upload image first if there is one
+            let imageUrl = formData.image;
+            if (imageFile) {
+                imageUrl = await uploadImageToCloudinary();
+                if (!imageUrl && imageFile) {
+                    // Upload failed, don't proceed
+                    return;
+                }
+            }
+
             const res = await fetch("/api/items", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -82,6 +145,7 @@ export default function RestaurantItemsPage() {
                     price: parseFloat(formData.price),
                     category: formData.category,
                     calories: formData.calories ? parseInt(formData.calories) : undefined,
+                    image: imageUrl,
                     available: formData.available,
                     restaurantId,
                 }),
@@ -98,8 +162,11 @@ export default function RestaurantItemsPage() {
                     price: "",
                     category: "General",
                     calories: "",
+                    image: "",
                     available: true,
                 });
+                setImageFile(null);
+                setImagePreview("");
             } else {
                 alert(data.error || "Failed to create item");
             }
@@ -162,8 +229,8 @@ export default function RestaurantItemsPage() {
                         Manage your restaurant menu ({items.length} {items.length === 1 ? 'item' : 'items'})
                     </p>
                 </div>
-                <Button 
-                    variant="primary" 
+                <Button
+                    variant="primary"
                     onClick={() => setShowForm(!showForm)}
                     className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
@@ -196,8 +263,46 @@ export default function RestaurantItemsPage() {
                         </div>
                         <h2 className="text-xl font-semibold text-gray-900">Add New Menu Item</h2>
                     </div>
-                    
+
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Image Upload Section */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Food Image
+                            </label>
+                            <div className="flex items-center space-x-4">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                    id="image-upload"
+                                />
+                                <label
+                                    htmlFor="image-upload"
+                                    className="cursor-pointer bg-white px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+                                >
+                                    <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Choose Image
+                                </label>
+                                {imageFile && (
+                                    <span className="text-sm text-gray-600">{imageFile.name}</span>
+                                )}
+                            </div>
+                            {imagePreview && (
+                                <div className="mt-4">
+                                    <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="w-48 h-48 object-cover rounded-lg border border-gray-300"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -307,21 +412,33 @@ export default function RestaurantItemsPage() {
                         </div>
 
                         <div className="flex gap-4 pt-4">
-                            <Button 
-                                type="submit" 
-                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                            <Button
+                                type="submit"
+                                disabled={uploadingImage}
+                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Create Item
-                                </div>
+                                {uploadingImage ? (
+                                    <div className="flex items-center">
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                        Uploading Image...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Create Item
+                                    </div>
+                                )}
                             </Button>
-                            <Button 
-                                type="button" 
+                            <Button
+                                type="button"
                                 variant="secondary"
-                                onClick={() => setShowForm(false)}
+                                onClick={() => {
+                                    setShowForm(false);
+                                    setImageFile(null);
+                                    setImagePreview("");
+                                }}
                                 className="px-8 py-3 rounded-lg font-semibold transition-all duration-300"
                             >
                                 Cancel
@@ -335,14 +452,21 @@ export default function RestaurantItemsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item) => (
                     <div key={item._id} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                        {/* Item Image */}
+                        {item.image && (
+                            <div
+                                className="w-full h-48 bg-cover bg-center rounded-lg mb-4"
+                                style={{ backgroundImage: `url(${item.image})` }}
+                            />
+                        )}
+
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
                             <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                    item.available 
-                                        ? 'bg-green-100 text-green-800' 
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.available
+                                        ? 'bg-green-100 text-green-800'
                                         : 'bg-red-100 text-red-800'
-                                }`}
+                                    }`}
                             >
                                 {item.available ? (
                                     <div className="flex items-center">
@@ -381,11 +505,10 @@ export default function RestaurantItemsPage() {
                         <button
                             onClick={() => toggleAvailability(item._id, item.available)}
                             disabled={updatingItemId === item._id}
-                            className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${
-                                item.available 
-                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl' 
+                            className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${item.available
+                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl'
                                     : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {updatingItemId === item._id ? (
                                 <div className="flex items-center justify-center">
@@ -424,7 +547,7 @@ export default function RestaurantItemsPage() {
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
                         Start building your menu by adding your first item. Customers will see these items when they scan your QR codes.
                     </p>
-                    <Button 
+                    <Button
                         onClick={() => setShowForm(true)}
                         className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                     >

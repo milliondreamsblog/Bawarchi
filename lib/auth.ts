@@ -37,9 +37,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const restaurant = await Restaurant.findOne({
           email: credentials.email,
-        }).lean();
+        }).lean() as any;
 
-        if (!restaurant) {
+        if (!restaurant || !restaurant.password) {
           return null;
         }
 
