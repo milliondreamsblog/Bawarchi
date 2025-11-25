@@ -18,19 +18,20 @@ export async function GET(
     }
 
     const restaurant = await Restaurant.findById(id).select("-password");
-    
+
     if (!restaurant) {
       return NextResponse.json({ success: false, error: "Restaurant not found" }, { status: 404 });
     }
 
     // Don't send back the full secret, just a masked version or existence check if needed
     // For now, we'll send it back so they can edit it, but in a real app be careful
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       settings: {
         razorpayKeyId: restaurant.razorpayKeyId,
-        razorpayKeySecret: restaurant.razorpayKeySecret
-      } 
+        razorpayKeySecret: restaurant.razorpayKeySecret,
+        gstPercentage: restaurant.gstPercentage || 0
+      }
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -51,12 +52,23 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { razorpayKeyId, razorpayKeySecret } = body;
+    const { razorpayKeyId, razorpayKeySecret, gstPercentage } = body;
 
     const restaurant = await Restaurant.findById(id);
-    
+
     if (!restaurant) {
       return NextResponse.json({ success: false, error: "Restaurant not found" }, { status: 404 });
+    }
+
+    // Validate GST percentage if provided
+    if (gstPercentage !== undefined) {
+      if (![0, 5, 12, 18].includes(gstPercentage)) {
+        return NextResponse.json(
+          { success: false, error: "GST percentage must be 0, 5, 12, or 18" },
+          { status: 400 }
+        );
+      }
+      restaurant.gstPercentage = gstPercentage;
     }
 
     if (razorpayKeyId !== undefined) restaurant.razorpayKeyId = razorpayKeyId;

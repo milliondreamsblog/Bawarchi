@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { calculateBillingBreakdown, type BillingBreakdown } from "../utils/billing";
 
 interface CartItem {
   itemId: string;
@@ -11,6 +12,10 @@ interface CartItem {
 interface CartStore {
   items: CartItem[];
   total: number;
+  gstPercentage: number;
+  setGstPercentage: (gst: number) => void;
+  getBaseTotal: () => number;
+  getBillingBreakdown: () => BillingBreakdown | null;
   addItem: (item: Omit<CartItem, "qty">) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, qty: number) => void;
@@ -19,9 +24,24 @@ interface CartStore {
 
 export const useCartStore = create<CartStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       total: 0,
+      gstPercentage: 0,
+
+      setGstPercentage: (gst: number) => set({ gstPercentage: gst }),
+
+      getBaseTotal: () => {
+        const state = get();
+        return state.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+      },
+
+      getBillingBreakdown: () => {
+        const state = get();
+        const baseTotal = state.getBaseTotal();
+        if (baseTotal === 0) return null;
+        return calculateBillingBreakdown(baseTotal, state.gstPercentage);
+      },
 
       addItem: (item) =>
         set((state) => {
@@ -41,7 +61,7 @@ export const useCartStore = create<CartStore>()(
             (sum, i) => sum + i.price * i.qty,
             0
           );
-          console.log('✅ Cart updated:', newItems.length, 'items, total:', newTotal);
+          console.log('✅ Cart updated:', newItems.length, 'items, base total:', newTotal);
           return { items: newItems, total: newTotal };
         }),
 
@@ -81,7 +101,7 @@ export const useCartStore = create<CartStore>()(
     {
       name: "cart-storage",
       storage: createJSONStorage(() => localStorage),
-      skipHydration: true, // Skip hydration on SSRpartialHydration: true,
+      skipHydration: true,
     }
   )
 );

@@ -14,6 +14,7 @@ export default function RestaurantSettingsPage() {
     const [formData, setFormData] = useState({
         razorpayKeyId: "",
         razorpayKeySecret: "",
+        gstPercentage: 0,
     });
 
     useEffect(() => {
@@ -38,6 +39,7 @@ export default function RestaurantSettingsPage() {
                 setFormData({
                     razorpayKeyId: data.settings.razorpayKeyId || "",
                     razorpayKeySecret: data.settings.razorpayKeySecret || "",
+                    gstPercentage: data.settings.gstPercentage || 0,
                 });
             }
         } catch (error) {
@@ -68,7 +70,7 @@ export default function RestaurantSettingsPage() {
             }
         } catch (error) {
             console.error("Failed to update settings:", error);
-            alert("Failed to update settings");
+            alert(" Failed to update settings");
         } finally {
             setSaving(false);
         }
@@ -102,8 +104,8 @@ export default function RestaurantSettingsPage() {
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900">Razorpay Integration</h2>
-                        <p className="text-gray-600">Configure payment gateway settings</p>
+                        <h2 className="text-xl font-semibold text-gray-900">Payment & Billing Settings</h2>
+                        <p className="text-gray-600">Configure payment gateway and GST</p>
                     </div>
                 </div>
 
@@ -113,7 +115,7 @@ export default function RestaurantSettingsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <p className="text-blue-800 font-medium mb-1">Razorpay API Keys</p>
+                            <p className="text-blue-800 font-medium mb-1">Razorpay API Keys & GST Configuration</p>
                             <p className="text-blue-700 text-sm">
                                 Enter your Razorpay Key ID and Key Secret to accept payments directly to your account.
                                 You can find these in your Razorpay Dashboard under Settings &gt; API Keys.
@@ -125,7 +127,7 @@ export default function RestaurantSettingsPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Key ID
+                            Razorpay Key ID
                         </label>
                         <input
                             type="text"
@@ -140,7 +142,7 @@ export default function RestaurantSettingsPage() {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Key Secret
+                            Razorpay Key Secret
                         </label>
                         <input
                             type="password"
@@ -153,9 +155,28 @@ export default function RestaurantSettingsPage() {
                         />
                     </div>
 
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            GST Percentage
+                        </label>
+                        <select
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
+                            value={formData.gstPercentage}
+                            onChange={(e) =>
+                                setFormData({ ...formData, gstPercentage: parseInt(e.target.value) })
+                            }
+                        >
+                            <option value={0}>0% (No GST)</option>
+                            <option value={5}>5% GST</option>
+                            <option value={12}>12% GST</option>
+                            <option value={18}>18% GST</option>
+                        </select>
+                        <p className="text-sm text-gray-500 mt-1">Choose the applicable GST rate for your restaurant (as per Indian tax regulations)</p>
+                    </div>
+
                     <div className="pt-4">
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
                             disabled={saving}
                         >

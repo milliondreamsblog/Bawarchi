@@ -4,9 +4,10 @@ import React from "react";
 import { useCartStore } from "@/lib/store/useCartStore";
 
 export default function Cart() {
-    const { items, total, updateQuantity, removeItem } = useCartStore();
+    const { items, updateQuantity, removeItem, getBillingBreakdown, gstPercentage } = useCartStore();
+    const billingBreakdown = getBillingBreakdown();
 
-    const formatPrice = (price: number) => `₹${price}`;
+    const formatPrice = (price: number) => `₹${price.toFixed(2)}`;
 
     if (items.length === 0) {
         return (
@@ -78,15 +79,28 @@ export default function Cart() {
                 ))}
             </div>
 
-            {/* Total */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
+            {/* Billing Breakdown */}
+            <div className="mt-6 space-y-3 border-t border-gray-100 pt-4">
+                <div className="flex justify-between text-gray-600">
+                    <span>Item Total</span>
+                    <span>{formatPrice(billingBreakdown?.baseTotal ?? 0)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                    <span>GST ({billingBreakdown?.gstPercentage ?? 0}%)</span>
+                    <span>{formatPrice(billingBreakdown?.gstAmount ?? 0)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                    <span>Platform Fee</span>
+                    <span>{formatPrice(billingBreakdown?.platformFee ?? 0)}</span>
+                </div>
+
+                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                     <div>
                         <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-                        <p className="text-sm text-gray-600">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+                        <p className="text-xs text-gray-500">{items.length} item{items.length !== 1 ? 's' : ''}</p>
                     </div>
                     <span className="text-2xl font-bold text-green-600">
-                        {formatPrice(total)}
+                        {formatPrice(billingBreakdown?.finalAmount ?? 0)}
                     </span>
                 </div>
             </div>

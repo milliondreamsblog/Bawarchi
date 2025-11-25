@@ -20,6 +20,7 @@ export interface Restaurant {
     phoneNumber?: string;
     address?: string;
     description?: string;
+    gstPercentage?: number; // 0, 5, 12, or 18
 }
 
 // Order type definition
@@ -28,6 +29,14 @@ export interface Order {
     tableNumber: number;
     items: OrderItem[];
     totalAmount: number;
+    // New billing breakdown fields
+    baseTotal?: number; // Sum of item prices
+    gstPercentage?: number; // Snapshot of restaurant's GST % at order time
+    gstAmount?: number; // Calculated GST
+    platformFee?: number; // 2% of (baseTotal + gstAmount)
+    finalAmount?: number; // baseTotal + gstAmount + platformFee
+    restaurantEarnings?: number; // finalAmount - platformFee
+    myEarnings?: number; // platformFee
     status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'completed' | 'rejected';
     restaurantId: string;
     createdAt: Date;

@@ -42,11 +42,15 @@ export default function TableMenuPage() {
     const [showCart, setShowCart] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
 
+
+
     // Subscribe to cart store
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
     const cartTotal = useCartStore((state) => state.total);
-
+    const setGstPercentage = useCartStore((state) => state.setGstPercentage);
+    const {getBillingBreakdown, total} = useCartStore();
+    const billingBreakdown = getBillingBreakdown();
     // Manually hydrate the store
     useEffect(() => {
         useCartStore.persist.rehydrate();
@@ -68,6 +72,9 @@ export default function TableMenuPage() {
 
                 const rest = restData.restaurant;
                 setRestaurant(rest);
+
+                // Set restaurant's GST percentage in cart store
+                setGstPercentage(rest.gstPercentage || 0);
 
                 // 2. Fetch Table by Slug (and verify restaurant)
                 const tableRes = await fetch(`/api/tables?slug=${tableSlug}`);
@@ -142,7 +149,7 @@ export default function TableMenuPage() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Unable to Load Menu</h2>
                     <p className="text-gray-600 mb-4">{error}</p>
-                    <button 
+                    <button
                         onClick={() => window.location.reload()}
                         className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                     >
@@ -207,7 +214,7 @@ export default function TableMenuPage() {
                                     {cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in cart
                                 </p>
                                 <p className="font-bold text-2xl text-green-600">
-                                    ₹{cartTotal}
+                                    ₹{billingBreakdown?.finalAmount}
                                 </p>
                             </div>
                             <button

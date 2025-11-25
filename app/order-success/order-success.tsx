@@ -21,6 +21,11 @@ interface Order {
     _id: string;
     items: OrderItem[];
     total: number;
+    baseTotal?: number;
+    gstPercentage?: number;
+    gstAmount?: number;
+    platformFee?: number;
+    finalAmount?: number;
     status: "pending" | "preparing" | "served";
     tableSlug: string;
     razorpayOrderId?: string;
@@ -119,12 +124,11 @@ export default function OrderSuccessPage() {
         });
     };
 
-    const calculateSubtotal = () => {
-        return order.items.reduce((sum, item) => sum + (item.itemId.price * item.qty), 0);
-    };
-
-    const taxes = 0;
-    const subtotal = calculateSubtotal();
+    // Use saved values if available, otherwise fallback to calculation (for old orders)
+    const baseTotal = order.baseTotal || order.items.reduce((sum, item) => sum + (item.itemId.price * item.qty), 0);
+    const gstAmount = order.gstAmount || 0;
+    const platformFee = order.platformFee || 0;
+    const finalAmount = order.finalAmount || order.total;
 
     // Helper to determine step status
     const getStepStatus = (step: 'confirmed' | 'preparing' | 'served') => {
@@ -229,18 +233,25 @@ export default function OrderSuccessPage() {
                     <div className="px-8 py-6 bg-gray-50 border-t-2 border-gray-200">
                         <div className="space-y-3">
                             <div className="flex justify-between text-gray-700">
-                                <span>Subtotal</span>
-                                <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
+                                <span>Item Total</span>
+                                <span className="font-semibold">₹{baseTotal.toFixed(2)}</span>
                             </div>
-                            {taxes > 0 && (
+
+                            {order.gstPercentage && order.gstPercentage > 0 && (
                                 <div className="flex justify-between text-gray-700">
-                                    <span>Taxes & Fees</span>
-                                    <span className="font-semibold">₹{taxes.toFixed(2)}</span>
+                                    <span>GST ({order.gstPercentage}%)</span>
+                                    <span className="font-semibold">₹{gstAmount.toFixed(2)}</span>
                                 </div>
                             )}
+
+                            <div className="flex justify-between text-gray-700">
+                                <span>Platform Fee (2%)</span>
+                                <span className="font-semibold">₹{platformFee.toFixed(2)}</span>
+                            </div>
+
                             <div className="border-t-2 border-gray-300 pt-3 flex justify-between items-center">
                                 <span className="text-xl font-bold text-gray-900">Total Amount</span>
-                                <span className="text-2xl font-bold text-green-600">₹{order.total.toFixed(2)}</span>
+                                <span className="text-2xl font-bold text-green-600">₹{finalAmount.toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
@@ -275,8 +286,8 @@ export default function OrderSuccessPage() {
                             {/* Step 1: Confirmed */}
                             <div className="flex items-center bg-white">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 border-2 ${getStepStatus('confirmed') === 'completed' || getStepStatus('confirmed') === 'active'
-                                    ? 'bg-green-600 border-green-600 text-white'
-                                    : 'bg-white border-gray-300 text-gray-300'
+                                        ? 'bg-green-600 border-green-600 text-white'
+                                        : 'bg-white border-gray-300 text-gray-300'
                                     }`}>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -285,132 +296,53 @@ export default function OrderSuccessPage() {
                                 <div className="flex-1">
                                     <p className={`font-semibold ${getStepStatus('confirmed') !== 'pending' ? 'text-gray-900' : 'text-gray-400'
                                         }`}>Order Confirmed</p>
-                                    <p className="text-sm text-gray-500">Payment received</p>
+                                    <p className="text-xs text-gray-500">We have received your order</p>
                                 </div>
-                                {getStepStatus('confirmed') === 'completed' && (
-                                    <span className="text-green-600 text-sm font-medium">Completed</span>
-                                )}
                             </div>
 
                             {/* Step 2: Preparing */}
                             <div className="flex items-center bg-white">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 border-2 ${getStepStatus('preparing') === 'completed' ? 'bg-green-600 border-green-600 text-white' :
-                                    getStepStatus('preparing') === 'active' ? 'bg-yellow-100 border-yellow-400 text-yellow-600' :
-                                        'bg-white border-gray-300 text-gray-300'
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 border-2 ${getStepStatus('preparing') === 'completed' || getStepStatus('preparing') === 'active'
+                                        ? 'bg-yellow-500 border-yellow-500 text-white'
+                                        : 'bg-white border-gray-300 text-gray-300'
                                     }`}>
-                                    {getStepStatus('preparing') === 'completed' ? (
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    ) : getStepStatus('preparing') === 'active' ? (
-                                        <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                                    ) : (
-                                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                                    )}
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
                                 </div>
                                 <div className="flex-1">
                                     <p className={`font-semibold ${getStepStatus('preparing') !== 'pending' ? 'text-gray-900' : 'text-gray-400'
-                                        }`}>Preparing Food</p>
-                                    <p className="text-sm text-gray-500">Kitchen is working on it</p>
+                                        }`}>Preparing</p>
+                                    <p className="text-xs text-gray-500">Chef is preparing your food</p>
                                 </div>
-                                {getStepStatus('preparing') === 'active' && (
-                                    <span className="text-yellow-600 text-sm font-medium">In Progress</span>
-                                )}
-                                {getStepStatus('preparing') === 'completed' && (
-                                    <span className="text-green-600 text-sm font-medium">Completed</span>
-                                )}
                             </div>
 
                             {/* Step 3: Served */}
                             <div className="flex items-center bg-white">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 border-2 ${getStepStatus('served') === 'active' || getStepStatus('served') === 'completed'
-                                    ? 'bg-green-600 border-green-600 text-white'
-                                    : 'bg-white border-gray-300 text-gray-300'
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 border-2 ${getStepStatus('served') === 'completed' || getStepStatus('served') === 'active'
+                                        ? 'bg-blue-600 border-blue-600 text-white'
+                                        : 'bg-white border-gray-300 text-gray-300'
                                     }`}>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                                 <div className="flex-1">
                                     <p className={`font-semibold ${getStepStatus('served') !== 'pending' ? 'text-gray-900' : 'text-gray-400'
                                         }`}>Served</p>
-                                    <p className="text-sm text-gray-500">Enjoy your meal!</p>
+                                    <p className="text-xs text-gray-500">Enjoy your meal!</p>
                                 </div>
-                                {getStepStatus('served') === 'active' && (
-                                    <span className="text-green-600 text-sm font-medium">Served</span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Thank You Message */}
-                    <div className="px-8 py-6 bg-gradient-to-r from-green-50 to-blue-50 border-t border-gray-200">
-                        <div className="flex items-start">
-                            <svg className="w-6 h-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <div>
-                                <p className="font-semibold text-gray-900 mb-1">Thank You for Your Order!</p>
-                                <p className="text-sm text-gray-600">
-                                    Your order will be served to your table shortly. If you need any assistance, please don&apos;t hesitate to ask our staff.
-                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="bg-white rounded-b-3xl shadow-2xl border border-gray-100 px-8 py-6">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        {/* <Link href="/" className="flex-1">
-                            <Button variant="secondary" className="w-full">
-                                <div className="flex items-center justify-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                    </svg>
-                                    Back to Home
-                                </div>
-                            </Button>
-                        </Link> */}
-                        <button
-                            onClick={() => window.print()}
-                            className="flex-1"
-                        >
-                            <Button variant="primary" className="w-full bg-green-600 hover:bg-green-700">
-                                <div className="flex items-center justify-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                    </svg>
-                                    Print Receipt
-                                </div>
-                            </Button>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="text-center mt-6">
-                    <p className="text-sm text-gray-600">
-                        Powered by <span className="font-semibold text-green-600">OrderByQR</span> 🍽️
-                    </p>
+                <div className="mt-8 text-center">
+                    <Link href={`/r/${order.restaurantId?.name.toLowerCase().replace(/\s+/g, '-')}/t/${order.tableSlug}`}>
+                        <Button variant="secondary">Order More Items</Button>
+                    </Link>
                 </div>
             </div>
-
-            {/* Print Styles */}
-            <style jsx global>{`
-                @media print {
-                    body {
-                        background: white;
-                    }
-                    .min-h-screen {
-                        min-height: auto;
-                    }
-                    button, a {
-                        display: none !important;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

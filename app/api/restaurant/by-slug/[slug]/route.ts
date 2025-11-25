@@ -11,8 +11,8 @@ export async function GET(
     await connectDB();
     const { slug } = await params;
 
-    const restaurant = await Restaurant.findOne({ slug }).select("_id name email slug owner status");
-    
+    const restaurant = await Restaurant.findOne({ slug }).select("_id name email slug owner status gstPercentage");
+
     if (!restaurant) {
       return NextResponse.json({ success: false, error: "Restaurant not found" }, { status: 404 });
     }

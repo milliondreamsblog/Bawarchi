@@ -18,8 +18,9 @@ declare global {
 }
 
 export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }: RazorpayCheckoutProps) {
-    const { items, total, clearCart } = useCartStore();
+    const { items, total, clearCart, getBillingBreakdown } = useCartStore();
     const [loading, setLoading] = React.useState(false);
+    const billingBreakdown = getBillingBreakdown();
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -38,9 +39,15 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
             return;
         }
 
+        if (!billingBreakdown) {
+            alert("Unable to calculate billing. Please try again.");
+            return;
+        }
+
         setLoading(true);
 
         try {
+            // Create payment order with base total (API will calculate full billing)
             const orderResponse = await fetch("/api/payments/create-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -77,6 +84,8 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
                         const verifyData = await verifyResponse.json();
 
                         if (verifyData.success) {
+                            // Create order with complete billing breakdown
+                            const billing = orderData.billingBreakdown;
                             const createOrderResponse = await fetch("/api/orders", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
@@ -90,6 +99,14 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
                                     total,
                                     razorpayOrderId: response.razorpay_order_id,
                                     razorpayPaymentId: response.razorpay_payment_id,
+                                    // Include complete billing breakdown
+                                    baseTotal: billing.baseTotal,
+                                    gstPercentage: billing.gstPercentage,
+                                    gstAmount: billing.gstAmount,
+                                    platformFee: billing.platformFee,
+                                    finalAmount: billing.finalAmount,
+                                    restaurantEarnings: billing.restaurantEarnings,
+                                    myEarnings: billing.myEarnings,
                                 }),
                             });
 
@@ -154,7 +171,7 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
                     <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
-                    Pay ₹{total}
+                    Pay ₹{billingBreakdown?.finalAmount.toFixed(2) || total}
                 </div>
             )}
         </Button>

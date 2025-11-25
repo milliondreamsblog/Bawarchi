@@ -7,17 +7,17 @@ import Table from "@/lib/models/Table.js";
 export async function GET(request: Request) {
   try {
     await connectDB();
-    
+
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get("restaurantId");
-    
+
     if (!restaurantId) {
       return NextResponse.json(
         { success: false, error: "restaurantId is required" },
         { status: 400 }
       );
     }
-    
+
     // Populate item details to avoid null references
     const orders = await Order.find({ restaurantId })
       .populate({
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       })
       .sort({ createdAt: -1 })
       .lean();
-      
+
     return NextResponse.json({ success: true, orders });
   } catch (error: any) {
     return NextResponse.json(
@@ -40,9 +40,24 @@ export async function POST(request: Request) {
   try {
     await connectDB();
     const body = await request.json();
-    
-    const { tableSlug, items, total, restaurantId } = body;
-    
+
+    const {
+      tableSlug,
+      items,
+      total,
+      restaurantId,
+      razorpayOrderId,
+      razorpayPaymentId,
+      // New billing fields
+      baseTotal,
+      gstPercentage,
+      gstAmount,
+      platformFee,
+      finalAmount,
+      restaurantEarnings,
+      myEarnings,
+    } = body;
+
     if (!tableSlug || !items || !total || !restaurantId) {
       return NextResponse.json(
         { success: false, error: "Table slug, items, total, and restaurantId are required" },
@@ -59,13 +74,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const order = await Order.create({
+    // Create order with all fields (new billing fields are optional for backward compatibility)
+    const orderData: any = {
       tableSlug,
       items,
       total,
       restaurantId,
       status: "pending",
-    });
+    };
+
+    // Add Razorpay IDs if present
+    if (razorpayOrderId) orderData.razorpayOrderId = razorpayOrderId;
+    if (razorpayPaymentId) orderData.razorpayPaymentId = razorpayPaymentId;
+
+    // Add billing breakdown fields if present
+    if (baseTotal !== undefined) orderData.baseTotal = baseTotal;
+    if (gstPercentage !== undefined) orderData.gstPercentage = gstPercentage;
+    if (gstAmount !== undefined) orderData.gstAmount = gstAmount;
+    if (platformFee !== undefined) orderData.platformFee = platformFee;
+    if (finalAmount !== undefined) orderData.finalAmount = finalAmount;
+    if (restaurantEarnings !== undefined) orderData.restaurantEarnings = restaurantEarnings;
+    if (myEarnings !== undefined) orderData.myEarnings = myEarnings;
+
+    const order = await Order.create(orderData);
 
     return NextResponse.json({ success: true, order }, { status: 201 });
   } catch (error: any) {

@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import connectDB from "@/lib/db.js";
+import { calculateBillingBreakdown } from "@/lib/utils/billing";
 
 export async function POST(request: Request) {
   try {
@@ -31,6 +32,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Table not found" }, { status: 404 });
     }
 
+    // Calculate billing breakdown with restaurant's GST
+    const gstPercentage = restaurant.gstPercentage || 0;
+    const billingBreakdown = calculateBillingBreakdown(amount, gstPercentage);
+
     // Use restaurant keys or fallback to global env vars
     const key_id = restaurant.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
     const key_secret = restaurant.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
@@ -48,12 +53,16 @@ export async function POST(request: Request) {
     });
 
     const options = {
-      amount: amount * 100, // Convert to paise
+      amount: Math.round(billingBreakdown.finalAmount * 100), // Convert to paise, use finalAmount
       currency,
       receipt: `receipt_${Date.now()}`,
       notes: {
         restaurantId: restaurant._id.toString(),
-        tableSlug: tableSlug
+        tableSlug: tableSlug,
+        baseTotal: billingBreakdown.baseTotal.toString(),
+        gstPercentage: gstPercentage.toString(),
+        gstAmount: billingBreakdown.gstAmount.toString(),
+        platformFee: billingBreakdown.platformFee.toString(),
       }
     };
 
@@ -65,6 +74,7 @@ export async function POST(request: Request) {
       amount: order.amount,
       currency: order.currency,
       key_id: key_id, // Send key_id back to frontend
+      billingBreakdown, // Send complete breakdown to frontend
     });
   } catch (error: any) {
     return NextResponse.json(
