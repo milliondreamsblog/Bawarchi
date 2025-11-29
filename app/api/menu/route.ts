@@ -24,6 +24,8 @@ export async function GET(request: Request) {
 
     // Fetch menu and populate items
     let menu;
+    let populateSuccessful = true;
+
     try {
       menu = await Menu.findOne(query).populate({
         path: 'sections.items',
@@ -31,6 +33,7 @@ export async function GET(request: Request) {
       }).lean() as any;
     } catch (populateError: any) {
       console.error('Error populating menu items:', populateError);
+      populateSuccessful = false;
       // If populate fails, try fetching without populate
       menu = await Menu.findOne(query).lean() as any;
     }
@@ -45,15 +48,47 @@ export async function GET(request: Request) {
 
     console.log('Menu found, processing sections...');
 
+    // If populate failed, manually fetch items
+    if (!populateSuccessful && menu.sections && Array.isArray(menu.sections)) {
+      console.log('Manually populating items...');
+
+      for (const section of menu.sections) {
+        if (section.items && Array.isArray(section.items)) {
+          // Fetch all items for this section
+          const itemIds = section.items;
+          const populatedItems = await Item.find({
+            _id: { $in: itemIds }
+          }).lean();
+
+          // Replace ObjectIds with actual items
+          section.items = populatedItems;
+        }
+      }
+    }
+
     // Filter out unavailable items from each section
     if (menu.sections && Array.isArray(menu.sections)) {
       menu.sections = menu.sections.map((section: any) => ({
         ...section,
         items: Array.isArray(section.items)
-          ? section.items.filter((item: any) => item && item.available !== false)
+          ? section.items.filter((item: any) => {
+            // Check if item is an object (not just an ID) and is available
+            if (typeof item === 'object' && item !== null) {
+              return item.available !== false;
+            }
+            // If it's just an ID string, filter it out
+            return false;
+          })
           : []
       }));
+
+      // Remove sections with no items
+      menu.sections = menu.sections.filter((section: any) =>
+        section.items && section.items.length > 0
+      );
     }
+
+    console.log('Returning menu with sections:', menu.sections?.length || 0);
 
     return NextResponse.json({ success: true, menu });
   } catch (error: any) {
