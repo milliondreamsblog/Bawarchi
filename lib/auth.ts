@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Check for super admin first
-        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || "admin@orderbyqr.com";
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || "admin@Bawarchie.com";
         const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || "admin123";
 
         if (

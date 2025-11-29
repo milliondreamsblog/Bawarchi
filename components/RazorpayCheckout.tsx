@@ -64,7 +64,7 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
                 key: orderData.key_id,
                 amount: orderData.amount,
                 currency: orderData.currency,
-                name: "OrderByQR",
+                name: "Bawarchie",
                 description: `Order for Table ${tableSlug}`,
                 order_id: orderData.order_id,
                 handler: async function (response: any) {

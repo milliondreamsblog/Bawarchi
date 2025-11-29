@@ -24,7 +24,7 @@ The authentication system has been fixed. The errors you saw in the terminal wer
 
 1. Go to: http://localhost:3000/super-admin/login
 2. Use these credentials:
-   - Email: `admin@orderbyqr.com`
+   - Email: `admin@Bawarchie.com`
    - Password: `admin123`
 3. Click "Sign In as Super Admin"
 4. You should be redirected to the restaurant management dashboard
@@ -81,7 +81,7 @@ If login still doesn't work:
    ```
    NEXTAUTH_SECRET=evu5ucL8PTO1ZbpcAg0Uw1jkqSJ0b6Zb6L9B6urKVrA=
    NEXTAUTH_URL=http://localhost:3000
-   SUPER_ADMIN_EMAIL=admin@orderbyqr.com
+   SUPER_ADMIN_EMAIL=admin@Bawarchie.com
    SUPER_ADMIN_PASSWORD=admin123
    ```
 

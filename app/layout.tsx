@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OrderByQR",
+  title: "Bawarchie",
   description: "Scan, order, and pay - all from your table!",
 };
 

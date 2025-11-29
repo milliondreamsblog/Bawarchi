@@ -126,7 +126,7 @@ export default function SignupPage() {
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6 text-white">
-                            <h1 className="text-3xl font-bold mb-2">Join OrderByQR</h1>
+                            <h1 className="text-3xl font-bold mb-2">Join Bawarchie</h1>
                             <p className="text-green-100 opacity-90">
                                 Register your restaurant and start accepting QR orders today
                             </p>
@@ -308,10 +308,10 @@ export default function SignupPage() {
                                         </Link>
                                     </p>
                                 </div>
-                                
+
                                 <div className="mt-4 text-center">
-                                    <Link 
-                                        href="/" 
+                                    <Link
+                                        href="/"
                                         className="inline-flex items-center text-sm text-gray-500 hover:text-green-600 transition-colors"
                                     >
                                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

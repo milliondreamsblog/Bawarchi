@@ -1,4 +1,4 @@
-# OrderByQR - Restaurant Ordering System
+# Bawarchie - Restaurant Ordering System
 
 A modern, full-stack QR-based food ordering system built with Next.js, MongoDB, Razorpay, and OpenAI.
 
@@ -35,7 +35,7 @@ A modern, full-stack QR-based food ordering system built with Next.js, MongoDB, 
 
 ```bash
 git clone <your-repo-url>
-cd orderbyqr
+cd Bawarchie
 npm install
 ```
 
@@ -45,7 +45,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # MongoDB
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/orderbyqr?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/Bawarchie?retryWrites=true&w=majority
 
 # Razorpay
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
@@ -131,7 +131,7 @@ The AI analyzes your menu and provides smart recommendations.
 ## 🏗️ Project Structure
 
 ```
-orderbyqr/
+Bawarchie/
 ├── app/
 │   ├── api/                    # API Routes
 │   │   ├── items/             # Items CRUD

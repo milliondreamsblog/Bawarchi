@@ -20,7 +20,7 @@ export default function SuperAdminLoginPage() {
         setLoading(true);
         setError("");
 
-        const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "admin@orderbyqr.com";
+        const SUPER_ADMIN_EMAIL = process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "admin@Bawarchie.com";
         const SUPER_ADMIN_PASSWORD = process.env.NEXT_PUBLIC_SUPER_ADMIN_PASSWORD || "admin123";
 
         if (formData.email === SUPER_ADMIN_EMAIL && formData.password === SUPER_ADMIN_PASSWORD) {
@@ -142,8 +142,8 @@ export default function SuperAdminLoginPage() {
                             </form>
 
                             <div className="mt-6 text-center">
-                                <Link 
-                                    href="/" 
+                                <Link
+                                    href="/"
                                     className="inline-flex items-center text-sm text-gray-500 hover:text-green-600 transition-colors"
                                 >
                                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

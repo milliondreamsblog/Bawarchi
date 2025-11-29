@@ -277,6 +277,7 @@ export default function RestaurantItemsPage() {
                                     onChange={handleImageChange}
                                     className="hidden"
                                     id="image-upload"
+                                    required
                                 />
                                 <label
                                     htmlFor="image-upload"

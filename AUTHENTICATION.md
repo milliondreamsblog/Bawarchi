@@ -2,7 +2,7 @@
 
 ## 🔐 What's New
 
-Your OrderByQR system now has a complete authentication system with:
+Your Bawarchie system now has a complete authentication system with:
 
 - **Restaurant Registration**: New restaurants can sign up
 - **Admin Approval Workflow**: Super admin approves/blocks restaurants
@@ -18,7 +18,7 @@ Add to your `.env` file:
 
 ```env
 # Super Admin Credentials (CHANGE THESE!)
-SUPER_ADMIN_EMAIL=admin@orderbyqr.com
+SUPER_ADMIN_EMAIL=admin@Bawarchie.com
 SUPER_ADMIN_PASSWORD=admin123
 
 # NextAuth Configuration
@@ -46,7 +46,7 @@ openssl rand -base64 32
 #### **For Super Admin**:
 1. Visit http://localhost:3000/super-admin/login
 2. Login with credentials from `.env`:
-   - Email: `admin@orderbyqr.com`
+   - Email: `admin@Bawarchie.com`
    - Password: `admin123`
 3. Go to "Restaurants" tab
 4. See pending registrations

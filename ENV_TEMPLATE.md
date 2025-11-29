@@ -1,7 +1,7 @@
 # Environment Variables Template - Copy to .env
 
 # MongoDB Configuration
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/orderbyqr?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/Bawarchie?retryWrites=true&w=majority
 
 # Razorpay Configuration (Test Mode)
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
@@ -26,11 +26,11 @@ NEXTAUTH_SECRET=your-generated-secret-key-here-min-32-chars
 NEXTAUTH_URL=http://localhost:3000
 
 # Super Admin Credentials (CHANGE THESE IN PRODUCTION!)
-SUPER_ADMIN_EMAIL=papa@orderbyqr.com
+SUPER_ADMIN_EMAIL=papa@Bawarchie.com
 SUPER_ADMIN_PASSWORD=papa123
 
 # Public Super Admin Email (for client-side demo - REMOVE IN PRODUCTION!)
-NEXT_PUBLIC_SUPER_ADMIN_EMAIL=papa@orderbyqr.com
+NEXT_PUBLIC_SUPER_ADMIN_EMAIL=papa@Bawarchie.com
 NEXT_PUBLIC_SUPER_ADMIN_PASSWORD=papa123
 
 # Instructions:

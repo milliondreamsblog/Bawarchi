@@ -1,6 +1,6 @@
 # 🚀 Quick Start Guide
 
-Get your OrderByQR system running in 5 minutes!
+Get your Bawarchie system running in 5 minutes!
 
 ## 1. Install Dependencies ✅ (Already Done)
 
@@ -14,7 +14,7 @@ npm install
 2. Add your credentials:
 
 ```env
-MONGO_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/orderbyqr
+MONGO_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/Bawarchie
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_secret
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_your_key_id
@@ -108,7 +108,7 @@ Your complete QR-based food ordering system is now running!
 
 ## 📚 Next Steps
 
-- Read [README.md](file:///d:/codesPlayground/orderbyqr/README.md) for full documentation
+- Read [README.md](file:///d:/codesPlayground/Bawarchie/README.md) for full documentation
 - Check [walkthrough.md](file:///C:/Users/adit7/.gemini/antigravity/brain/5ba29caf-15f1-41c5-9dc7-e77e23054409/walkthrough.md) for detailed testing guide
 - Deploy to Vercel when ready (see README)
 
