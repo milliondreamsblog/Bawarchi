@@ -1,21 +1,22 @@
-import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
-import FeaturesSection from "@/components/FeaturesSection";
-import AboutSection from "@/components/About";
-// import PricingSection from "@/components/PricingSection";
-import CTASection from "@/components/CTAsection";
-import Footer from "@/components/Footer";
+import HeroSection from "@/components/landing/HeroSection";   
+import SolutionSection from "@/components/landing/Solution";
+import BenefitsSection from "@/components/landing/Benifits";
+import PricingSection from "@/components/landing/PricingSection";
+import TestimonialsSection from "@/components/landing/TestimonialSection";
+import FinalCTASection from "@/components/landing/CTAsection";
+import FAQsection from "@/components/landing/FAQ";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-scree bg-[#0A0F0D] text-white font-sans antialiased">
       <HeroSection />
-      <FeaturesSection />
-      <AboutSection />
-      {/* <PricingSection /> */}
-      <CTASection />
-      <Footer />
+      {/* <ProblemSection /> */}
+      <SolutionSection />
+      <BenefitsSection />
+      <PricingSection />
+      <TestimonialsSection />
+      <FAQsection />
+      <FinalCTASection />
     </div>
   );
 }

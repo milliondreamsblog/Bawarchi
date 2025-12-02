@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Button from "@/components/Button";
+import Image from "next/image";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -62,10 +63,18 @@ export default function LoginPage() {
             {/* Navigation */}
             <nav className="bg-white border-b border-gray-100 py-4">
                 <div className="container max-w-6xl mx-auto px-4 flex justify-between items-center">
-                    <Link href="/" className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-green-600 rounded-lg"></div>
-                        <span className="text-xl font-bold text-gray-900">OrderBy<span className="text-green-600">QR</span></span>
-                    </Link>
+                    <Link href="/" className="flex items-center group">
+          <div className="relative h-12 transition-transform duration-200">
+            <Image
+              src="/logo-11.webp"
+              alt="Bawarchie Logo"
+              height={40}
+              width={180}
+              className="relative -top-18 right-10"
+              priority
+            />
+          </div>
+        </Link>
                     <div className="flex space-x-4">
                         <Link href="/auth/signup" className="px-4 py-2 text-gray-700 hover:text-green-600 transition-colors">
                             Register
