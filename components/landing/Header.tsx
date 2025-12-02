@@ -82,7 +82,7 @@ export default function Header() {
         <div className="flex items-center space-x-3 lg:hidden">
           {/* Single CTA Button - Simplified */}
           <Link
-            href="https://cal.com/aditya-yadav"
+            href="https://cal.com/bawarchie"
             className="px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg hover:from-green-500 hover:to-emerald-400 transition-all duration-200 font-medium text-sm shadow-lg shadow-green-900/30"
           >
             Demo
@@ -170,7 +170,7 @@ export default function Header() {
               </p>
               <div className="space-y-3">
                 <Link
-                  href="https://cal.com/aditya-yadav"
+                  href="https://cal.com/bawarchie"
                   className="block w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg hover:from-green-500 hover:to-emerald-400 transition-all duration-200 font-medium text-center shadow-lg shadow-green-900/30"
                   onClick={() => setIsMenuOpen(false)}
                 >

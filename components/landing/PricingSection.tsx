@@ -53,7 +53,7 @@ export default function PricingSection() {
             </ul>
             
             <Link 
-              href="https://cal.com/aditya-yadav"
+              href="https://cal.com/bawarchie"
               className="block w-full text-center py-3.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-500 transition-all"
             >
               Get Started

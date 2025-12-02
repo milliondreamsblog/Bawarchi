@@ -91,7 +91,7 @@ export default function HeroSection() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <Link 
-              href="https://cal.com/aditya-yadav"
+              href="https://cal.com/bawarchie"
               className="group relative inline-flex items-center justify-center px-8 py-4 bg-green-600 text-white font-semibold rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-green-900/40"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>

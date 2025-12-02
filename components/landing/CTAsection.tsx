@@ -23,7 +23,7 @@ export default function FinalCTASection() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link 
-              href="https://cal.com/aditya-yadav"
+              href="https://cal.com/bawarchie"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-500 transition-all text-lg"
             >
               Book Free Demo
