@@ -29,11 +29,11 @@ export default function Header() {
         <Link href="/" className="flex items-center group">
           <div className="relative h-12 transition-transform duration-200">
             <Image
-              src="/logo-11.webp"
+              src="/logoBawa.png"
               alt="Bawarchie Logo"
-              height={40}
-              width={180}
-              className="relative -top-18 right-10"
+              height={100}
+              width={100}
+              className="relative -top-8 right-10"
               priority
             />
           </div>

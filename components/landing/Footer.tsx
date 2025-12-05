@@ -12,11 +12,11 @@ export default function Footer() {
                         <Link href="/" className="inline-flex items-center mb-6">
                             <div className="relative h-10 w-40">
                                 <Image
-                                    src="/logo-11.webp"
+                                    src="/logoBawa.png"
                                     alt="Bawarchie Logo"
                                     height={40}
-                                    width={160}
-                                    className="object-contain relative -top-18 right-8"
+                                    width={120}
+                                    className="object-contain relative -top-12 right-8"
                                     priority
                                 />
                             </div>
