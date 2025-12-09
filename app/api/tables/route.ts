@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Table from "@/lib/models/Table.js";
+import QRCode from "qrcode";
+import { v2 as cloudinary } from "cloudinary";
 
 export async function GET(request: Request) {
   try {
@@ -37,13 +39,20 @@ export async function GET(request: Request) {
   }
 }
 
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+
 export async function POST(request: Request) {
   try {
     await connectDB();
     const body = await request.json();
-    
     const { tableNumber, slug, restaurantId } = body;
-    
+
     if (!tableNumber || !slug || !restaurantId) {
       return NextResponse.json(
         { success: false, error: "Table number, slug, and restaurantId are required" },
@@ -51,7 +60,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if slug already exists for this restaurant
+    // Check duplicate slug within same restaurant
     const existing = await Table.findOne({ slug, restaurantId });
     if (existing) {
       return NextResponse.json(
@@ -60,9 +69,32 @@ export async function POST(request: Request) {
       );
     }
 
-    const table = await Table.create({ tableNumber, slug, restaurantId });
+    // --- 1. Generate table URL ---
+    const tableUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${restaurantId}/t/${slug}`;
+
+    // --- 2. Create QR Code (base64) ---
+    const qrBase64 = await QRCode.toDataURL(tableUrl);
+
+    // --- 3. Upload QR to Cloudinary ---
+    const uploadResult = await cloudinary.uploader.upload(qrBase64, {
+      folder: `restaurants/${restaurantId}/tables`,
+      public_id: slug, // keeps table-slug.png
+      overwrite: true,
+    });
+
+    // --- 4. Create table in DB with qrUrl ---
+    const table = await Table.create({
+      tableNumber,
+      slug,
+      restaurantId,
+      qrUrl: uploadResult.secure_url, // store Cloudinary URL
+    });
+
     return NextResponse.json({ success: true, table }, { status: 201 });
+
   } catch (error: any) {
+    console.error("Error creating table:", error);
+    
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
