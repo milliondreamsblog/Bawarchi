@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import QRCode from "qrcode";
 import Image from "next/image";
 
-interface Table { _id: string; tableNumber: number; slug: string; restaurantId: string; }
+interface Table { _id: string; tableNumber: number; slug: string; restaurantId: string; qrUrl : string}
 
 export default function RestaurantTablesPage() {
     const params = useParams();
@@ -243,11 +243,11 @@ export default function RestaurantTablesPage() {
                         </div>
 
                         {/* QR Code */}
-                        {qrCodes[table._id] && (
+                        {table.qrUrl && (
                             <div className="text-center mb-4">
                                 <div className="bg-white p-4 rounded-xl border border-gray-200 inline-block">
                                     <Image
-                                        src={qrCodes[table._id]} 
+                                        src={table.qrUrl} 
                                         alt={`QR Code for Table ${table.tableNumber}`} 
                                         className="mx-auto rounded-lg"
                                         width={460}
@@ -274,7 +274,7 @@ export default function RestaurantTablesPage() {
                             </div>
 
                             {/* Download Button */}
-                            {qrCodes[table._id] && (
+                            {table.qrUrl && (
                                 <a 
                                     href={qrCodes[table._id]} 
                                     download={`table-${table.tableNumber}-qr.png`}
@@ -319,3 +319,4 @@ export default function RestaurantTablesPage() {
         </div>
     );
 }
+
