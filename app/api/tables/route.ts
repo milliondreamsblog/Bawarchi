@@ -70,7 +70,8 @@ export async function POST(request: Request) {
     }
 
     // --- 1. Generate table URL ---
-    const tableUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${restaurantId}/t/${slug}`;
+    const domain = process.env.NEXT_PUBLIC_BASE_URL
+    const tableUrl = `${domain}/r/${restaurantId}/t/${slug}`;
 
     // --- 2. Create QR Code (base64) ---
     const qrBase64 = await QRCode.toDataURL(tableUrl);

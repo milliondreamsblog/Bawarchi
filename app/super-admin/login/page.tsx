@@ -50,18 +50,6 @@ export default function SuperAdminLoginPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-white">
-            <nav className="bg-white border-b border-gray-100 py-4">
-                <div className="container max-w-6xl mx-auto px-4 flex justify-between items-center">
-                    <Link href="/" className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-green-600 rounded-lg"></div>
-                        <span className="text-xl font-bold text-gray-900">OrderBy<span className="text-green-600">QR</span></span>
-                    </Link>
-                    <Link href="/" className="px-4 py-2 text-gray-700 hover:text-green-600 transition-colors">
-                        Home
-                    </Link>
-                </div>
-            </nav>
-
             <div className="py-12 px-4">
                 <div className="container max-w-md mx-auto">
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">

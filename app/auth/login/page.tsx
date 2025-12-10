@@ -60,32 +60,6 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-white">
-            {/* Navigation */}
-            <nav className="bg-white border-b border-gray-100 py-4">
-                <div className="container max-w-6xl mx-auto px-4 flex justify-between items-center">
-                    <Link href="/" className="flex items-center group">
-          <div className="relative h-12 transition-transform duration-200">
-            <Image
-              src="/logo-11.webp"
-              alt="Bawarchie Logo"
-              height={40}
-              width={180}
-              className="relative -top-18 right-10"
-              priority
-            />
-          </div>
-        </Link>
-                    <div className="flex space-x-4">
-                        <Link href="/auth/signup" className="px-4 py-2 text-gray-700 hover:text-green-600 transition-colors">
-                            Register
-                        </Link>
-                        <Link href="/" className="px-4 py-2 text-gray-700 hover:text-green-600 transition-colors">
-                            Home
-                        </Link>
-                    </div>
-                </div>
-            </nav>
-
             <div className="py-12 px-4">
                 <div className="container max-w-md mx-auto">
                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
