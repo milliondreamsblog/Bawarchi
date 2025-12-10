@@ -4,6 +4,19 @@ import connectDB from "@/lib/db.js";
 import Table from "@/lib/models/Table.js";
 import QRCode from "qrcode";
 import { v2 as cloudinary } from "cloudinary";
+import Restaurant from "@/lib/models/Restaurant";
+
+export interface RestaurantType {
+  _id: string;
+  name: string;
+  slug: string;
+  email: string;
+  owner: string;
+  phone: string;
+  address: string;
+  status: string;
+  gstPercentage?: number;
+}
 
 export async function GET(request: Request) {
   try {
@@ -60,6 +73,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const restaurant = await Restaurant.findById(restaurantId).lean<RestaurantType>();
+
+    if (!restaurant) {
+      return NextResponse.json(
+        { success: false, error: "Restaurant not found" },
+        { status: 404 }
+      );
+    }
+
+
     // Check duplicate slug within same restaurant
     const existing = await Table.findOne({ slug, restaurantId });
     if (existing) {
@@ -69,8 +92,10 @@ export async function POST(request: Request) {
       );
     }
 
+    const restaurantSlug = restaurant.slug;
+
     // --- 1. Generate table URL ---
-    const tableUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${restaurantId}/t/${slug}`;
+    const tableUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${restaurantSlug}/t/${slug}`;
 
     // --- 2. Create QR Code (base64) ---
     const qrBase64 = await QRCode.toDataURL(tableUrl);
