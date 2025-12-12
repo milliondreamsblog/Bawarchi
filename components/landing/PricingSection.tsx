@@ -1,4 +1,4 @@
-import { DollarSign, CheckCircle } from "lucide-react";
+import { DollarSign, CheckCircle, Star } from "lucide-react";
 import Link from "next/link";
 
 export default function PricingSection() {
@@ -20,11 +20,11 @@ export default function PricingSection() {
           {/* One-Time Setup */}
           <div className="p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl">
             <h3 className="text-lg text-gray-400 mb-2">One-Time Setup</h3>
-            <div className="text-5xl font-bold mb-2">₹1,299</div>
-            <p className="text-gray-500 mb-8">Everything included</p>
+            <div className="text-5xl font-bold mb-2">₹50<span className="text-lg text-gray-400">/QR</span></div>
+            <p className="text-gray-500 mb-8">Basic QR menu only</p>
             
             <ul className="space-y-3 mb-8">
-              {["QR Code Printing", "Menu Setup", "Dashboard Setup", "Staff Onboarding", "Table Setup"].map((item, index) => (
+              {["QR Code Printing", "Menu Setup", "Basic Dashboard", "Staff Onboarding", "Table Setup"].map((item, index) => (
                 <li key={index} className="flex items-center gap-3 text-gray-400">
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   <span>{item}</span>
@@ -33,41 +33,35 @@ export default function PricingSection() {
             </ul>
           </div>
 
-          {/* Monthly Maintenance - Featured */}
+          {/* Monthly without Payment Gateway - Featured */}
           <div className="p-8 bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-2 border-green-500/30 rounded-3xl relative">
-            {/* <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-green-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
+              <Star className="w-3 h-3 fill-white" />
               MOST POPULAR
-            </div> */}
+            </div>
             
-            <h3 className="text-lg text-gray-400 mb-2">Monthly Subscription</h3>
-            <div className="text-5xl font-bold mb-2">₹699<span className="text-lg text-gray-400">/month</span></div>
-            <p className="text-gray-500 mb-8">All-inclusive service</p>
+            <h3 className="text-lg text-gray-400 mb-2">Digital Menu</h3>
+            <div className="text-5xl font-bold mb-2">₹199<span className="text-lg text-gray-400">/month</span></div>
+            <p className="text-gray-500 mb-8">Full menu + order management</p>
             
             <ul className="space-y-3 mb-8">
-              {["Server Hosting", "Feature Updates", "Admin Dashboard", "Customer Support", "Menu & Table Management", "Real-time Order Dashboard"].map((item, index) => (
+              {["Complete Menu System", "Order Management", "Real-time Dashboard", "Staff Management", "Analytics", "Customer Feedback"].map((item, index) => (
                 <li key={index} className="flex items-center gap-3 text-gray-400">
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
-            
-            <Link 
-              href="https://cal.com/bawarchie"
-              className="block w-full text-center py-3.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-500 transition-all"
-            >
-              Get Started
-            </Link>
           </div>
 
-          {/* Transaction Fees */}
+          {/* Complete Solution with Payment Gateway */}
           <div className="p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl">
-            <h3 className="text-lg text-gray-400 mb-2">Transaction Processing</h3>
-            <div className="text-5xl font-bold mb-2">1.5 - 2.5%</div>
-            <p className="text-gray-500 mb-8">per transaction</p>
+            <h3 className="text-lg text-gray-400 mb-2">Complete Solution</h3>
+            <div className="text-5xl font-bold mb-2">₹299<span className="text-lg text-gray-400">/month</span></div>
+            <p className="text-gray-500 mb-8">Everything + payment gateway</p>
             
-            <ul className="space-y-3">
-              {["Razorpay MDR Included", "Automation Charges", "Payment Verification", "Fraud Protection"].map((item, index) => (
+            <ul className="space-y-3 mb-8">
+              {["Everything in Digital Menu", "Payment Gateway", "Auto Billing", "Digital Payments", "GST Calculation", "Priority Support"].map((item, index) => (
                 <li key={index} className="flex items-center gap-3 text-gray-400">
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   <span>{item}</span>
@@ -77,9 +71,19 @@ export default function PricingSection() {
           </div>
         </div>
 
+        {/* Single CTA Button in Center */}
         <div className="text-center mt-12">
+          <Link 
+            href="https://cal.com/bawarchie"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-500 transition-all text-lg"
+          >
+            I want this!
+          </Link>
+        </div>
+
+        <div className="text-center mt-8">
           <p className="text-gray-400">
-            <span className="text-green-400 font-semibold">7-day free trial</span> • No setup fee for first 20 restaurants • Cancel anytime
+            <span className="text-green-400 font-semibold">Special offer for first 20 restaurants</span> • Cancel anytime
           </p>
         </div>
       </div>

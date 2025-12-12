@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowRight, CheckCircle, TrendingUp, Zap, Clock, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, TrendingUp, Clock } from "lucide-react";
 import Image from "next/image";
 
 export default function HeroSection() {
