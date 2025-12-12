@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Button from "@/components/Button";
+import Image from "next/image";
 
 interface Item {
     _id: string;
@@ -49,12 +49,10 @@ export default function RestaurantItemsPage() {
 
     const fetchRestaurantAndItems = async () => {
         try {
-            // 1. Get restaurant ID from slug
             const restRes = await fetch(`/api/restaurant/by-slug/${slug}`);
             const restData = await restRes.json();
 
             if (!restData.success) {
-                console.error("Restaurant not found");
                 setLoading(false);
                 return;
             }
@@ -62,7 +60,6 @@ export default function RestaurantItemsPage() {
             const id = restData.restaurant._id;
             setRestaurantId(id);
 
-            // 2. Fetch items using ID
             const res = await fetch(`/api/items?restaurantId=${id}`);
             const data = await res.json();
             if (data.success) {
@@ -79,7 +76,6 @@ export default function RestaurantItemsPage() {
         const file = e.target.files?.[0];
         if (file) {
             setImageFile(file);
-            // Create preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
@@ -128,12 +124,10 @@ export default function RestaurantItemsPage() {
         if (!restaurantId) return;
 
         try {
-            // Upload image first if there is one
             let imageUrl = formData.image;
             if (imageFile) {
                 imageUrl = await uploadImageToCloudinary();
                 if (!imageUrl && imageFile) {
-                    // Upload failed, don't proceed
                     return;
                 }
             }
@@ -157,10 +151,8 @@ export default function RestaurantItemsPage() {
 
             if (data.success) {
                 if (editingItem) {
-                    // Update existing item
                     setItems(items.map(item => item._id === editingItem._id ? data.item : item));
                 } else {
-                    // Add new item
                     setItems([...items, data.item]);
                 }
                 setShowForm(false);
@@ -203,7 +195,7 @@ export default function RestaurantItemsPage() {
     };
 
     const handleDeleteItem = async (item: Item) => {
-        if (!confirm(`Delete "${item.name}"?\n\nThis will permanently remove this item from your menu. This action cannot be undone.`)) {
+        if (!confirm(`Delete "${item.name}"? This action cannot be undone.`)) {
             return;
         }
 
@@ -239,9 +231,7 @@ export default function RestaurantItemsPage() {
 
             const response = await fetch(`/api/items/${itemId}`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ available: !currentStatus, restaurantId }),
             });
 
@@ -254,8 +244,6 @@ export default function RestaurantItemsPage() {
             setItems(items.map(item =>
                 item._id === itemId ? { ...item, available: !currentStatus } : item
             ));
-
-            console.log(`✅ Item ${itemId} availability updated to ${!currentStatus}`);
         } catch (error: any) {
             console.error("Failed to update item availability:", error);
             alert(`Error: ${error.message || "Failed to update item"}`);
@@ -266,113 +254,76 @@ export default function RestaurantItemsPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-20">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading menu items...</p>
+                    <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-gray-600 text-sm">Loading items...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6">
+        <div className="min-h-screen bg-gray-50 p-4">
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Menu Items</h1>
-                    <p className="text-gray-600 mt-2">
-                        Manage your restaurant menu ({items.length} {items.length === 1 ? 'item' : 'items'})
-                    </p>
+            <div className="mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Menu Items</h1>
+                        <p className="text-gray-600 text-sm mt-1">
+                            {items.length} {items.length === 1 ? 'item' : 'items'}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all text-sm w-full sm:w-auto"
+                    >
+                        {showForm ? 'Cancel' : 'Add New Item'}
+                    </button>
                 </div>
-                <Button
-                    variant="primary"
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                    {showForm ? (
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Cancel
-                        </div>
-                    ) : (
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add New Item
-                        </div>
-                    )}
-                </Button>
             </div>
 
             {/* Add Item Form */}
             {showForm && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <div className="flex items-center mb-6">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-semibold text-gray-900">{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
+                <div className="bg-white rounded-xl shadow border border-gray-200 p-4 mb-6">
+                    <div className="mb-4">
+                        <h2 className="font-semibold text-gray-900">{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Image Upload Section */}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Image Upload */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Food Image
                             </label>
-                            <div className="flex items-center space-x-4">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="hidden"
-                                    id="image-upload"
-                                    required={!editingItem}
-                                />
-                                <label
-                                    htmlFor="image-upload"
-                                    className="cursor-pointer bg-white px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
-                                >
-                                    <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    Choose Image
-                                </label>
-                                {imageFile && (
-                                    <span className="text-sm text-gray-600">{imageFile.name}</span>
-                                )}
-                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="w-full text-sm text-gray-600 border border-gray-300 rounded-lg p-2"
+                            />
                             {imagePreview && (
-                                <div className="mt-4">
-                                    <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                                <div className="mt-2">
                                     <img
                                         src={imagePreview}
                                         alt="Preview"
-                                        className="w-48 h-48 object-cover rounded-lg border border-gray-300"
+                                        className="w-32 h-32 object-cover rounded-lg border border-gray-300"
                                     />
                                 </div>
                             )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Item Name *
                                 </label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     placeholder="Enter item name"
                                     value={formData.name}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, name: e.target.value })
-                                    }
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     required
                                 />
                             </div>
@@ -382,20 +333,15 @@ export default function RestaurantItemsPage() {
                                     Category
                                 </label>
                                 <select
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     value={formData.category}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, category: e.target.value })
-                                    }
+                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                 >
                                     <option value="General">General</option>
                                     <option value="Starters">Starters</option>
                                     <option value="Main Course">Main Course</option>
                                     <option value="Beverages">Beverages</option>
                                     <option value="Desserts">Desserts</option>
-                                    <option value="Appetizers">Appetizers</option>
-                                    <option value="Soups">Soups</option>
-                                    <option value="Salads">Salads</option>
                                 </select>
                             </div>
                         </div>
@@ -405,29 +351,25 @@ export default function RestaurantItemsPage() {
                                 Description
                             </label>
                             <textarea
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                 placeholder="Enter item description"
                                 value={formData.description}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, description: e.target.value })
-                                }
-                                rows={3}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                rows={2}
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Price (₹) *
                                 </label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     placeholder="0.00"
                                     value={formData.price}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, price: e.target.value })
-                                    }
+                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     required
                                     min="0"
                                     step="1"
@@ -440,214 +382,162 @@ export default function RestaurantItemsPage() {
                                 </label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                    placeholder="Enter calories"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    placeholder="Calories"
                                     value={formData.calories}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, calories: e.target.value })
-                                    }
+                                    onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
                                     min="0"
                                 />
                             </div>
 
-                            <div className="flex items-center justify-center">
-                                <div className="flex items-center space-x-3 bg-gray-50 p-4 rounded-lg w-full">
+                            <div className="flex items-center">
+                                <div className="flex items-center space-x-2 w-full">
                                     <input
                                         type="checkbox"
                                         id="available"
                                         checked={formData.available}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, available: e.target.checked })
-                                        }
-                                        className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                                        onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
+                                        className="w-4 h-4 text-green-600 rounded"
                                     />
-                                    <label htmlFor="available" className="text-sm font-medium text-gray-700">
-                                        Available for ordering
+                                    <label htmlFor="available" className="text-sm text-gray-700">
+                                        Available
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-4 pt-4">
-                            <Button
+                        <div className="flex gap-3 pt-2">
+                            <button
                                 type="submit"
                                 disabled={uploadingImage}
-                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-50"
                             >
-                                {uploadingImage ? (
-                                    <div className="flex items-center">
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                        Uploading Image...
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Create Item
-                                    </div>
-                                )}
-                            </Button>
-                            <Button
+                                {uploadingImage ? 'Uploading...' : editingItem ? 'Update Item' : 'Create Item'}
+                            </button>
+                            <button
                                 type="button"
-                                variant="secondary"
                                 onClick={() => {
                                     setShowForm(false);
                                     setEditingItem(null);
                                     setImageFile(null);
                                     setImagePreview("");
                                 }}
-                                className="px-8 py-3 rounded-lg font-semibold transition-all duration-300"
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-medium text-sm transition-all"
                             >
                                 Cancel
-                            </Button>
+                            </button>
                         </div>
                     </form>
                 </div>
             )}
 
             {/* Items Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.map((item) => (
-                    <div key={item._id} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
-                        {/* Item Image */}
-                        {item.image && (
-                            <div
-                                className="w-full h-48 bg-cover bg-center rounded-lg mb-4"
-                                style={{ backgroundImage: `url(${item.image})` }}
-                            />
-                        )}
-
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                            <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.available
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-red-100 text-red-800'
-                                    }`}
-                            >
-                                {item.available ? (
-                                    <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                        Available
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center">
-                                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                        Unavailable
-                                    </div>
-                                )}
-                            </span>
-                        </div>
-
-                        {item.description && (
-                            <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
-                        )}
-
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center space-x-4">
-                                <span className="text-2xl font-bold text-green-600">
-                                    ₹{item.price}
-                                </span>
-                                {item.calories && (
-                                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                        {item.calories} kcal
-                                    </span>
-                                )}
-                            </div>
-                            <span className="text-sm font-medium text-gray-700 bg-blue-100 px-3 py-1 rounded-full">
-                                {item.category}
-                            </span>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                            <button
-                                onClick={() => handleEditItem(item)}
-                                className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-                            >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Edit
-                            </button>
-                            <button
-                                onClick={() => handleDeleteItem(item)}
-                                disabled={deletingItemId === item._id}
-                                className="flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {deletingItemId === item._id ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                        Deleting
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Delete
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={() => toggleAvailability(item._id, item.available)}
-                            disabled={updatingItemId === item._id}
-                            className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${item.available
-                                ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl'
-                                : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
-                                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                            {updatingItemId === item._id ? (
-                                <div className="flex items-center justify-center">
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                    Updating...
-                                </div>
-                            ) : item.available ? (
-                                <div className="flex items-center justify-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Mark Unavailable
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Mark Available
+            {items.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {items.map((item) => (
+                        <div key={item._id} className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+                            {/* Item Image */}
+                            {item.image && (
+                                <div className="w-full h-40">
+                                    <Image
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                        height={400}
+                                        width={400}
+                                    />
                                 </div>
                             )}
-                        </button>
-                    </div>
-                ))}
-            </div>
 
-            {/* Empty State */}
-            {items.length === 0 && !showForm && (
-                <div className="text-center py-16">
-                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            <div className="p-4">
+                                {/* Header */}
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="font-semibold text-gray-900 text-sm truncate">{item.name}</h3>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${item.available
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {item.available ? 'Available' : 'Unavailable'}
+                                    </span>
+                                </div>
+
+                                {/* Description */}
+                                {item.description && (
+                                    <p className="text-gray-600 text-xs mb-3 line-clamp-2">{item.description}</p>
+                                )}
+
+                                {/* Details */}
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-lg font-bold text-green-600">
+                                            ₹{item.price}
+                                        </span>
+                                        {item.calories && (
+                                            <span className="text-xs text-gray-500">
+                                                • {item.calories} kcal
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                                        {item.category}
+                                    </span>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => handleEditItem(item)}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteItem(item)}
+                                            disabled={deletingItemId === item._id}
+                                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+                                        >
+                                            {deletingItemId === item._id ? 'Deleting...' : 'Delete'}
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={() => toggleAvailability(item._id, item.available)}
+                                        disabled={updatingItemId === item._id}
+                                        className={`w-full py-2 rounded-lg text-xs font-medium transition-all ${item.available
+                                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                                            : 'bg-green-600 hover:bg-green-700 text-white'
+                                            } disabled:opacity-50`}
+                                    >
+                                        {updatingItemId === item._id
+                                            ? 'Updating...'
+                                            : item.available
+                                                ? 'Mark Unavailable'
+                                                : 'Mark Available'
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : !showForm && (
+                <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No Menu Items Yet</h3>
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Start building your menu by adding your first item. Customers will see these items when they scan your QR codes.
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Menu Items</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                        Start by adding your first menu item
                     </p>
-                    <Button
+                    <button
                         onClick={() => setShowForm(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all"
                     >
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Create Your First Item
-                        </div>
-                    </Button>
+                        Add First Item
+                    </button>
                 </div>
             )}
         </div>

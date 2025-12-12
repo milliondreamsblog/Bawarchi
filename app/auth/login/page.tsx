@@ -193,28 +193,6 @@ export default function LoginPage() {
                             <p className="text-xs text-gray-600">Live order tracking</p>
                         </div>
                     </div>
-
-                    {/* Demo Access Note */}
-                    <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-                        <div className="flex items-center justify-center mb-2">
-                            <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 className="font-semibold text-blue-900">Want to see a demo?</h4>
-                        </div>
-                        <p className="text-blue-700 text-sm mb-3">
-                            Explore our platform with a live demo menu
-                        </p>
-                        <Link 
-                            href="/t/table-1" 
-                            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm"
-                        >
-                            View Demo Menu
-                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </Link>
-                    </div>
                 </div>
             </div>
         </div>

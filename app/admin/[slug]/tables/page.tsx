@@ -2,11 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Button from "@/components/Button";
 import QRCode from "qrcode";
 import Image from "next/image";
+import Link from "next/link";
 
-interface Table { _id: string; tableNumber: number; slug: string; restaurantId: string; qrUrl: string }
+interface Table {
+    _id: string;
+    tableNumber: number;
+    slug: string;
+    restaurantId: string;
+    qrUrl?: string
+}
 
 export default function RestaurantTablesPage() {
     const params = useParams();
@@ -27,19 +33,20 @@ export default function RestaurantTablesPage() {
 
     const fetchRestaurantAndTables = async () => {
         try {
-            // 1. Get restaurant ID
+            // Get restaurant ID
             const restRes = await fetch(`/api/restaurant/by-slug/${slug}`);
             const restData = await restRes.json();
             if (!restData.success) return;
             const id = restData.restaurant._id;
             setRestaurantId(id);
 
-            // 2. Fetch tables
+            // Fetch tables
             const res = await fetch(`/api/tables?restaurantId=${id}`);
             const data = await res.json();
             if (data.success) {
-                setTables(data.tables);
-                generateQRCodes(data.tables);
+                const tablesData = data.tables || [];
+                setTables(tablesData);
+                generateQRCodes(tablesData);
             }
         } catch (error) {
             console.error("Failed to fetch tables:", error);
@@ -52,8 +59,8 @@ export default function RestaurantTablesPage() {
         const codes: { [key: string]: string } = {};
         for (const table of tablesData) {
             try {
-                const url = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${slug}/t/${table.slug}`;
-                const qrDataUrl = await QRCode.toDataURL(url, { width: 200, margin: 2 });
+                const url = `${window.location.origin}/r/${slug}/t/${table.slug}`;
+                const qrDataUrl = await QRCode.toDataURL(url, { width: 200, margin: 1 });
                 codes[table._id] = qrDataUrl;
             } catch (error) {
                 console.error(`Failed to generate QR for ${table.slug}:`, error);
@@ -86,7 +93,6 @@ export default function RestaurantTablesPage() {
             } else {
                 alert(data.error || "Failed to create table");
             }
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert("Failed to create table");
         }
@@ -102,7 +108,7 @@ export default function RestaurantTablesPage() {
     };
 
     const handleDeleteTable = async (table: Table) => {
-        if (!confirm(`Delete Table ${table.tableNumber}?\n\nThis will permanently delete the table and its QR code. This action cannot be undone.`)) {
+        if (!confirm(`Delete Table ${table.tableNumber}? This action cannot be undone.`)) {
             return;
         }
 
@@ -136,72 +142,57 @@ export default function RestaurantTablesPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-12">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading tables...</p>
+                    <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-gray-600 text-sm">Loading tables...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6">
+        <div className="min-h-screen bg-gray-50 p-4">
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Table Management</h1>
-                    <p className="text-gray-600">Create tables and generate QR codes for customer ordering</p>
+            <div className="mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Tables</h1>
+                        <p className="text-gray-600 text-sm mt-1">
+                            {tables.length} {tables.length === 1 ? 'table' : 'tables'}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-all w-full sm:w-auto"
+                    >
+                        {showForm ? 'Cancel' : 'Add Table'}
+                    </button>
                 </div>
-                <Button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                    {showForm ? (
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Cancel
-                        </div>
-                    ) : (
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add Table
-                        </div>
-                    )}
-                </Button>
             </div>
 
             {/* Add Table Form */}
             {showForm && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <div className="flex items-center mb-6">
-                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-semibold text-gray-900">Add New Table</h2>
+                <div className="bg-white rounded-xl shadow border border-gray-200 p-4 mb-6">
+                    <div className="mb-4">
+                        <h2 className="font-semibold text-gray-900">Add New Table</h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Table Number *
                                 </label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     value={formData.tableNumber}
                                     onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
                                     onBlur={autoGenerateSlug}
                                     required
                                     min="1"
-                                    placeholder="Enter table number"
+                                    placeholder="e.g., 1"
                                 />
                             </div>
                             <div>
@@ -210,168 +201,133 @@ export default function RestaurantTablesPage() {
                                 </label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     value={formData.slug}
                                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                    placeholder="Auto-generated slug"
+                                    placeholder="Auto-generated"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Unique identifier for the table URL. Auto-generated for security.
-                                </p>
                             </div>
                         </div>
 
-                        {/* Preview */}
                         {formData.slug && (
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                <p className="text-sm text-green-800">
-                                    <strong>Table URL Preview:</strong><br />
-                                    <code className="text-xs bg-green-100 px-2 py-1 rounded">
-                                        {process.env.NEXT_PUBLIC_BASE_URL}/r/{slug}/t/{formData.slug}
-                                    </code>
+                            <div className="bg-gray-50 rounded-lg p-3">
+                                <p className="text-xs text-gray-600">
+                                    Table URL:
                                 </p>
+                                <code className="text-xs bg-white px-2 py-1 rounded border border-gray-200 break-all">
+                                    /r/{slug}/t/{formData.slug}
+                                </code>
                             </div>
                         )}
 
-                        <div className="flex gap-4 pt-4">
-                            <Button
+                        <div className="flex gap-3 pt-2">
+                            <button
                                 type="submit"
-                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-all"
                             >
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Create Table
-                                </div>
-                            </Button>
-                            <Button
+                                Create Table
+                            </button>
+                            <button
                                 type="button"
-                                variant="secondary"
                                 onClick={() => setShowForm(false)}
-                                className="px-8 py-3 rounded-lg font-semibold transition-all duration-300"
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-medium text-sm transition-all"
                             >
                                 Cancel
-                            </Button>
+                            </button>
                         </div>
                     </form>
                 </div>
             )}
 
             {/* Tables Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tables.map((table) => (
-                    <div key={table._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-200">
-                        {/* Table Header */}
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-xl font-semibold text-gray-900 mb-1">Table {table.tableNumber}</h3>
-                                <p className="text-sm text-gray-600 font-mono bg-gray-100 px-2 py-1 rounded">
-                                    {table.slug}
-                                </p>
-                            </div>
-                            <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                Active
-                            </div>
-                        </div>
-
-                        {/* QR Code */}
-                        {table.qrUrl && (
-                            <div className="text-center mb-4">
-                                <div className="bg-white p-4 rounded-xl border border-gray-200 inline-block">
-                                    <Image
-                                        src={table.qrUrl}
-                                        alt={`QR Code for Table ${table.tableNumber}`}
-                                        className="mx-auto rounded-lg"
-                                        width={460}
-                                        height={460}
-                                    />
+            {tables.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {tables.map((table) => (
+                        <div key={table._id} className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+                            <div className="p-4">
+                                {/* Table Header */}
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">Table {table.tableNumber}</h3>
+                                        <p className="text-xs text-gray-600 font-mono mt-1">{table.slug}</p>
+                                    </div>
+                                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                                        Active
+                                    </span>
                                 </div>
-                            </div>
-                        )}
 
-                        {/* Table Info */}
-                        <div className="space-y-3">
-                            <div className="flex items-center text-sm text-gray-600">
-                                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                <a
-                                    href={`/r/${slug}/t/${table.slug}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-green-600 hover:text-green-700 hover:underline break-all"
-                                >
-                                    /r/{slug}/t/{table.slug}
-                                </a>
-                            </div>
-
-                            {/* Download Button */}
-                            {table.qrUrl && (
-                                <a
-                                    href={qrCodes[table._id]}
-                                    download={`table-${table.tableNumber}-qr.png`}
-                                    className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-                                >
-                                    <div className="flex items-center justify-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Download QR Code
-                                    </div>
-                                </a>
-                            )}
-
-                            {/* Delete Button */}
-                            <button
-                                onClick={() => handleDeleteTable(table)}
-                                disabled={deletingTableId === table._id}
-                                className="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed mt-3"
-                            >
-                                {deletingTableId === table._id ? (
-                                    <div className="flex items-center justify-center">
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                        Deleting...
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Delete Table
+                                {/* QR Code */}
+                                {qrCodes[table._id] && (
+                                    <div className="text-center mb-4">
+                                        <div className="bg-white p-3 rounded-lg border border-gray-200 inline-block">
+                                            <Image
+                                                src={qrCodes[table._id]}
+                                                alt={`QR Code for Table ${table.tableNumber}`}
+                                                className="w-40 h-40 mx-auto"
+                                                width={460}
+                                                height={460}
+                                            />
+                                        </div>
                                     </div>
                                 )}
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
 
-            {/* Empty State */}
-            {tables.length === 0 && !showForm && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {/* Table URL */}
+                                <div className="mb-4">
+                                    <div className="text-xs text-gray-600 mb-1">Table URL:</div>
+                                    <div className="bg-gray-50 rounded-lg p-2">
+                                        <code className="text-xs break-all">
+                                            <Link href={`/r/${slug}/t/${table.slug}`}
+                                                target="no_ref">
+                                                /r/{slug}/t/{table.slug}
+                                            </Link>
+                                        </code>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="space-y-2">
+                                    {qrCodes[table._id] && (
+                                        <a
+                                            href={qrCodes[table._id]}
+                                            download={`table-${table.tableNumber}-qr.png`}
+                                            className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-lg font-medium text-sm transition-all"
+                                        >
+                                            Download QR
+                                        </a>
+                                    )}
+
+                                    <button
+                                        onClick={() => handleDeleteTable(table)}
+                                        disabled={deletingTableId === table._id}
+                                        className="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-2 rounded-lg font-medium text-sm transition-all disabled:opacity-50"
+                                    >
+                                        {deletingTableId === table._id ? 'Deleting...' : 'Delete Table'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : !showForm && (
+                <div className="bg-white rounded-xl shadow border border-gray-200 p-8 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Tables Created</h3>
-                    <p className="text-gray-600 mb-6">Create your first table to generate QR codes for customer ordering</p>
-                    <Button
+                    <h3 className="font-semibold text-gray-900 mb-2">No Tables</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                        Create tables to generate QR codes
+                    </p>
+                    <button
                         onClick={() => setShowForm(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all"
                     >
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Create First Table
-                        </div>
-                    </Button>
+                        Add First Table
+                    </button>
                 </div>
             )}
         </div>
     );
 }
-

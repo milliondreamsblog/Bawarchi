@@ -147,7 +147,6 @@ export default function RestaurantLayout({ children }: { children: ReactNode }) 
                     inset-y-0 left-0
                     w-64 bg-white border-r border-gray-200 shadow-lg
                     flex flex-col
-                    z-50
                     transform transition-transform duration-300 ease-in-out
                     ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                 `}>

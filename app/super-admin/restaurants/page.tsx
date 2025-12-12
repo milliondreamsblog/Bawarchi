@@ -96,11 +96,10 @@ export default function RestaurantsPage() {
                         <button
                             key={filter}
                             onClick={() => setStatusFilter(filter)}
-                            className={`px-4 py-2 rounded-lg font-medium capitalize transition-all duration-200 ${
-                                statusFilter === filter
+                            className={`px-4 py-2 rounded-lg font-medium capitalize transition-all duration-200 ${statusFilter === filter
                                     ? "bg-green-600 text-white shadow-md"
                                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
+                                }`}
                         >
                             {filter}
                         </button>

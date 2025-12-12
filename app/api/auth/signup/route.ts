@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       name,
       slug,
       email,
-      password: hashedPassword,
+      password,
       owner,
       phone,
       address,
