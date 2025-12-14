@@ -10,16 +10,16 @@ export default function FAQsection() {
 
   const faqs = [
     {
-      question: "What's included in the ₹50/QR setup?",
-      answer: "The one-time ₹50 per QR code fee includes everything to get started: professional QR code printing for each table, complete menu setup in our system, basic dashboard configuration, and initial table setup. You pay only for the QR codes you need."
+      question: "What's included in the ₹79/QR setup?",
+      answer: "The one-time ₹79 per QR code fee includes everything to get started: professional QR code printing for each table, complete menu setup in our system, basic dashboard configuration, and initial table setup. You pay only for the QR codes you need."
     },
     {
-      question: "What's the difference between ₹199/month and ₹299/month plans?",
-      answer: "The ₹199/month plan includes complete digital menu and order management with counter payments. The ₹299/month plan includes everything from ₹199 plan PLUS integrated payment gateway, digital payments, auto billing, and GST calculation."
+      question: "What's the difference between ₹299/month and ₹399/month plans?",
+      answer: "The ₹199/month plan includes complete digital menu and order management with counter payments. The ₹399/month plan includes everything from ₹299 plan PLUS integrated payment gateway, digital payments, auto billing, and GST calculation."
     },
     {
       question: "Can I try Bawarchie before paying?",
-      answer: "Yes! We offer a 7-day free trial for both monthly plans (₹199 and ₹299). No credit card required for the trial. You'll get full access to all features during the trial period."
+      answer: "Yes! We offer a 7-day free trial for both monthly plans (₹299 and ₹399). No credit card required for the trial. You'll get full access to all features during the trial period."
     },
     {
       question: "How long does setup take?",
@@ -27,19 +27,19 @@ export default function FAQsection() {
     },
     {
       question: "What happens if I want to cancel?",
-      answer: "You can cancel your monthly subscription anytime with no penalties. We don't lock you into long-term contracts. Your data will be available for 30 days after cancellation. The ₹50/QR setup is non-refundable as it covers printing and setup costs."
+      answer: "You can cancel your monthly subscription anytime with no penalties. We don't lock you into long-term contracts. Your data will be available for 30 days after cancellation. The ₹79/QR setup is non-refundable as it covers printing and setup costs."
     },
     {
       question: "Do I need special hardware for any plan?",
       answer: "No special hardware required! All plans work with any smartphone, tablet, or computer. We provide QR codes for the one-time setup plan, and you can use any device to access your dashboard for monthly plans."
     },
     {
-      question: "Can I upgrade from ₹199/month to ₹299/month later?",
+      question: "Can I upgrade from ₹299/month to ₹299/month later?",
       answer: "Yes, you can upgrade anytime! Just contact our support team and we'll switch you to the Complete Solution plan. You'll get access to payment gateway and all premium features immediately."
     },
     {
-      question: "What payment methods are supported in the ₹299 plan?",
-      answer: "The Complete Solution plan (₹299/month) supports all major payment methods through Razorpay: UPI, Credit/Debit Cards, Net Banking, Wallets (Paytm, PhonePe, etc.), and EMI options. The ₹199 plan is designed for counter payments."
+      question: "What payment methods are supported in the ₹399 plan?",
+      answer: "The Complete Solution plan (₹399/month) supports all major payment methods through Razorpay: UPI, Credit/Debit Cards, Net Banking, Wallets (Paytm, PhonePe, etc.), and EMI options. The ₹199 plan is designed for counter payments."
     },
     {
       question: "Is there a long-term contract?",
@@ -47,7 +47,7 @@ export default function FAQsection() {
     },
     {
       question: "How many QR codes can I get with the one-time setup?",
-      answer: "You can order as many QR codes as you need at ₹50 each. Most restaurants order one per table. We recommend ordering extras for backup. Bulk discounts available for orders over 50 QR codes."
+      answer: "You can order as many QR codes as you need at ₹79 each. Most restaurants order one per table."
     }
   ];
 
