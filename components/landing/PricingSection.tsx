@@ -20,8 +20,10 @@ export default function PricingSection() {
           {/* One-Time Setup */}
           <div className="p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl">
             <h3 className="text-lg text-gray-400 mb-2">One-Time Setup</h3>
-            <div className="text-5xl font-bold mb-2">₹79<span className="text-lg text-gray-400">/QR</span></div>
-            <p className="text-gray-500 mb-8">Basic QR menu only</p>
+            <div className="text-5xl font-bold mb-2">₹999
+              {/* <span className="text-lg text-gray-400">/QR</span> */}
+              </div>
+            <p className="text-gray-500 mb-8">Full Setup</p>
             
             <ul className="space-y-3 mb-8">
               {["QR Code Printing", "Menu Setup", "Basic Dashboard", "Staff Onboarding", "Table Setup"].map((item, index) => (
@@ -41,7 +43,7 @@ export default function PricingSection() {
             </div>
             
             <h3 className="text-lg text-gray-400 mb-2">Digital Menu</h3>
-            <div className="text-5xl font-bold mb-2">₹299<span className="text-lg text-gray-400">/month</span></div>
+            <div className="text-5xl font-bold mb-2">₹399<span className="text-lg text-gray-400">/month</span></div>
             <p className="text-gray-500 mb-8">Full menu + order management</p>
             
             <ul className="space-y-3 mb-8">
@@ -57,7 +59,7 @@ export default function PricingSection() {
           {/* Complete Solution with Payment Gateway */}
           <div className="p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl">
             <h3 className="text-lg text-gray-400 mb-2">Complete Solution</h3>
-            <div className="text-5xl font-bold mb-2">₹399<span className="text-lg text-gray-400">/month</span></div>
+            <div className="text-5xl font-bold mb-2">₹499<span className="text-lg text-gray-400">/month</span></div>
             <p className="text-gray-500 mb-8">Everything + payment gateway</p>
             
             <ul className="space-y-3 mb-8">
