@@ -19,7 +19,13 @@ interface MenuItem {
     calories?: number;
     image?: string;
     available?: boolean;
+    isVeg?: boolean;
+    isVegan?: boolean;
+    isGlutenFree?: boolean;
+    spiceLevel?: string;
 }
+
+type DietFilter = "all" | "veg" | "vegan" | "glutenFree" | "mild";
 
 interface MenuSection {
     name: string;
@@ -43,6 +49,7 @@ export default function TableMenuPage() {
     const [error, setError] = useState("");
     const [showCart, setShowCart] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
+    const [dietFilter, setDietFilter] = useState<DietFilter>("all");
 
 
 
@@ -121,13 +128,24 @@ export default function TableMenuPage() {
         }
     }, [restaurantSlug, tableSlug]);
 
-    const handleAddToCart = (item: MenuItem) => {
-        addItem({
-            itemId: item._id,
-            name: item.name,
-            price: item.price,
-        });
+    const handleAddToCart = (item: MenuItem, qty = 1) => {
+        addItem({ itemId: item._id, name: item.name, price: item.price }, qty);
     };
+
+    // Dietary filter applied client-side
+    const filteredSections = menu?.sections
+        .map((section) => ({
+            ...section,
+            items: section.items.filter((item) => {
+                if (dietFilter === "all") return true;
+                if (dietFilter === "veg") return item.isVeg || item.isVegan;
+                if (dietFilter === "vegan") return item.isVegan;
+                if (dietFilter === "glutenFree") return item.isGlutenFree;
+                if (dietFilter === "mild") return item.spiceLevel === "mild";
+                return true;
+            }),
+        }))
+        .filter((section) => section.items.length > 0);
 
     if (loading) {
         return (
@@ -181,9 +199,42 @@ export default function TableMenuPage() {
                 </div>
             </div>
 
+            {/* Dietary Filter Bar */}
+            <div className="container max-w-6xl mx-auto px-4 mb-6">
+                <div className="flex gap-2 flex-wrap">
+                    {([
+                        { key: "all",       label: "All",          emoji: "🍽️" },
+                        { key: "veg",       label: "Veg",          emoji: "🟢" },
+                        { key: "vegan",     label: "Vegan",        emoji: "🌱" },
+                        { key: "glutenFree",label: "Gluten-Free",  emoji: "🌾" },
+                        { key: "mild",      label: "Mild",         emoji: "🌶️" },
+                    ] as { key: DietFilter; label: string; emoji: string }[]).map(({ key, label, emoji }) => (
+                        <button
+                            key={key}
+                            onClick={() => setDietFilter(key)}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                                dietFilter === key
+                                    ? "bg-green-600 text-white border-green-600 shadow-md"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-green-400"
+                            }`}
+                        >
+                            <span>{emoji}</span> {label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             {/* Menu Sections */}
             <div className="container max-w-6xl mx-auto px-4">
-                {menu?.sections.map((section) => (
+                {(filteredSections ?? []).length === 0 && !loading && (
+                    <div className="text-center py-16 text-gray-400">
+                        <p className="text-lg font-medium">No items match this filter.</p>
+                        <button onClick={() => setDietFilter("all")} className="mt-3 text-green-600 underline text-sm">
+                            Show all items
+                        </button>
+                    </div>
+                )}
+                {(filteredSections ?? []).map((section) => (
                     <div key={section.name} className="mb-12">
                         <div className="flex items-center mb-6">
                             <div className="w-1 h-8 bg-green-600 rounded-full mr-3"></div>
@@ -204,6 +255,7 @@ export default function TableMenuPage() {
                     </div>
                 ))}
             </div>
+
 
             {/* Sticky Cart Footer */}
             {isHydrated && cartItems.length > 0 && (

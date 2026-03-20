@@ -13,15 +13,24 @@ interface MenuItem {
   available?: boolean;
 }
 
+interface CartAction {
+  itemId: string;
+  name: string;
+  qty: number;
+  action: string;
+  item: MenuItem;
+}
+
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   suggestedItems?: MenuItem[];
+  cartActions?: CartAction[];
 }
 
 interface MenuAIChatProps {
   restaurantId: string;
-  onAddToCart: (item: MenuItem) => void;
+  onAddToCart: (item: MenuItem, qty?: number) => void;
 }
 
 const QUICK_PROMPTS = [
@@ -72,12 +81,22 @@ export default function MenuAIChat({ restaurantId, onAddToCart }: MenuAIChatProp
       const data = await res.json();
 
       if (data.success) {
+        const actions: CartAction[] = data.cartActions || [];
+
+        // Auto-add cart actions immediately
+        if (actions.length > 0) {
+          actions.forEach((a) => {
+            if (a.item) onAddToCart(a.item, a.qty);
+          });
+        }
+
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
             content: data.message,
             suggestedItems: data.suggestedItems || [],
+            cartActions: actions,
           },
         ]);
       } else {
@@ -196,6 +215,22 @@ export default function MenuAIChat({ restaurantId, onAddToCart }: MenuAIChatProp
                 >
                   {msg.content}
                 </div>
+
+                {/* Cart action confirmation */}
+                {msg.cartActions && msg.cartActions.length > 0 && (
+                  <div className="w-full mt-1.5">
+                    <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 flex flex-wrap gap-1.5">
+                      <span className="text-xs font-semibold text-green-700 w-full mb-0.5">
+                        ✓ Added to cart:
+                      </span>
+                      {msg.cartActions.map((a, i) => (
+                        <span key={i} className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                          {a.qty > 1 ? `${a.qty}× ` : ""}{a.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Suggested items from AI */}
                 {msg.suggestedItems && msg.suggestedItems.length > 0 && (

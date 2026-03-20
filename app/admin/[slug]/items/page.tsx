@@ -16,6 +16,10 @@ interface Item {
     image?: string;
     available: boolean;
     restaurantId: string;
+    isVeg?: boolean;
+    isVegan?: boolean;
+    isGlutenFree?: boolean;
+    spiceLevel?: string;
 }
 
 export default function RestaurantItemsPage() {
@@ -39,6 +43,10 @@ export default function RestaurantItemsPage() {
         calories: "",
         image: "",
         available: true,
+        isVeg: false,
+        isVegan: false,
+        isGlutenFree: false,
+        spiceLevel: "medium",
     });
 
     useEffect(() => {
@@ -150,6 +158,10 @@ export default function RestaurantItemsPage() {
                     image: imageUrl,
                     available: formData.available,
                     restaurantId,
+                    isVeg: formData.isVeg,
+                    isVegan: formData.isVegan,
+                    isGlutenFree: formData.isGlutenFree,
+                    spiceLevel: formData.spiceLevel,
                 }),
             });
 
@@ -173,6 +185,10 @@ export default function RestaurantItemsPage() {
                     calories: "",
                     image: "",
                     available: true,
+                    isVeg: false,
+                    isVegan: false,
+                    isGlutenFree: false,
+                    spiceLevel: "medium",
                 });
                 setImageFile(null);
                 setImagePreview("");
@@ -195,6 +211,10 @@ export default function RestaurantItemsPage() {
             calories: item.calories?.toString() || "",
             image: item.image || "",
             available: item.available,
+            isVeg: item.isVeg ?? false,
+            isVegan: item.isVegan ?? false,
+            isGlutenFree: item.isGlutenFree ?? false,
+            spiceLevel: item.spiceLevel ?? "medium",
         });
         if (item.image) {
             setImagePreview(item.image);
@@ -468,6 +488,44 @@ export default function RestaurantItemsPage() {
                             </div>
                         </div>
 
+                        {/* Dietary Tags */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Dietary Tags</label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {[
+                                    { key: "isVeg",       label: "🟢 Vegetarian" },
+                                    { key: "isVegan",     label: "🌱 Vegan" },
+                                    { key: "isGlutenFree",label: "🌾 Gluten-Free" },
+                                ].map(({ key, label }) => (
+                                    <label key={key} className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
+                                        formData[key as keyof typeof formData]
+                                            ? "border-green-500 bg-green-50 text-green-700"
+                                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                                    }`}>
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only"
+                                            checked={!!formData[key as keyof typeof formData]}
+                                            onChange={(e) => setFormData({ ...formData, [key]: e.target.checked })}
+                                        />
+                                        <span className="text-sm font-medium">{label}</span>
+                                    </label>
+                                ))}
+                                <div>
+                                    <select
+                                        value={formData.spiceLevel}
+                                        onChange={(e) => setFormData({ ...formData, spiceLevel: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                                    >
+                                        <option value="mild">🌶️ Mild</option>
+                                        <option value="medium">🌶️🌶️ Medium</option>
+                                        <option value="hot">🌶️🌶️🌶️ Hot</option>
+                                        <option value="extra-hot">🌶️🌶️🌶️🌶️ Extra Hot</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex gap-4 pt-4">
                             <Button
                                 type="submit"
@@ -559,6 +617,30 @@ export default function RestaurantItemsPage() {
                                 {item.category}
                             </span>
                         </div>
+
+                        {/* Dietary Badges */}
+                        {(item.isVeg || item.isVegan || item.isGlutenFree || (item.spiceLevel && item.spiceLevel !== "medium")) && (
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                                {item.isVegan && (
+                                    <span className="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">🌱 Vegan</span>
+                                )}
+                                {item.isVeg && !item.isVegan && (
+                                    <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">🟢 Veg</span>
+                                )}
+                                {item.isGlutenFree && (
+                                    <span className="text-xs font-medium bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">🌾 GF</span>
+                                )}
+                                {item.spiceLevel === "mild" && (
+                                    <span className="text-xs font-medium bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">🌶️ Mild</span>
+                                )}
+                                {item.spiceLevel === "hot" && (
+                                    <span className="text-xs font-medium bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">🌶️🌶️🌶️ Hot</span>
+                                )}
+                                {item.spiceLevel === "extra-hot" && (
+                                    <span className="text-xs font-medium bg-red-100 text-red-700 px-2 py-0.5 rounded-full">🌶️🌶️🌶️🌶️ Extra Hot</span>
+                                )}
+                            </div>
+                        )}
 
                         {/* Action Buttons */}
                         <div className="grid grid-cols-2 gap-3 mb-3">

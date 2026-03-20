@@ -15,7 +15,8 @@ export async function PATCH(
     await connectDB();
     const { id } = await params;
     const body = await request.json();
-    const { available, restaurantId, name, description, price, category, calories, image } = body;
+    const { available, restaurantId, name, description, price, category, calories, image,
+            isVeg, isVegan, isGlutenFree, spiceLevel } = body;
 
     // Verify item belongs to restaurant
     const existingItem = await Item.findById(id);
@@ -44,6 +45,10 @@ export async function PATCH(
     if (category) existingItem.category = category;
     if (calories !== undefined) existingItem.calories = calories;
     if (image !== undefined) existingItem.image = image;
+    if (isVeg !== undefined) existingItem.isVeg = !!isVeg;
+    if (isVegan !== undefined) existingItem.isVegan = !!isVegan;
+    if (isGlutenFree !== undefined) existingItem.isGlutenFree = !!isGlutenFree;
+    if (spiceLevel !== undefined) existingItem.spiceLevel = spiceLevel;
 
     await existingItem.save();
 

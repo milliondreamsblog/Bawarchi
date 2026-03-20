@@ -19,6 +19,10 @@ interface IItem {
   category: string;
   calories?: number;
   image?: string;
+  isVeg?: boolean;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  spiceLevel?: string;
 }
 
 export async function POST(request: Request) {
@@ -71,7 +75,15 @@ export async function POST(request: Request) {
           .map((section: any) => {
             const sectionItems = (section.items as IItem[])
               .filter((i) => i?.available !== false)
-              .map((i) => `  - ${i.name} (₹${i.price}${i.calories ? `, ${i.calories} kcal` : ""}${i.description ? `: ${i.description}` : ""})`)
+              .map((i) => {
+                const tags = [
+                  i.isVeg ? "🟢 Veg" : null,
+                  i.isVegan ? "🌱 Vegan" : null,
+                  i.isGlutenFree ? "🌾 GF" : null,
+                  i.spiceLevel && i.spiceLevel !== "medium" ? `🌶 ${i.spiceLevel}` : null,
+                ].filter(Boolean).join(", ");
+                return `  - ${i.name} (₹${i.price}${i.calories ? `, ${i.calories} kcal` : ""}${tags ? `, ${tags}` : ""}${i.description ? `: ${i.description}` : ""})`;
+              })
               .join("\n");
             return `${section.name}:\n${sectionItems}`;
           })
@@ -97,31 +109,47 @@ export async function POST(request: Request) {
       category: i.category,
       calories: i.calories,
       description: i.description,
+      isVeg: i.isVeg,
+      isVegan: i.isVegan,
+      isGlutenFree: i.isGlutenFree,
+      spiceLevel: i.spiceLevel,
     }));
 
-    const systemPrompt = `You are a friendly and helpful restaurant waiter AI assistant. You help customers navigate the menu, answer questions about dishes, and make personalized recommendations.
+    const systemPrompt = `You are a friendly and helpful restaurant waiter AI assistant. You help customers navigate the menu, answer questions about dishes, make personalized recommendations, and can add items directly to the customer's cart.
 
 MENU:
 ${menuContext}
 
-RULES:
-- Only recommend items that exist in the menu above
-- Keep responses concise and conversational (2-3 sentences max)
-- When suggesting specific dishes, always include their item IDs in the suggestedItemIds array
-- If asked about something not on the menu, politely say it's not available
-- Consider dietary preferences, calorie goals, and budget when recommending
-- Be warm, helpful, and enthusiastic about the food
-
 AVAILABLE ITEMS (with IDs for your reference):
 ${JSON.stringify(itemsJson, null, 2)}
+
+RULES:
+- Only recommend or add items that exist in the menu above
+- Keep responses concise and conversational (2-3 sentences max)
+- When suggesting specific dishes, include their IDs in suggestedItemIds
+- If asked about something not on the menu, politely say it's not available
+- Consider dietary preferences (veg/vegan/gluten-free), calorie goals, and budget
+- Be warm, helpful, and enthusiastic about the food
+- Dietary tag legend: 🟢 Veg, 🌱 Vegan, 🌾 Gluten-Free, 🌶 spice level
+
+CART ACTIONS — IMPORTANT:
+- If the customer says anything like "add [item] to my cart", "order [item]", "I'll have [item]", "get me [item]", or "I want [item]", populate the cartActions array
+- Each cartAction: { "itemId": "<exact id from menu>", "name": "<item name>", "qty": <number, default 1>, "action": "add" }
+- Extract quantity from phrases like "2 paneer tikka" → qty: 2, "a lassi" → qty: 1
+- If quantity is ambiguous, default to 1
+- Only add items that exist in the menu
 
 Always respond with valid JSON in this exact format:
 {
   "message": "Your conversational response here",
-  "suggestedItemIds": ["id1", "id2"]
+  "suggestedItemIds": ["id1", "id2"],
+  "cartActions": [
+    { "itemId": "id1", "name": "Item Name", "qty": 2, "action": "add" }
+  ]
 }
 
-The suggestedItemIds array should contain IDs of items you specifically mention or recommend. Leave it as an empty array if you are not recommending specific items.`;
+Leave cartActions as [] if the customer is just asking a question (not ordering).
+Leave suggestedItemIds as [] if you are not recommending specific items.`;
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -138,15 +166,28 @@ The suggestedItemIds array should contain IDs of items you specifically mention 
     const raw = JSON.parse(completion.choices[0].message.content || "{}");
     const message: string = raw.message || "How can I help you?";
     const suggestedItemIds: string[] = raw.suggestedItemIds || [];
+    const cartActions: { itemId: string; name: string; qty: number; action: string }[] =
+      Array.isArray(raw.cartActions) ? raw.cartActions : [];
 
     const suggestedItems = items.filter((i) =>
       suggestedItemIds.includes(i._id.toString())
     );
 
+    // Enrich cartActions with full item data so the client can add to cart
+    const enrichedCartActions = cartActions
+      .filter((a) => a.action === "add" && a.itemId)
+      .map((a) => {
+        const item = items.find((i) => i._id.toString() === a.itemId);
+        if (!item) return null;
+        return { ...a, item };
+      })
+      .filter(Boolean);
+
     return NextResponse.json({
       success: true,
       message,
       suggestedItems,
+      cartActions: enrichedCartActions,
     });
   } catch (error: any) {
     return NextResponse.json(
