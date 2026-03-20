@@ -45,7 +45,6 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (item) =>
         set((state) => {
-          console.log('🛒 Adding item to cart:', item);
           const existing = state.items.find((i) => i.itemId === item.itemId);
           let newItems;
 
@@ -61,7 +60,6 @@ export const useCartStore = create<CartStore>()(
             (sum, i) => sum + i.price * i.qty,
             0
           );
-          console.log('✅ Cart updated:', newItems.length, 'items, base total:', newTotal);
           return { items: newItems, total: newTotal };
         }),
 

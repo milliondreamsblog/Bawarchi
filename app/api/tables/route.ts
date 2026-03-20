@@ -5,6 +5,7 @@ import Table from "@/lib/models/Table.js";
 import QRCode from "qrcode";
 import { v2 as cloudinary } from "cloudinary";
 import Restaurant from "@/lib/models/Restaurant";
+import { requireAuth } from "@/lib/utils/apiAuth";
 
 export interface RestaurantType {
   _id: string;
@@ -61,6 +62,9 @@ cloudinary.config({
 
 
 export async function POST(request: Request) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     await connectDB();
     const body = await request.json();
@@ -95,7 +99,8 @@ export async function POST(request: Request) {
     const restaurantSlug = restaurant.slug;
 
     // --- 1. Generate table URL ---
-    const tableUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${restaurantSlug}/t/${slug}`;
+    const domain = process.env.NEXT_PUBLIC_BASE_URL
+    const tableUrl = `${domain}/r/${restaurantSlug}/t/${slug}`;
 
     // --- 2. Create QR Code (base64) ---
     const qrBase64 = await QRCode.toDataURL(tableUrl);

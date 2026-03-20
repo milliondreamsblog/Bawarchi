@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import QRCode from "qrcode";
 import Image from "next/image";
 
-interface Table { _id: string; tableNumber: number; slug: string; restaurantId: string; qrUrl : string}
+interface Table { _id: string; tableNumber: number; slug: string; restaurantId: string; qrUrl: string }
 
 export default function RestaurantTablesPage() {
     const params = useParams();
@@ -17,6 +17,7 @@ export default function RestaurantTablesPage() {
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({ tableNumber: "", slug: "" });
     const [qrCodes, setQrCodes] = useState<{ [key: string]: string }>({});
+    const [deletingTableId, setDeletingTableId] = useState<string | null>(null);
 
     useEffect(() => {
         if (slug) {
@@ -51,7 +52,7 @@ export default function RestaurantTablesPage() {
         const codes: { [key: string]: string } = {};
         for (const table of tablesData) {
             try {
-                const url = `${window.location.origin}/r/${slug}/t/${table.slug}`;
+                const url = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${slug}/t/${table.slug}`;
                 const qrDataUrl = await QRCode.toDataURL(url, { width: 200, margin: 2 });
                 codes[table._id] = qrDataUrl;
             } catch (error) {
@@ -85,7 +86,7 @@ export default function RestaurantTablesPage() {
             } else {
                 alert(data.error || "Failed to create table");
             }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert("Failed to create table");
         }
@@ -97,6 +98,39 @@ export default function RestaurantTablesPage() {
             const prefix = restaurantId.substring(0, 7).toUpperCase();
             const slug = `R${prefix}-T${num}`;
             setFormData({ ...formData, slug });
+        }
+    };
+
+    const handleDeleteTable = async (table: Table) => {
+        if (!confirm(`Delete Table ${table.tableNumber}?\n\nThis will permanently delete the table and its QR code. This action cannot be undone.`)) {
+            return;
+        }
+
+        if (!restaurantId) return;
+
+        try {
+            setDeletingTableId(table._id);
+            const res = await fetch(`/api/tables/${table._id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ restaurantId }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                setTables(tables.filter(t => t._id !== table._id));
+                const newQrCodes = { ...qrCodes };
+                delete newQrCodes[table._id];
+                setQrCodes(newQrCodes);
+            } else {
+                alert(data.error || "Failed to delete table");
+            }
+        } catch (error) {
+            console.error("Failed to delete table:", error);
+            alert("Failed to delete table");
+        } finally {
+            setDeletingTableId(null);
         }
     };
 
@@ -119,7 +153,7 @@ export default function RestaurantTablesPage() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Table Management</h1>
                     <p className="text-gray-600">Create tables and generate QR codes for customer ordering</p>
                 </div>
-                <Button 
+                <Button
                     onClick={() => setShowForm(!showForm)}
                     className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
@@ -152,20 +186,20 @@ export default function RestaurantTablesPage() {
                         </div>
                         <h2 className="text-xl font-semibold text-gray-900">Add New Table</h2>
                     </div>
-                    
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Table Number *
                                 </label>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     value={formData.tableNumber}
                                     onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
-                                    onBlur={autoGenerateSlug} 
-                                    required 
+                                    onBlur={autoGenerateSlug}
+                                    required
                                     min="1"
                                     placeholder="Enter table number"
                                 />
@@ -174,13 +208,13 @@ export default function RestaurantTablesPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Table Slug *
                                 </label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     value={formData.slug}
                                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                                     placeholder="Auto-generated slug"
-                                    required 
+                                    required
                                 />
                                 <p className="text-xs text-gray-500 mt-2">
                                     Unique identifier for the table URL. Auto-generated for security.
@@ -194,14 +228,14 @@ export default function RestaurantTablesPage() {
                                 <p className="text-sm text-green-800">
                                     <strong>Table URL Preview:</strong><br />
                                     <code className="text-xs bg-green-100 px-2 py-1 rounded">
-                                        {window.location.origin}/r/{slug}/t/{formData.slug}
+                                        {process.env.NEXT_PUBLIC_BASE_URL}/r/{slug}/t/{formData.slug}
                                     </code>
                                 </p>
                             </div>
                         )}
 
                         <div className="flex gap-4 pt-4">
-                            <Button 
+                            <Button
                                 type="submit"
                                 className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                             >
@@ -212,7 +246,7 @@ export default function RestaurantTablesPage() {
                                     Create Table
                                 </div>
                             </Button>
-                            <Button 
+                            <Button
                                 type="button"
                                 variant="secondary"
                                 onClick={() => setShowForm(false)}
@@ -247,8 +281,8 @@ export default function RestaurantTablesPage() {
                             <div className="text-center mb-4">
                                 <div className="bg-white p-4 rounded-xl border border-gray-200 inline-block">
                                     <Image
-                                        src={table.qrUrl} 
-                                        alt={`QR Code for Table ${table.tableNumber}`} 
+                                        src={table.qrUrl}
+                                        alt={`QR Code for Table ${table.tableNumber}`}
                                         className="mx-auto rounded-lg"
                                         width={460}
                                         height={460}
@@ -263,10 +297,10 @@ export default function RestaurantTablesPage() {
                                 <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                 </svg>
-                                <a 
-                                    href={`/r/${slug}/t/${table.slug}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
+                                <a
+                                    href={`/r/${slug}/t/${table.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="text-green-600 hover:text-green-700 hover:underline break-all"
                                 >
                                     /r/{slug}/t/{table.slug}
@@ -275,8 +309,8 @@ export default function RestaurantTablesPage() {
 
                             {/* Download Button */}
                             {table.qrUrl && (
-                                <a 
-                                    href={qrCodes[table._id]} 
+                                <a
+                                    href={qrCodes[table._id]}
                                     download={`table-${table.tableNumber}-qr.png`}
                                     className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                                 >
@@ -288,6 +322,27 @@ export default function RestaurantTablesPage() {
                                     </div>
                                 </a>
                             )}
+
+                            {/* Delete Button */}
+                            <button
+                                onClick={() => handleDeleteTable(table)}
+                                disabled={deletingTableId === table._id}
+                                className="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+                            >
+                                {deletingTableId === table._id ? (
+                                    <div className="flex items-center justify-center">
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                        Deleting...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Delete Table
+                                    </div>
+                                )}
+                            </button>
                         </div>
                     </div>
                 ))}
@@ -303,7 +358,7 @@ export default function RestaurantTablesPage() {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No Tables Created</h3>
                     <p className="text-gray-600 mb-6">Create your first table to generate QR codes for customer ordering</p>
-                    <Button 
+                    <Button
                         onClick={() => setShowForm(true)}
                         className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                     >

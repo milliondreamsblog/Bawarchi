@@ -24,6 +24,7 @@ export default function RestaurantOrdersPage() {
     const [restaurantId, setRestaurantId] = useState<string | null>(null);
     const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
     const [filter, setFilter] = useState<string>("all");
+    const [selectedTable, setSelectedTable] = useState<string>("all");
 
     useEffect(() => {
         if (slug) {
@@ -41,7 +42,13 @@ export default function RestaurantOrdersPage() {
         { refreshInterval: 5000 }
     );
 
+    const { data: tablesData } = useSWR(
+        restaurantId ? `/api/tables?restaurantId=${restaurantId}` : null,
+        fetcher
+    );
+
     const orders: Order[] = data?.orders || [];
+    const tables = tablesData?.tables || [];
     const loading = !data && !error && restaurantId;
 
     const formatDate = (date: string) => {
@@ -69,7 +76,28 @@ export default function RestaurantOrdersPage() {
         }
     };
 
-    const filteredOrders = orders.filter((order) => filter === "all" ? true : order.status === filter);
+    // Filter orders by table first, then by status
+    const tableFilteredOrders = selectedTable === "all"
+        ? orders
+        : orders.filter((order) => order.tableSlug === selectedTable);
+
+    const filteredOrders = tableFilteredOrders.filter((order) => filter === "all" ? true : order.status === filter);
+
+    // Get unique tables that have orders
+    const getTablesWithOrders = () => {
+        const tableMap = new Map<string, number>();
+        orders.forEach(order => {
+            const count = tableMap.get(order.tableSlug) || 0;
+            tableMap.set(order.tableSlug, count + 1);
+        });
+        return Array.from(tableMap.entries()).map(([slug, count]) => ({
+            slug,
+            count,
+            tableNumber: tables.find((t: any) => t.slug === slug)?.tableNumber || slug
+        })).sort((a, b) => parseInt(a.tableNumber) - parseInt(b.tableNumber));
+    };
+
+    const tablesWithOrders = getTablesWithOrders();
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -81,7 +109,7 @@ export default function RestaurantOrdersPage() {
     };
 
     const getStatusCount = (status: string) => {
-        return orders.filter(order => order.status === status).length;
+        return tableFilteredOrders.filter(order => order.status === status).length;
     };
 
     if (!restaurantId) {
@@ -121,7 +149,7 @@ export default function RestaurantOrdersPage() {
     }
 
     return (
-        <div className="p-6">
+        <div>
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
@@ -138,7 +166,7 @@ export default function RestaurantOrdersPage() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "all" ? "bg-green-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`} onClick={() => setFilter("all")}>
-                        <div className="text-2xl font-bold">{orders.length}</div>
+                        <div className="text-2xl font-bold">{tableFilteredOrders.length}</div>
                         <div className="text-sm">All Orders</div>
                     </div>
                     <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "pending" ? "bg-yellow-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`} onClick={() => setFilter("pending")}>
@@ -155,6 +183,43 @@ export default function RestaurantOrdersPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Table Tabs */}
+            {tablesWithOrders.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            onClick={() => setSelectedTable("all")}
+                            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${selectedTable === "all"
+                                ? "bg-green-600 text-white shadow-md"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                        >
+                            All Tables
+                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${selectedTable === "all" ? "bg-white text-green-600" : "bg-gray-200 text-gray-700"
+                                }`}>
+                                {orders.length}
+                            </span>
+                        </button>
+                        {tablesWithOrders.map((table) => (
+                            <button
+                                key={table.slug}
+                                onClick={() => setSelectedTable(table.slug)}
+                                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${selectedTable === table.slug
+                                    ? "bg-green-600 text-white shadow-md"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    }`}
+                            >
+                                Table {table.tableNumber}
+                                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${selectedTable === table.slug ? "bg-white text-green-600" : "bg-gray-200 text-gray-700"
+                                    }`}>
+                                    {table.count}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Orders List */}
             <div className="space-y-6">
@@ -214,8 +279,8 @@ export default function RestaurantOrdersPage() {
                             </div>
                             <div className="flex gap-3">
                                 {order.status === "pending" && (
-                                    <button 
-                                        onClick={() => updateOrderStatus(order._id, "preparing")} 
+                                    <button
+                                        onClick={() => updateOrderStatus(order._id, "preparing")}
                                         disabled={updatingOrderId === order._id}
                                         className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
@@ -230,8 +295,8 @@ export default function RestaurantOrdersPage() {
                                     </button>
                                 )}
                                 {order.status === "preparing" && (
-                                    <button 
-                                        onClick={() => updateOrderStatus(order._id, "served")} 
+                                    <button
+                                        onClick={() => updateOrderStatus(order._id, "served")}
                                         disabled={updatingOrderId === order._id}
                                         className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
@@ -261,8 +326,8 @@ export default function RestaurantOrdersPage() {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
                     <p className="text-gray-600">
-                        {filter === "all" 
-                            ? "No orders have been placed yet. They will appear here when customers order." 
+                        {filter === "all"
+                            ? "No orders have been placed yet. They will appear here when customers order."
                             : `No ${filter} orders at the moment.`
                         }
                     </p>

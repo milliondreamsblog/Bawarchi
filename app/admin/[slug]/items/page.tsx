@@ -26,6 +26,8 @@ export default function RestaurantItemsPage() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+    const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+    const [editingItem, setEditingItem] = useState<Item | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>("");
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -136,8 +138,8 @@ export default function RestaurantItemsPage() {
                 }
             }
 
-            const res = await fetch("/api/items", {
-                method: "POST",
+            const res = await fetch(editingItem ? `/api/items/${editingItem._id}` : "/api/items", {
+                method: editingItem ? "PATCH" : "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: formData.name,
@@ -154,8 +156,15 @@ export default function RestaurantItemsPage() {
             const data = await res.json();
 
             if (data.success) {
-                setItems([...items, data.item]);
+                if (editingItem) {
+                    // Update existing item
+                    setItems(items.map(item => item._id === editingItem._id ? data.item : item));
+                } else {
+                    // Add new item
+                    setItems([...items, data.item]);
+                }
                 setShowForm(false);
+                setEditingItem(null);
                 setFormData({
                     name: "",
                     description: "",
@@ -173,6 +182,53 @@ export default function RestaurantItemsPage() {
         } catch (error) {
             console.error("Failed to create item:", error);
             alert("Failed to create item");
+        }
+    };
+
+    const handleEditItem = (item: Item) => {
+        setEditingItem(item);
+        setFormData({
+            name: item.name,
+            description: item.description || "",
+            price: item.price.toString(),
+            category: item.category || "General",
+            calories: item.calories?.toString() || "",
+            image: item.image || "",
+            available: item.available,
+        });
+        if (item.image) {
+            setImagePreview(item.image);
+        }
+        setShowForm(true);
+    };
+
+    const handleDeleteItem = async (item: Item) => {
+        if (!confirm(`Delete "${item.name}"?\n\nThis will permanently remove this item from your menu. This action cannot be undone.`)) {
+            return;
+        }
+
+        if (!restaurantId) return;
+
+        try {
+            setDeletingItemId(item._id);
+            const res = await fetch(`/api/items/${item._id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ restaurantId }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                setItems(items.filter(i => i._id !== item._id));
+            } else {
+                alert(data.error || "Failed to delete item");
+            }
+        } catch (error) {
+            console.error("Failed to delete item:", error);
+            alert("Failed to delete item");
+        } finally {
+            setDeletingItemId(null);
         }
     };
 
@@ -261,7 +317,7 @@ export default function RestaurantItemsPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
-                        <h2 className="text-xl font-semibold text-gray-900">Add New Menu Item</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -277,7 +333,7 @@ export default function RestaurantItemsPage() {
                                     onChange={handleImageChange}
                                     className="hidden"
                                     id="image-upload"
-                                    required
+                                    required={!editingItem}
                                 />
                                 <label
                                     htmlFor="image-upload"
@@ -437,6 +493,7 @@ export default function RestaurantItemsPage() {
                                 variant="secondary"
                                 onClick={() => {
                                     setShowForm(false);
+                                    setEditingItem(null);
                                     setImageFile(null);
                                     setImagePreview("");
                                 }}
@@ -465,8 +522,8 @@ export default function RestaurantItemsPage() {
                             <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
                             <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.available
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
                                     }`}
                             >
                                 {item.available ? (
@@ -503,12 +560,44 @@ export default function RestaurantItemsPage() {
                             </span>
                         </div>
 
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <button
+                                onClick={() => handleEditItem(item)}
+                                className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                            >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => handleDeleteItem(item)}
+                                disabled={deletingItemId === item._id}
+                                className="flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {deletingItemId === item._id ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                        Deleting
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Delete
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
                         <button
                             onClick={() => toggleAvailability(item._id, item.available)}
                             disabled={updatingItemId === item._id}
                             className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${item.available
-                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl'
-                                    : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
+                                ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl'
+                                : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {updatingItemId === item._id ? (

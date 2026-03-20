@@ -7,6 +7,8 @@ import ItemCard from "@/components/ItemCard";
 import Cart from "@/components/Cart";
 import RazorpayCheckout from "@/components/RazorpayCheckout";
 import { useCartStore } from "@/lib/store/useCartStore";
+import AdminFooter from "@/components/admin/AdminFooter";
+import MenuAIChat from "@/components/MenuAIChat";
 
 interface MenuItem {
     _id: string;
@@ -173,8 +175,7 @@ export default function TableMenuPage() {
                             </p>
                         </div>
                         <div className="text-right">
-                            <p className="text-green-100 text-sm">Scan & Order</p>
-                            <p className="text-green-100 text-sm">No Waiting</p>
+                            <p className="text-green-100 text-sm">powered by Bawarchie</p>
                         </div>
                     </div>
                 </div>
@@ -248,6 +249,15 @@ export default function TableMenuPage() {
                         <RazorpayCheckout tableSlug={tableSlug} restaurantId={restaurant?._id} />
                     </div>
                 </div>
+            )}
+            <AdminFooter />
+
+            {/* AI Waiter Chat — only shown once restaurant data is loaded */}
+            {restaurant && (
+                <MenuAIChat
+                    restaurantId={restaurant._id}
+                    onAddToCart={handleAddToCart}
+                />
             )}
         </div>
     );
