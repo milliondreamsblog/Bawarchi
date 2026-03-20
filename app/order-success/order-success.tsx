@@ -274,9 +274,13 @@ export default function OrderSuccessPage() {
         return 'pending';
     };
 
+    const handleDownloadReceipt = () => {
+        window.print();
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 py-8 px-4">
-            <div className="max-w-3xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 py-8 px-4 print-receipt">
+            <div className="max-w-3xl mx-auto receipt-content">
                 {/* Success Header */}
                 <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-t-3xl shadow-2xl border border-gray-100 overflow-hidden">
                     <div className="px-8 py-8 text-white text-center">
@@ -379,6 +383,11 @@ export default function OrderSuccessPage() {
                         </div>
                     </div>
 
+                    {/* Print-only receipt footer line */}
+                    <div className="hidden print:block px-8 py-3 text-center text-xs text-gray-400 border-t border-dashed border-gray-200">
+                        Thank you for dining with us! • Powered by Bawarchie
+                    </div>
+
                     {/* Payment Info */}
                     {order.razorpayPaymentId && (
                         <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
@@ -460,11 +469,24 @@ export default function OrderSuccessPage() {
                     </div>
                 </div>
 
-                <div className="mt-6">
+                {/* Download Receipt Button */}
+                <div className="bg-white border-t border-gray-200 px-8 py-5 rounded-b-3xl no-print">
+                    <button
+                        onClick={handleDownloadReceipt}
+                        className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition-colors shadow-lg"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download Receipt (PDF)
+                    </button>
+                </div>
+
+                <div className="mt-6 no-print">
                     <FeedbackSection order={order} />
                 </div>
 
-                <div className="mt-6 text-center">
+                <div className="mt-6 text-center no-print">
                     <Link href={`/r/${order.restaurantId?.name.toLowerCase().replace(/\s+/g, '-')}/t/${order.tableSlug}`}>
                         <Button variant="secondary">Order More Items</Button>
                     </Link>
