@@ -1,201 +1,307 @@
-# Bawarchie - Restaurant Ordering System
+# Bawarchie — QR-Based Restaurant Ordering Platform
 
-A modern, full-stack QR-based food ordering system built with Next.js, MongoDB, Razorpay, and OpenAI.
+A production-ready, multi-tenant SaaS platform for QR code-based restaurant ordering and payments. Customers scan a table QR code, browse the AI-assisted menu, order, and pay — all without a waiter.
 
-## 🚀 Features
+> **Final Year Engineering Project** · Built with Next.js 16, MongoDB, Razorpay, OpenAI GPT-4o-mini
 
-- **QR Code Ordering**: Customers scan table QR codes to view menu and place orders
-- **Secure Payments**: Integrated Razorpay payment gateway
-- **AI Recommendations**: Smart meal suggestions based on calories, budget, and dietary preferences
-- **Real-Time Orders**: Live order tracking with SWR polling
-- **Admin Dashboard**: Complete management interface for items, menu, tables, and orders
-- **Responsive Design**: Mobile-first UI with modern gradients and animations
-- **Persistent Cart**: Cart state stored in localStorage with Zustand
+---
 
-## 📋 Tech Stack
+## Features
 
-- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, TailwindCSS 4
-- **Backend**: Next.js API Routes, MongoDB with Mongoose
-- **Payments**: Razorpay Orders API
-- **AI**: OpenAI GPT-4o-mini
-- **State**: Zustand with persistence
-- **Data Fetching**: SWR for real-time updates
-- **QR Codes**: qrcode library
+| Feature | Description |
+|---|---|
+| **QR Ordering** | Per-table QR codes route customers directly to their restaurant's menu |
+| **AI Waiter** | GPT-4o-mini chatbot with full menu context — recommends dishes, answers questions, adds items to cart |
+| **Razorpay Payments** | Full payment flow with GST + 2% platform fee calculation and signature verification |
+| **Kitchen Display System** | Real-time SSE-powered KDS with urgency timers and sound notifications |
+| **Analytics Dashboard** | Revenue trends, top items, peak hours heatmap, order status breakdown |
+| **Admin Panel** | Multi-tenant restaurant management — menu, items, tables, orders, settings |
+| **Super Admin** | Platform-level restaurant approval and oversight |
+| **API Security** | Session-based auth guard on all admin-facing API routes |
 
-## 🛠️ Setup Instructions
+---
 
-### Prerequisites
+## Tech Stack
 
-- Node.js 18+ and npm
-- MongoDB Atlas account (or local MongoDB)
-- Razorpay account (test/live credentials)
-- OpenAI API key
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
+- **Backend**: Next.js API Routes, MongoDB with Mongoose, NextAuth v5
+- **Payments**: Razorpay Orders API with HMAC-SHA256 signature verification
+- **AI**: OpenAI GPT-4o-mini — chat + structured JSON recommendations
+- **Real-time**: Server-Sent Events (SSE) for KDS live order stream
+- **Charts**: Recharts — AreaChart, BarChart with MongoDB aggregation pipelines
+- **State**: Zustand with localStorage persistence
+- **Media**: Cloudinary for item images and QR code storage
+- **QR Codes**: `qrcode` library → uploaded to Cloudinary
 
-### 1. Clone and Install
+---
 
-```bash
-git clone <your-repo-url>
-cd Bawarchie
-npm install
+## System Architecture
+
+```mermaid
+graph TD
+    A[Customer scans QR] --> B[/r/restaurantSlug/t/tableSlug]
+    B --> C[Fetch Restaurant + Table + Menu]
+    C --> D[Browse Menu + AI Waiter Chat]
+    D --> E[Add to Cart - Zustand]
+    E --> F[Razorpay Checkout]
+    F --> G[/api/payments/create-order]
+    G --> H[Verify Payment Signature]
+    H --> I[/api/orders POST - Save to MongoDB]
+
+    I --> J[Kitchen Display System]
+    J --> K[SSE Stream polls every 3s]
+    K --> L[Kitchen accepts order]
+    L --> M[Mark as Served]
+
+    I --> N[Admin Orders Page]
+    I --> O[Analytics Aggregation]
+
+    P[Restaurant Owner] --> Q[Admin Dashboard]
+    Q --> R[Manage Items / Menu / Tables]
+    Q --> S[View Orders]
+    Q --> T[Analytics Dashboard]
+    Q --> J
 ```
 
-### 2. Environment Variables
+---
 
-Create a `.env` file in the root directory:
+## Kitchen Display System — Real-Time Flow
 
-```env
-# MongoDB
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/Bawarchie?retryWrites=true&w=majority
+```mermaid
+sequenceDiagram
+    participant C as Customer
+    participant DB as MongoDB
+    participant SSE as SSE Endpoint
+    participant KDS as Kitchen Display
 
-# Razorpay
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
-RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxx
-
-# Razorpay Public Key (for frontend)
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
-
-# OpenAI
-OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    C->>DB: POST /api/orders (status: pending)
+    SSE->>DB: Poll every 3 seconds
+    DB-->>SSE: Return pending + preparing orders
+    SSE-->>KDS: Push via EventSource (text/event-stream)
+    KDS->>KDS: New order detected → play sound alert
+    Note over KDS: Order appears in "New Orders" column
+    KDS->>DB: PATCH /api/orders/:id (status: preparing)
+    KDS->>KDS: Optimistic update → moves to "In Kitchen"
+    KDS->>DB: PATCH /api/orders/:id (status: served)
+    KDS->>KDS: Order removed from display
 ```
 
-### 3. Seed Database
+### Urgency Timer Logic
 
-Populate your database with sample data:
+| Elapsed Time | Border Color | Meaning |
+|---|---|---|
+| < 5 minutes | Green | Fresh order |
+| 5–10 minutes | Yellow | Needs attention |
+| > 10 minutes | Red | Urgent — customer waiting |
 
-```bash
-npm run seed
-```
+---
 
-This will create:
-- 17 food items (starters, main course, beverages, desserts)
-- Complete menu with 4 sections
-- 10 tables with unique slugs
-
-### 4. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 📱 Usage Guide
-
-### For Customers
-
-1. **Scan QR Code**: Use your phone camera to scan the QR code at your table
-2. **Browse Menu**: View menu organized by sections (Starters, Main Course, etc.)
-3. **Add to Cart**: Select items and quantities
-4. **Checkout**: Click "Pay" button
-5. **Payment**: Complete payment via Razorpay
-6. **Confirmation**: Receive order confirmation
-
-**Demo URL**: Navigate to `/t/table-1` for Table 1 menu
-
-### For Restaurant Staff (Admin)
-
-Access the admin dashboard at `/admin` with these sections:
-
-#### Items Management (`/admin/items`)
-- View all menu items
-- Add new items with name, price, description, category, calories
-- Toggle availability
-
-#### Menu Builder (`/admin/menu`)
-- Create menu sections
-- Assign items to sections
-- Update menu title
-- Save menu structure
-
-#### Tables Management (`/admin/tables`)
-- Create new tables with unique slugs
-- Generate QR codes automatically
-- Download QR codes as PNG
-- View table URLs
-
-#### Orders Dashboard (`/admin/orders`)
-- View all orders in real-time (auto-refreshes every 5 seconds)
-- Filter by status (Pending, Preparing, Served)
-- Update order status
-- View order details and totals
-
-### AI Assistant (`/chat`)
-
-Ask the AI for meal recommendations:
-- "Give me a 400 calorie meal"
-- "Best combo under ₹200"
-- "I want vegetarian food"
-
-The AI analyzes your menu and provides smart recommendations.
-
-## 🏗️ Project Structure
+## Project Structure
 
 ```
-Bawarchie/
+orderbyqr/
 ├── app/
-│   ├── api/                    # API Routes
-│   │   ├── items/             # Items CRUD
-│   │   ├── menu/              # Menu management
-│   │   ├── tables/            # Tables management
-│   │   ├── orders/            # Orders management
-│   │   ├── payments/          # Razorpay integration
-│   │   │   ├── create-order/
-│   │   │   └── verify/
-│   │   └── ai/                # OpenAI recommendations
-│   │       └── recommend/
-│   ├── admin/                 # Admin Dashboard
-│   │   ├── items/
-│   │   ├── menu/
-│   │   ├── tables/
+│   ├── api/
+│   │   ├── ai/
+│   │   │   ├── chat/route.ts          # Multi-turn AI waiter chatbot
+│   │   │   └── recommend/route.ts     # Menu recommendation engine
+│   │   ├── analytics/route.ts         # MongoDB aggregation pipeline
+│   │   ├── auth/[...nextauth]/        # NextAuth handlers
+│   │   ├── items/[id]/route.ts        # Item CRUD (auth-guarded)
+│   │   ├── menu/route.ts              # Menu fetch + update
 │   │   ├── orders/
-│   │   └── layout.tsx
-│   ├── t/[slug]/              # Table Menu Pages
-│   ├── chat/                  # AI Chat Interface
-│   ├── order-success/         # Order Confirmation
-│   ├── layout.tsx             # Root Layout
-│   ├── page.tsx               # Home Page
-│   └── globals.css            # Design System
-├── components/                # Reusable Components
-│   ├── Button.tsx
+│   │   │   ├── route.ts               # List + create orders
+│   │   │   ├── [id]/route.ts          # Update order status (auth-guarded)
+│   │   │   └── stream/route.ts        # SSE live order stream (Node.js runtime)
+│   │   ├── payments/
+│   │   │   ├── create-order/route.ts  # Razorpay order creation + billing breakdown
+│   │   │   └── verify/route.ts        # HMAC signature verification
+│   │   ├── restaurant/                # Restaurant lookup, stats, settings
+│   │   └── tables/
+│   │       ├── route.ts               # List + create tables (QR gen → Cloudinary)
+│   │       └── [id]/route.ts          # Delete table (auth-guarded)
+│   ├── admin/[slug]/
+│   │   ├── page.tsx                   # Dashboard with quick stats
+│   │   ├── layout.tsx                 # Sidebar nav + auth guard
+│   │   ├── items/page.tsx             # Menu item management
+│   │   ├── menu/page.tsx              # Menu section builder
+│   │   ├── tables/page.tsx            # Table + QR management
+│   │   ├── orders/page.tsx            # Order tracking (5s SWR refresh)
+│   │   ├── kitchen/page.tsx           # Kitchen Display System (SSE)
+│   │   ├── analytics/page.tsx         # Analytics dashboard (Recharts)
+│   │   └── settings/page.tsx          # Payment + GST settings
+│   ├── auth/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── super-admin/                   # Platform admin panel
+│   ├── r/[restaurantSlug]/t/[tableSlug]/
+│   │   └── page.tsx                   # Customer-facing menu + cart + AI chat
+│   └── order-success/page.tsx
+├── components/
+│   ├── admin/
+│   │   ├── AdminHeader.tsx
+│   │   └── AdminFooter.tsx
+│   ├── MenuAIChat.tsx                 # Floating AI waiter widget
 │   ├── ItemCard.tsx
 │   ├── Cart.tsx
-│   └── RazorpayCheckout.tsx
+│   ├── RazorpayCheckout.tsx
+│   └── RootLayoutClient.tsx           # Conditional header/footer
 ├── lib/
-│   ├── db.js                  # MongoDB Connection
-│   ├── models/                # Mongoose Models
+│   ├── auth.ts                        # NextAuth config (JWT, credentials)
+│   ├── db.js                          # MongoDB connection pool
+│   ├── models/
+│   │   ├── Restaurant.js
 │   │   ├── Item.js
 │   │   ├── Menu.js
 │   │   ├── Table.js
-│   │   └── Order.js
-│   └── store/
-│       └── useCartStore.ts    # Zustand Cart Store
-├── scripts/
-│   └── seed.mjs               # Database Seeding
-└── package.json
+│   │   └── Order.js                   # With GST + platform fee fields
+│   ├── store/useCartStore.ts          # Zustand cart with billing breakdown
+│   └── utils/
+│       ├── apiAuth.ts                 # requireAuth() guard for API routes
+│       ├── billing.ts                 # GST + 2% platform fee calculation
+│       └── password.ts               # bcrypt helpers
+└── middleware.ts                      # Next.js route protection
 ```
 
-## 🔑 API Endpoints
+---
 
-### Items
-- `GET /api/items` - List all items
-- `POST /api/items` - Create new item
+## API Reference
 
-### Menu
-- `GET /api/menu` - Get menu with populated items
-- `POST /api/menu` - Update/create menu
+### Auth
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/auth/signup` | Register restaurant (status: pending) |
+| `POST` | `/api/auth/[...nextauth]` | NextAuth sign in/out |
+
+### Menu & Items
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/menu?restaurantId=` | Fetch menu with populated sections |
+| `GET` | `/api/items?restaurantId=` | List restaurant items |
+| `POST` | `/api/items` | Create item |
+| `PATCH` | `/api/items/:id` | Update item (auth) |
+| `DELETE` | `/api/items/:id` | Delete item (auth) |
 
 ### Tables
-- `GET /api/tables` - List all tables
-- `GET /api/tables?slug=table-1` - Get specific table
-- `POST /api/tables` - Create new table
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/tables?restaurantId=` | List tables |
+| `GET` | `/api/tables?slug=` | Lookup table by slug (customer) |
+| `POST` | `/api/tables` | Create table + generate + upload QR (auth) |
+| `DELETE` | `/api/tables/:id` | Delete table (auth) |
 
 ### Orders
-- `GET /api/orders` - List all orders (sorted by newest)
-- `POST /api/orders` - Create new order
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/orders?restaurantId=` | List all orders |
+| `POST` | `/api/orders` | Place order |
+| `PATCH` | `/api/orders/:id` | Update order status (auth) |
+| `GET` | `/api/orders/stream?restaurantId=` | SSE live stream (auth) |
 
 ### Payments
-- `POST /api/payments/create-order` - Create Razorpay order
-- `POST /api/payments/verify` - Verify payment signature
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/payments/create-order` | Create Razorpay order with GST + fee breakdown |
+| `POST` | `/api/payments/verify` | Verify HMAC-SHA256 payment signature |
+
+### Analytics
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/analytics?restaurantId=&range=30` | Revenue, top items, peak hours, summary (auth) |
 
 ### AI
-- `POST /api/ai/recommend` - Get meal recommendations
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/ai/recommend` | Menu recommendations by query |
+| `POST` | `/api/ai/chat` | Multi-turn AI waiter conversation |
+
+---
+
+## Billing Logic
+
+Every order goes through a 3-step calculation:
+
+```
+baseTotal   = Σ (item.price × qty)
+gstAmount   = baseTotal × (gstPercentage / 100)
+platformFee = (baseTotal + gstAmount) × 0.02
+finalAmount = baseTotal + gstAmount + platformFee
+
+restaurantEarnings = finalAmount - platformFee
+platformEarnings   = platformFee
+```
+
+GST percentage is configured per restaurant (0%, 5%, 12%, or 18%) and snapshotted on each order.
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas or local MongoDB
+- Razorpay account (test credentials work fine)
+- OpenAI API key
+- Cloudinary account
+
+### Install
+
+```bash
+git clone <repo-url>
+cd orderbyqr
+npm install
+```
+
+### Environment Variables
+
+Create `.env.local`:
+
+```env
+MONGODB_URI=mongodb+srv://...
+NEXTAUTH_SECRET=your-secret-here
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+
+OPENAI_API_KEY=sk-...
+
+RAZORPAY_KEY_ID=rzp_test_...
+RAZORPAY_KEY_SECRET=...
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...
+
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+
+SUPER_ADMIN_EMAIL=admin@bawarchie.com
+SUPER_ADMIN_PASSWORD=your-admin-password
+```
+
+### Run
+
+```bash
+npm run dev       # development
+npm run build     # production build
+npm run start     # production server
+```
+
+---
+
+## Revenue Model
+
+Bawarchie operates as a SaaS platform:
+
+- Restaurants sign up and are approved by the super admin
+- Each order incurs a **2% platform fee** automatically calculated and stored
+- The platform dashboard (super admin) can track total `myEarnings` across all restaurants
+- Restaurants configure their own Razorpay keys and GST rate
+
+---
+
+## Security
+
+- **Route protection**: `middleware.ts` guards `/admin/*` and `/super-admin/*` with NextAuth session checks
+- **API protection**: `lib/utils/apiAuth.ts` — `requireAuth()` called at the top of every admin-facing API handler
+- **Payment verification**: Razorpay HMAC-SHA256 signature verified server-side before order is saved
+- **Password hashing**: bcryptjs with salt rounds
+- **Multi-tenant isolation**: All queries scoped by `restaurantId`; admin layout verifies session user owns the slug
