@@ -40,6 +40,129 @@ interface Order {
     };
 }
 
+// ── Feedback Section ────────────────────────────────────────
+function FeedbackSection({ order }: { order: Order }) {
+    const [rating, setRating] = useState(0);
+    const [hovered, setHovered] = useState(0);
+    const [text, setText] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [aiResult, setAiResult] = useState<{ label: string; tags: string[]; summary: string } | null>(null);
+
+    const sentimentColors: Record<string, string> = {
+        positive: "bg-green-100 text-green-700 border-green-200",
+        neutral: "bg-yellow-100 text-yellow-700 border-yellow-200",
+        negative: "bg-red-100 text-red-700 border-red-200",
+    };
+
+    const handleSubmit = async () => {
+        if (rating === 0) return;
+        setSubmitting(true);
+        try {
+            const res = await fetch("/api/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    restaurantId: typeof order.restaurantId === "object" ? order.restaurantId._id : order.restaurantId,
+                    orderId: order._id,
+                    tableSlug: order.tableSlug,
+                    rating,
+                    text,
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSubmitted(true);
+                if (data.feedback?.sentiment?.label) {
+                    setAiResult(data.feedback.sentiment);
+                }
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (submitted) {
+        return (
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Thank you for your feedback!</h3>
+                <p className="text-gray-500 text-sm mb-4">Your review helps us improve.</p>
+                {aiResult && (
+                    <div className={`inline-flex flex-col items-center gap-2 px-5 py-3 rounded-xl border text-sm ${sentimentColors[aiResult.label] || "bg-gray-100 text-gray-700 border-gray-200"}`}>
+                        <span className="font-semibold capitalize">{aiResult.label} experience</span>
+                        {aiResult.summary && <p className="opacity-80 text-xs">{aiResult.summary}</p>}
+                        {aiResult.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 justify-center mt-1">
+                                {aiResult.tags.map((tag) => (
+                                    <span key={tag} className="bg-white/60 px-2 py-0.5 rounded-full text-xs font-medium">{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-1 text-center">How was your experience?</h3>
+            <p className="text-gray-500 text-sm text-center mb-6">Your feedback helps the restaurant improve</p>
+
+            {/* Star rating */}
+            <div className="flex justify-center gap-2 mb-6">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                        key={star}
+                        onMouseEnter={() => setHovered(star)}
+                        onMouseLeave={() => setHovered(0)}
+                        onClick={() => setRating(star)}
+                        className="transition-transform hover:scale-125"
+                        aria-label={`Rate ${star} stars`}
+                    >
+                        <svg
+                            className={`w-10 h-10 transition-colors ${star <= (hovered || rating) ? "text-yellow-400" : "text-gray-200"}`}
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                    </button>
+                ))}
+            </div>
+
+            {rating > 0 && (
+                <p className="text-center text-sm font-medium text-gray-600 mb-4">
+                    {["", "Poor", "Fair", "Good", "Great", "Excellent!"][rating]}
+                </p>
+            )}
+
+            {/* Optional text */}
+            <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Tell us more... (optional)"
+                rows={3}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-300 resize-none mb-4"
+            />
+
+            <button
+                onClick={handleSubmit}
+                disabled={rating === 0 || submitting}
+                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors"
+            >
+                {submitting ? "Submitting..." : "Submit Feedback"}
+            </button>
+        </div>
+    );
+}
+// ── End Feedback Section ─────────────────────────────────────
+
 export default function OrderSuccessPage() {
     const searchParams = useSearchParams();
     const orderId = searchParams.get("orderId");
@@ -337,7 +460,11 @@ export default function OrderSuccessPage() {
                     </div>
                 </div>
 
-                <div className="mt-8 text-center">
+                <div className="mt-6">
+                    <FeedbackSection order={order} />
+                </div>
+
+                <div className="mt-6 text-center">
                     <Link href={`/r/${order.restaurantId?.name.toLowerCase().replace(/\s+/g, '-')}/t/${order.tableSlug}`}>
                         <Button variant="secondary">Order More Items</Button>
                     </Link>
