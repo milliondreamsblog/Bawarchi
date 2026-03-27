@@ -11,12 +11,13 @@
     "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.8.0",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.554.0",
     "mongoose": "^8.19.4",
-    "next": "16.0.7",
+    "next": "16.0.10",
     "next-auth": "^5.0.0-beta.25",
     "openai": "^4.77.3",
     "postcss": "^8.5.6",

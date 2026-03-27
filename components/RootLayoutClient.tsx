@@ -12,7 +12,7 @@ export default function RootLayoutClient({
     const pathname = usePathname();
 
     // Check if current route is an admin, super-admin, or auth route
-    const isAdminRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/super-admin") || pathname?.startsWith("/auth") || pathname?.startsWith("/r");
+    const isAdminRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/super-admin") || pathname?.startsWith("/auth") || pathname?.startsWith("/r") || pathname?.startsWith("/order-success"); 
 
     return (
         <>
