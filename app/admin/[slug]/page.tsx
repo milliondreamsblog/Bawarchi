@@ -55,10 +55,10 @@ export default function RestaurantDashboardPage() {
 
     if (status === "loading" || loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white dark:from-gray-900 dark:to-gray-800">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading dashboard...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
                 </div>
             </div>
         );
@@ -172,17 +172,17 @@ export default function RestaurantDashboardPage() {
         <div>
             {/* Welcome Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     Welcome back, {restaurant.owner}!
                 </h1>
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-600 dark:text-gray-400">
                     Manage your restaurant <strong className="text-green-600">{restaurant.name}</strong> from this dashboard.
                 </p>
             </div>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
                     <div className="flex items-center">
                         <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
                             <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,12 +190,12 @@ export default function RestaurantDashboardPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.ordersToday}</p>
-                            <p className="text-sm text-gray-600">Today&apos;s Orders</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.ordersToday}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Today&apos;s Orders</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
                     <div className="flex items-center">
                         <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
                             <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,12 +203,12 @@ export default function RestaurantDashboardPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
-                            <p className="text-sm text-gray-600">Menu Items</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalItems}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Menu Items</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
                     <div className="flex items-center">
                         <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
                             <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,8 +216,8 @@ export default function RestaurantDashboardPage() {
                             </svg>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-900">{stats.totalTables}</p>
-                            <p className="text-sm text-gray-600">Active Tables</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalTables}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Active Tables</p>
                         </div>
                     </div>
                 </div>
@@ -229,19 +229,19 @@ export default function RestaurantDashboardPage() {
                     <Link
                         key={index}
                         href={action.href}
-                        className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-200 group"
+                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-200 dark:hover:border-green-700 group"
                     >
                         <div className="flex items-center gap-4">
                             {action.icon}
                             <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-green-600 transition-colors">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-green-600 transition-colors">
                                     {action.title}
                                 </h3>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                     {action.description}
                                 </p>
                             </div>
-                            <div className="text-gray-400 group-hover:text-green-600 transition-colors">
+                            <div className="text-gray-400 dark:text-gray-500 group-hover:text-green-600 transition-colors">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>

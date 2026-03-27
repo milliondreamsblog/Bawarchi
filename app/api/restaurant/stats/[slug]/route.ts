@@ -30,13 +30,18 @@ export async function GET(
     endOfDay.setHours(23, 59, 59, 999);
 
     // Run queries in parallel
-    const [ordersToday, totalItems, totalTables] = await Promise.all([
+    const [ordersToday, totalItems, totalTables, tablesOccupied, lowStockItems] = await Promise.all([
       Order.countDocuments({
         restaurantId,
         createdAt: { $gte: startOfDay, $lte: endOfDay }
       }),
       Item.countDocuments({ restaurantId }),
-      Table.countDocuments({ restaurantId })
+      Table.countDocuments({ restaurantId }),
+      Table.countDocuments({ restaurantId, status: "occupied" }),
+      Item.countDocuments({
+        restaurantId,
+        stock: { $gt: 0, $lte: 5 },
+      }),
     ]);
 
     return NextResponse.json({
@@ -44,7 +49,9 @@ export async function GET(
       stats: {
         ordersToday,
         totalItems,
-        totalTables
+        totalTables,
+        tablesOccupied,
+        lowStockItems,
       }
     });
   } catch (error: any) {

@@ -26,7 +26,7 @@ interface Order {
     gstAmount?: number;
     platformFee?: number;
     finalAmount?: number;
-    status: "pending" | "preparing" | "served";
+    status: "pending" | "preparing" | "served" | "cancelled" | "refunded";
     tableSlug: string;
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
@@ -169,6 +169,7 @@ export default function OrderSuccessPage() {
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         if (orderId) {
@@ -253,14 +254,41 @@ export default function OrderSuccessPage() {
     const platformFee = order.platformFee || 0;
     const finalAmount = order.finalAmount || order.total;
 
+    const canCancel =
+        order.status === "pending" &&
+        Date.now() - new Date(order.createdAt).getTime() < 5 * 60 * 1000;
+
+    const handleCancelOrder = async () => {
+        if (!confirm("Are you sure you want to cancel this order? A refund will be initiated if payment was made.")) return;
+        setCancelling(true);
+        try {
+            const res = await fetch(`/api/orders/${order._id}/cancel`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reason: "Cancelled by customer", cancelledBy: "customer" }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setOrder(data.order);
+            } else {
+                alert(data.error || "Failed to cancel order");
+            }
+        } catch {
+            alert("Failed to cancel order");
+        } finally {
+            setCancelling(false);
+        }
+    };
+
     // Helper to determine step status
     const getStepStatus = (step: 'confirmed' | 'preparing' | 'served') => {
-        const statusMap = {
+        if (order.status === "cancelled" || order.status === "refunded") return 'pending';
+        const statusMap: Record<string, number> = {
             pending: 0,
             preparing: 1,
             served: 2
         };
-        const currentStatusLevel = statusMap[order.status];
+        const currentStatusLevel = statusMap[order.status] ?? 0;
 
         const stepLevels = {
             confirmed: 0,
@@ -469,8 +497,31 @@ export default function OrderSuccessPage() {
                     </div>
                 </div>
 
-                {/* Download Receipt Button */}
-                <div className="bg-white border-t border-gray-200 px-8 py-5 rounded-b-3xl no-print">
+                {/* Cancelled/Refunded Banner */}
+                {(order.status === "cancelled" || order.status === "refunded") && (
+                    <div className="bg-red-50 border-t border-red-200 px-8 py-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-red-800">
+                                    {order.status === "refunded" ? "Order Cancelled & Refunded" : "Order Cancelled"}
+                                </p>
+                                <p className="text-sm text-red-600">
+                                    {order.status === "refunded"
+                                        ? "A refund has been initiated to your payment method."
+                                        : "This order has been cancelled."}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Download Receipt + Cancel Buttons */}
+                <div className="bg-white border-t border-gray-200 px-8 py-5 rounded-b-3xl no-print space-y-3">
                     <button
                         onClick={handleDownloadReceipt}
                         className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition-colors shadow-lg"
@@ -480,6 +531,28 @@ export default function OrderSuccessPage() {
                         </svg>
                         Download Receipt (PDF)
                     </button>
+
+                    {canCancel && (
+                        <button
+                            onClick={handleCancelOrder}
+                            disabled={cancelling}
+                            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-lg disabled:opacity-50"
+                        >
+                            {cancelling ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Cancelling...
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Cancel Order
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
 
                 <div className="mt-6 no-print">

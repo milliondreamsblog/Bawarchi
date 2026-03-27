@@ -117,7 +117,7 @@ export default function RestaurantOrdersPage() {
             <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading restaurant...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading restaurant...</p>
                 </div>
             </div>
         );
@@ -128,7 +128,7 @@ export default function RestaurantOrdersPage() {
             <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading orders...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
                 </div>
             </div>
         );
@@ -136,14 +136,14 @@ export default function RestaurantOrdersPage() {
 
     if (error) {
         return (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-8 text-center">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Orders</h3>
-                <p className="text-gray-600">Please try refreshing the page</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Failed to Load Orders</h3>
+                <p className="text-gray-600 dark:text-gray-400">Please try refreshing the page</p>
             </div>
         );
     }
@@ -153,31 +153,31 @@ export default function RestaurantOrdersPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Management</h1>
-                    <p className="text-gray-600">Manage and track incoming orders from your tables</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Order Management</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Manage and track incoming orders from your tables</p>
                 </div>
                 <div className="text-right">
                     <p className="text-2xl font-bold text-green-600">{filteredOrders.length}</p>
-                    <p className="text-sm text-gray-600">Total Orders</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
                 </div>
             </div>
 
             {/* Stats and Filters */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "all" ? "bg-green-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`} onClick={() => setFilter("all")}>
+                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "all" ? "bg-green-600 text-white" : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"}`} onClick={() => setFilter("all")}>
                         <div className="text-2xl font-bold">{tableFilteredOrders.length}</div>
                         <div className="text-sm">All Orders</div>
                     </div>
-                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "pending" ? "bg-yellow-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`} onClick={() => setFilter("pending")}>
+                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "pending" ? "bg-yellow-600 text-white" : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"}`} onClick={() => setFilter("pending")}>
                         <div className="text-2xl font-bold">{getStatusCount("pending")}</div>
                         <div className="text-sm">Pending</div>
                     </div>
-                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "preparing" ? "bg-blue-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`} onClick={() => setFilter("preparing")}>
+                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "preparing" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"}`} onClick={() => setFilter("preparing")}>
                         <div className="text-2xl font-bold">{getStatusCount("preparing")}</div>
                         <div className="text-sm">Preparing</div>
                     </div>
-                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "served" ? "bg-green-600 text-white" : "bg-gray-100 hover:bg-gray-200"}`} onClick={() => setFilter("served")}>
+                    <div className={`text-center p-4 rounded-xl cursor-pointer transition-all ${filter === "served" ? "bg-green-600 text-white" : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"}`} onClick={() => setFilter("served")}>
                         <div className="text-2xl font-bold">{getStatusCount("served")}</div>
                         <div className="text-sm">Served</div>
                     </div>
@@ -186,17 +186,17 @@ export default function RestaurantOrdersPage() {
 
             {/* Table Tabs */}
             {tablesWithOrders.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-6">
                     <div className="flex flex-wrap gap-3">
                         <button
                             onClick={() => setSelectedTable("all")}
                             className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${selectedTable === "all"
                                 ? "bg-green-600 text-white shadow-md"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                                 }`}
                         >
                             All Tables
-                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${selectedTable === "all" ? "bg-white text-green-600" : "bg-gray-200 text-gray-700"
+                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${selectedTable === "all" ? "bg-white text-green-600" : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
                                 }`}>
                                 {orders.length}
                             </span>
@@ -207,11 +207,11 @@ export default function RestaurantOrdersPage() {
                                 onClick={() => setSelectedTable(table.slug)}
                                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${selectedTable === table.slug
                                     ? "bg-green-600 text-white shadow-md"
-                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                                     }`}
                             >
                                 Table {table.tableNumber}
-                                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${selectedTable === table.slug ? "bg-white text-green-600" : "bg-gray-200 text-gray-700"
+                                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${selectedTable === table.slug ? "bg-white text-green-600" : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
                                     }`}>
                                     {table.count}
                                 </span>
@@ -224,11 +224,11 @@ export default function RestaurantOrdersPage() {
             {/* Orders List */}
             <div className="space-y-6">
                 {filteredOrders.map((order) => (
-                    <div key={order._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-200">
+                    <div key={order._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-200">
                         <div className="flex justify-between items-start mb-6">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-xl font-semibold text-gray-900">Table {order.tableSlug}</h3>
+                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Table {order.tableSlug}</h3>
                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(order.status)}`}>
                                         {order.status === "pending" && <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>}
                                         {order.status === "preparing" && <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>}
@@ -236,16 +236,16 @@ export default function RestaurantOrdersPage() {
                                         {order.status.toUpperCase()}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-600">{formatDate(order.createdAt)}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{formatDate(order.createdAt)}</p>
                                 {order.razorpayPaymentId && (
-                                    <p className="text-xs text-gray-500 mt-1">Payment ID: {order.razorpayPaymentId}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Payment ID: {order.razorpayPaymentId}</p>
                                 )}
                             </div>
                         </div>
 
                         {/* Order Items */}
                         <div className="mb-6">
-                            <h4 className="text-sm font-medium text-gray-700 mb-3">Order Items</h4>
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Order Items</h4>
                             <div className="space-y-2">
                                 {order.items.map((item, idx) => {
                                     if (!item.itemId) {
@@ -262,9 +262,9 @@ export default function RestaurantOrdersPage() {
                                         );
                                     }
                                     return (
-                                        <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                            <span className="text-gray-700">{item.itemId.name} × {item.qty}</span>
-                                            <span className="font-semibold text-gray-900">{formatPrice(item.itemId.price * item.qty)}</span>
+                                        <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                                            <span className="text-gray-700 dark:text-gray-300">{item.itemId.name} × {item.qty}</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">{formatPrice(item.itemId.price * item.qty)}</span>
                                         </div>
                                     );
                                 })}
@@ -272,9 +272,9 @@ export default function RestaurantOrdersPage() {
                         </div>
 
                         {/* Order Actions */}
-                        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                        <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-600">
                             <div>
-                                <p className="text-sm text-gray-600">Total Amount</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
                                 <p className="text-2xl font-bold text-green-600">{formatPrice(order.total)}</p>
                             </div>
                             <div className="flex gap-3">
@@ -318,14 +318,14 @@ export default function RestaurantOrdersPage() {
 
             {/* Empty State */}
             {filteredOrders.length === 0 && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
-                    <p className="text-gray-600">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Orders Found</h3>
+                    <p className="text-gray-600 dark:text-gray-400">
                         {filter === "all"
                             ? "No orders have been placed yet. They will appear here when customers order."
                             : `No ${filter} orders at the moment.`

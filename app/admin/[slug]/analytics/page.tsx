@@ -82,11 +82,11 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-500 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{value}</p>
           {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
         </div>
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent}`}>
@@ -101,8 +101,8 @@ function StatCard({
 function RevenueTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-lg text-sm">
-      <p className="font-semibold text-gray-700 mb-1">{label}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3 shadow-lg text-sm">
+      <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">{label}</p>
       <p className="text-green-600">Revenue: ₹{fmt(payload[0]?.value ?? 0)}</p>
       <p className="text-blue-600">Orders: {payload[1]?.value ?? 0}</p>
     </div>
@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-center py-24">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500">Crunching your numbers...</p>
+          <p className="text-gray-500 dark:text-gray-400">Crunching your numbers...</p>
         </div>
       </div>
     );
@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl p-10 text-center border border-red-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center border border-red-100">
         <p className="text-red-600 font-medium">{error}</p>
       </div>
     );
@@ -187,10 +187,10 @@ export default function AnalyticsPage() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-500 mt-1">Business intelligence for your restaurant</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Business intelligence for your restaurant</p>
         </div>
-        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+        <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
           {RANGE_OPTIONS.map((opt) => (
             <button
               key={opt.value}

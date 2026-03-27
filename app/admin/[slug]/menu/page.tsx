@@ -110,7 +110,7 @@ export default function RestaurantMenuPage() {
             <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading menu builder...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading menu builder...</p>
                 </div>
             </div>
         );
@@ -121,8 +121,8 @@ export default function RestaurantMenuPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Menu Builder</h1>
-                    <p className="text-gray-600">Organize your items into menu sections for customer display</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Menu Builder</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Organize your items into menu sections for customer display</p>
                 </div>
                 <Button 
                     onClick={saveMenu}
@@ -146,11 +146,11 @@ export default function RestaurantMenuPage() {
             </div>
 
             {/* Menu Title */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">Menu Title</label>
-                <input 
-                    type="text" 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Menu Title</label>
+                <input
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                     value={menu.title}
                     onChange={(e) => setMenu({ ...menu, title: e.target.value })} 
                     placeholder="Enter menu title"
@@ -158,12 +158,12 @@ export default function RestaurantMenuPage() {
             </div>
 
             {/* Add Section */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Add New Section</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Add New Section</h3>
                 <div className="flex gap-4">
-                    <input 
-                        type="text" 
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                    <input
+                        type="text"
+                        className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                         placeholder="Enter section name"
                         value={newSectionName} 
                         onChange={(e) => setNewSectionName(e.target.value)}
@@ -186,9 +186,9 @@ export default function RestaurantMenuPage() {
             {/* Sections */}
             <div className="space-y-6">
                 {menu.sections.map((section, sectionIndex) => (
-                    <div key={sectionIndex} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <div key={sectionIndex} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-semibold text-gray-900">{section.name}</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{section.name}</h3>
                             <Button 
                                 onClick={() => removeSection(sectionIndex)}
                                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"
@@ -204,10 +204,10 @@ export default function RestaurantMenuPage() {
 
                         {/* Items in Section */}
                         <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Items in this section</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Items in this section</label>
                             {section.items.length === 0 ? (
-                                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                                    <p className="text-gray-500">No items added to this section yet</p>
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+                                    <p className="text-gray-500 dark:text-gray-400">No items added to this section yet</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-wrap gap-3">
@@ -233,16 +233,16 @@ export default function RestaurantMenuPage() {
 
                         {/* Add Items */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Add items to section</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Add items to section</label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {allItems.filter((item) => !section.items.includes(item._id)).map((item) => (
                                     <button 
                                         key={item._id} 
                                         onClick={() => addItemToSection(sectionIndex, item._id)}
-                                        className="text-left px-4 py-3 bg-gray-50 hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-lg transition-all duration-200 hover:shadow-md"
+                                        className="text-left px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-green-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 hover:border-green-300 rounded-lg transition-all duration-200 hover:shadow-md"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-gray-700">{item.name}</span>
+                                            <span className="text-gray-700 dark:text-gray-300">{item.name}</span>
                                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                             </svg>
@@ -257,14 +257,14 @@ export default function RestaurantMenuPage() {
 
             {/* Empty State */}
             {menu.sections.length === 0 && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Sections Created</h3>
-                    <p className="text-gray-600 mb-4">Start by creating your first menu section above</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Sections Created</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">Start by creating your first menu section above</p>
                 </div>
             )}
         </div>

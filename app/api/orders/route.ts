@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Order from "@/lib/models/Order.js";
 import Table from "@/lib/models/Table.js";
+import Item from "@/lib/models/Item.js";
 
 export async function GET(request: Request) {
   try {
@@ -97,6 +98,22 @@ export async function POST(request: Request) {
     if (myEarnings !== undefined) orderData.myEarnings = myEarnings;
 
     const order = await Order.create(orderData);
+
+    // Auto-set table to occupied
+    await Table.findOneAndUpdate(
+      { slug: tableSlug, restaurantId },
+      { status: "occupied", occupiedAt: new Date(), currentOrderId: order._id }
+    );
+
+    // Decrement stock for each item (skip if stock is -1 = unlimited)
+    for (const { itemId, qty } of items) {
+      const item = await Item.findById(itemId);
+      if (item && item.stock > 0) {
+        item.stock = Math.max(0, item.stock - qty);
+        if (item.stock === 0) item.available = false;
+        await item.save();
+      }
+    }
 
     return NextResponse.json({ success: true, order }, { status: 201 });
   } catch (error: any) {

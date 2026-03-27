@@ -34,3 +34,25 @@ export async function requireAuth() {
 
   return { error: null, session };
 }
+
+/**
+ * Verifies that the incoming request has a valid super-admin session.
+ * Use this at the top of any super-admin-only API route handler.
+ *
+ * @example
+ * const { error, session } = await requireSuperAdmin();
+ * if (error) return error;
+ */
+export async function requireSuperAdmin() {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "super-admin") {
+    return {
+      error: NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 }
+      ),
+      session: null,
+    };
+  }
+  return { error: null, session };
+}

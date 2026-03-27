@@ -96,8 +96,8 @@ export default function FeedbackPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Customer Feedback</h1>
-        <p className="text-gray-500 mt-1">AI-analysed reviews from your customers</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Customer Feedback</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">AI-analysed reviews from your customers</p>
       </div>
 
       {summary && summary.total > 0 ? (
@@ -105,29 +105,29 @@ export default function FeedbackPage() {
           {/* ── Summary Cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Avg Rating */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center">
-              <p className="text-5xl font-bold text-gray-900 mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center text-center">
+              <p className="text-5xl font-bold text-gray-900 dark:text-white mb-2">
                 {summary.avgRating.toFixed(1)}
               </p>
               <Stars rating={Math.round(summary.avgRating)} size="lg" />
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Based on {summary.total} review{summary.total !== 1 ? "s" : ""}
               </p>
             </div>
 
             {/* Rating Distribution */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <p className="text-sm font-semibold text-gray-500 mb-3">Rating Breakdown</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">Rating Breakdown</p>
               <div className="space-y-2">
                 {[...summary.ratingDist].reverse().map(({ star, count }) => {
                   const pct = summary.total > 0 ? (count / summary.total) * 100 : 0;
                   return (
                     <div key={star} className="flex items-center gap-2 text-xs">
-                      <span className="w-4 text-gray-500 font-medium">{star}</span>
+                      <span className="w-4 text-gray-500 dark:text-gray-400 font-medium">{star}</span>
                       <svg className="w-3 h-3 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                       </svg>
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-yellow-400 rounded-full transition-all"
                           style={{ width: `${pct}%` }}
@@ -141,8 +141,8 @@ export default function FeedbackPage() {
             </div>
 
             {/* Sentiment */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <p className="text-sm font-semibold text-gray-500 mb-3">AI Sentiment</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">AI Sentiment</p>
               <div className="space-y-3">
                 {[
                   { key: "positive", label: "Positive", color: "bg-green-500", dot: "bg-green-500" },
@@ -153,20 +153,20 @@ export default function FeedbackPage() {
                   const pct = summary.total > 0 ? (count / summary.total) * 100 : 0;
                   return (
                     <div key={key} className="space-y-1">
-                      <div className="flex justify-between text-xs text-gray-600">
+                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
                         <span className="flex items-center gap-1.5">
                           <span className={`w-2 h-2 rounded-full ${dot}`} />
                           {label}
                         </span>
                         <span className="font-medium">{count} ({Math.round(pct)}%)</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
                 })}
-                <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                   {summary.positivePercent}% of reviewed orders rated positively
                 </p>
               </div>
@@ -187,7 +187,7 @@ export default function FeedbackPage() {
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === key
                     ? "bg-green-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
                 {label}
@@ -198,14 +198,14 @@ export default function FeedbackPage() {
           {/* ── Reviews List ── */}
           <div className="space-y-4">
             {filtered.length === 0 ? (
-              <div className="bg-white rounded-2xl p-10 text-center text-gray-400 border border-gray-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center text-gray-400 border border-gray-100 dark:border-gray-700">
                 No {filter} reviews yet.
               </div>
             ) : (
               filtered.map((review) => (
                 <div
                   key={review._id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6"
                 >
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex items-center gap-3">
@@ -232,13 +232,13 @@ export default function FeedbackPage() {
                   </div>
 
                   {review.text && (
-                    <p className="text-gray-700 text-sm leading-relaxed mb-3">
+                    <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3">
                       &ldquo;{review.text}&rdquo;
                     </p>
                   )}
 
                   {review.sentiment?.summary && (
-                    <p className="text-xs text-gray-500 italic mb-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic mb-2">
                       AI: {review.sentiment.summary}
                     </p>
                   )}
@@ -248,7 +248,7 @@ export default function FeedbackPage() {
                       {review.sentiment.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full"
+                          className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-2.5 py-1 rounded-full"
                         >
                           {tag}
                         </span>
@@ -262,13 +262,13 @@ export default function FeedbackPage() {
         </>
       ) : (
         /* Empty state */
-        <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-16 text-center">
           <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-10 h-10 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
             </svg>
           </div>
-          <p className="text-xl font-semibold text-gray-700">No reviews yet</p>
+          <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">No reviews yet</p>
           <p className="text-gray-400 text-sm mt-1">
             Feedback will appear here after customers complete an order.
           </p>

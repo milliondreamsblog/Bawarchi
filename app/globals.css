@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Print / PDF Receipt styles ─────────────────────────────── */
 @media print {
   /* Hide everything by default */

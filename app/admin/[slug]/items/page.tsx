@@ -289,7 +289,7 @@ export default function RestaurantItemsPage() {
             <div className="flex items-center justify-center py-20">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">Loading menu items...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading menu items...</p>
                 </div>
             </div>
         );
@@ -300,8 +300,8 @@ export default function RestaurantItemsPage() {
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Menu Items</h1>
-                    <p className="text-gray-600 mt-2">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Menu Items</h1>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
                         Manage your restaurant menu ({items.length} {items.length === 1 ? 'item' : 'items'})
                     </p>
                 </div>
@@ -330,20 +330,20 @@ export default function RestaurantItemsPage() {
 
             {/* Add Item Form */}
             {showForm && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
                     <div className="flex items-center mb-6">
                         <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
-                        <h2 className="text-xl font-semibold text-gray-900">{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</h2>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Image Upload Section */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Food Image
                             </label>
                             <div className="flex items-center space-x-4">
@@ -357,7 +357,7 @@ export default function RestaurantItemsPage() {
                                 />
                                 <label
                                     htmlFor="image-upload"
-                                    className="cursor-pointer bg-white px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+                                    className="cursor-pointer bg-white dark:bg-gray-700 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center dark:text-white"
                                 >
                                     <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -365,16 +365,16 @@ export default function RestaurantItemsPage() {
                                     Choose Image
                                 </label>
                                 {imageFile && (
-                                    <span className="text-sm text-gray-600">{imageFile.name}</span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">{imageFile.name}</span>
                                 )}
                             </div>
                             {imagePreview && (
                                 <div className="mt-4">
-                                    <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Preview:</p>
                                     <img
                                         src={imagePreview}
                                         alt="Preview"
-                                        className="w-48 h-48 object-cover rounded-lg border border-gray-300"
+                                        className="w-48 h-48 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
                                     />
                                 </div>
                             )}
@@ -382,12 +382,12 @@ export default function RestaurantItemsPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Item Name *
                                 </label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     placeholder="Enter item name"
                                     value={formData.name}
                                     onChange={(e) =>
@@ -398,11 +398,11 @@ export default function RestaurantItemsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Category
                                 </label>
                                 <select
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     value={formData.category}
                                     onChange={(e) =>
                                         setFormData({ ...formData, category: e.target.value })
@@ -421,11 +421,11 @@ export default function RestaurantItemsPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Description
                             </label>
                             <textarea
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none"
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none"
                                 placeholder="Enter item description"
                                 value={formData.description}
                                 onChange={(e) =>
@@ -437,12 +437,12 @@ export default function RestaurantItemsPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Price (₹) *
                                 </label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     placeholder="0.00"
                                     value={formData.price}
                                     onChange={(e) =>
@@ -455,12 +455,12 @@ export default function RestaurantItemsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Calories
                                 </label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                                     placeholder="Enter calories"
                                     value={formData.calories}
                                     onChange={(e) =>
@@ -471,7 +471,7 @@ export default function RestaurantItemsPage() {
                             </div>
 
                             <div className="flex items-center justify-center">
-                                <div className="flex items-center space-x-3 bg-gray-50 p-4 rounded-lg w-full">
+                                <div className="flex items-center space-x-3 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg w-full">
                                     <input
                                         type="checkbox"
                                         id="available"
@@ -481,7 +481,7 @@ export default function RestaurantItemsPage() {
                                         }
                                         className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
                                     />
-                                    <label htmlFor="available" className="text-sm font-medium text-gray-700">
+                                    <label htmlFor="available" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Available for ordering
                                     </label>
                                 </div>
@@ -490,7 +490,7 @@ export default function RestaurantItemsPage() {
 
                         {/* Dietary Tags */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Dietary Tags</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Dietary Tags</label>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {[
                                     { key: "isVeg",       label: "🟢 Vegetarian" },
@@ -500,7 +500,7 @@ export default function RestaurantItemsPage() {
                                     <label key={key} className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors ${
                                         formData[key as keyof typeof formData]
                                             ? "border-green-500 bg-green-50 text-green-700"
-                                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                                            : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300"
                                     }`}>
                                         <input
                                             type="checkbox"
@@ -515,7 +515,7 @@ export default function RestaurantItemsPage() {
                                     <select
                                         value={formData.spiceLevel}
                                         onChange={(e) => setFormData({ ...formData, spiceLevel: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
                                     >
                                         <option value="mild">🌶️ Mild</option>
                                         <option value="medium">🌶️🌶️ Medium</option>
@@ -567,7 +567,7 @@ export default function RestaurantItemsPage() {
             {/* Items Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item) => (
-                    <div key={item._id} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                    <div key={item._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
                         {/* Item Image */}
                         {item.image && (
                             <div
@@ -577,7 +577,7 @@ export default function RestaurantItemsPage() {
                         )}
 
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.name}</h3>
                             <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${item.available
                                     ? 'bg-green-100 text-green-800'
@@ -599,7 +599,7 @@ export default function RestaurantItemsPage() {
                         </div>
 
                         {item.description && (
-                            <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
+                            <p className="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">{item.description}</p>
                         )}
 
                         <div className="flex items-center justify-between mb-4">
@@ -715,8 +715,8 @@ export default function RestaurantItemsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No Menu Items Yet</h3>
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Menu Items Yet</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                         Start building your menu by adding your first item. Customers will see these items when they scan your QR codes.
                     </p>
                     <Button
