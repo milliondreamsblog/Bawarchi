@@ -1,377 +1,678 @@
-﻿"use client";
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import Button from "@/components/Button";
 import QRCode from "qrcode";
-import Image from "next/image";
+import {
+  Plus,
+  Search,
+  Printer,
+  Download,
+  ExternalLink,
+  Trash2,
+  Copy,
+  X,
+  LayoutGrid,
+  List,
+  QrCode as QrIcon,
+  Check,
+} from "lucide-react";
 
-interface Table { _id: string; tableNumber: number; slug: string; restaurantId: string; qrUrl: string }
-
-export default function RestaurantTablesPage() {
-    const params = useParams();
-    const slug = params.slug as string;
-    const [restaurantId, setRestaurantId] = useState<string | null>(null);
-    const [tables, setTables] = useState<Table[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ tableNumber: "", slug: "" });
-    const [qrCodes, setQrCodes] = useState<{ [key: string]: string }>({});
-    const [deletingTableId, setDeletingTableId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (slug) {
-            fetchRestaurantAndTables();
-        }
-    }, [slug]);
-
-    const fetchRestaurantAndTables = async () => {
-        try {
-            // 1. Get restaurant ID
-            const restRes = await fetch(`/api/restaurant/by-slug/${slug}`);
-            const restData = await restRes.json();
-            if (!restData.success) return;
-            const id = restData.restaurant._id;
-            setRestaurantId(id);
-
-            // 2. Fetch tables
-            const res = await fetch(`/api/tables?restaurantId=${id}`);
-            const data = await res.json();
-            if (data.success) {
-                setTables(data.tables);
-                generateQRCodes(data.tables);
-            }
-        } catch (error) {
-            console.error("Failed to fetch tables:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const generateQRCodes = async (tablesData: Table[]) => {
-        const codes: { [key: string]: string } = {};
-        for (const table of tablesData) {
-            try {
-                const url = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${slug}/t/${table.slug}`;
-                const qrDataUrl = await QRCode.toDataURL(url, { width: 200, margin: 2 });
-                codes[table._id] = qrDataUrl;
-            } catch (error) {
-                console.error(`Failed to generate QR for ${table.slug}:`, error);
-            }
-        }
-        setQrCodes(codes);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!restaurantId) return;
-
-        try {
-            const res = await fetch("/api/tables", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    tableNumber: parseInt(formData.tableNumber),
-                    slug: formData.slug,
-                    restaurantId,
-                }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                const newTables = [...tables, data.table];
-                setTables(newTables);
-                generateQRCodes(newTables);
-                setShowForm(false);
-                setFormData({ tableNumber: "", slug: "" });
-            } else {
-                alert(data.error || "Failed to create table");
-            }
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            alert("Failed to create table");
-        }
-    };
-
-    const autoGenerateSlug = () => {
-        const num = formData.tableNumber;
-        if (num && restaurantId) {
-            const prefix = restaurantId.substring(0, 7).toUpperCase();
-            const slug = `R${prefix}-T${num}`;
-            setFormData({ ...formData, slug });
-        }
-    };
-
-    const handleDeleteTable = async (table: Table) => {
-        if (!confirm(`Delete Table ${table.tableNumber}?\n\nThis will permanently delete the table and its QR code. This action cannot be undone.`)) {
-            return;
-        }
-
-        if (!restaurantId) return;
-
-        try {
-            setDeletingTableId(table._id);
-            const res = await fetch(`/api/tables/${table._id}`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ restaurantId }),
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                setTables(tables.filter(t => t._id !== table._id));
-                const newQrCodes = { ...qrCodes };
-                delete newQrCodes[table._id];
-                setQrCodes(newQrCodes);
-            } else {
-                alert(data.error || "Failed to delete table");
-            }
-        } catch (error) {
-            console.error("Failed to delete table:", error);
-            alert("Failed to delete table");
-        } finally {
-            setDeletingTableId(null);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-12">
-                <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-400">Loading tables...</p>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="p-6">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Table Management</h1>
-                    <p className="text-gray-600 dark:text-gray-400">Create tables and generate QR codes for customer ordering</p>
-                </div>
-                <Button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-[#324F7B] hover:bg-[#283f63] text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                    {showForm ? (
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Cancel
-                        </div>
-                    ) : (
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add Table
-                        </div>
-                    )}
-                </Button>
-            </div>
-
-            {/* Add Table Form */}
-            {showForm && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
-                    <div className="flex items-center mb-6">
-                        <div className="w-10 h-10 bg-[#86A6DE]/20 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-5 h-5 text-[#324F7B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                        </div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Add New Table</h2>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Table Number *
-                                </label>
-                                <input
-                                    type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors"
-                                    value={formData.tableNumber}
-                                    onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
-                                    onBlur={autoGenerateSlug}
-                                    required
-                                    min="1"
-                                    placeholder="Enter table number"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Table Slug *
-                                </label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors"
-                                    value={formData.slug}
-                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                    placeholder="Auto-generated slug"
-                                    required
-                                />
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                    Unique identifier for the table URL. Auto-generated for security.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Preview */}
-                        {formData.slug && (
-                            <div className="bg-[#86A6DE]/10 border border-[#86A6DE]/40 rounded-xl p-4">
-                                <p className="text-sm text-[#324F7B]">
-                                    <strong>Table URL Preview:</strong><br />
-                                    <code className="text-xs bg-[#86A6DE]/20 px-2 py-1 rounded">
-                                        {process.env.NEXT_PUBLIC_BASE_URL}/r/{slug}/t/{formData.slug}
-                                    </code>
-                                </p>
-                            </div>
-                        )}
-
-                        <div className="flex gap-4 pt-4">
-                            <Button
-                                type="submit"
-                                className="bg-[#324F7B] hover:bg-[#283f63] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                            >
-                                <div className="flex items-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Create Table
-                                </div>
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={() => setShowForm(false)}
-                                className="px-8 py-3 rounded-lg font-semibold transition-all duration-300"
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* Tables Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tables.map((table) => (
-                    <div key={table._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-200">
-                        {/* Table Header */}
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Table {table.tableNumber}</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                    {table.slug}
-                                </p>
-                            </div>
-                            <div className="bg-[#86A6DE]/20 text-[#324F7B] px-2 py-1 rounded-full text-xs font-medium">
-                                Active
-                            </div>
-                        </div>
-
-                        {/* QR Code */}
-                        {table.qrUrl && (
-                            <div className="text-center mb-4">
-                                <div className="bg-white p-4 rounded-xl border border-gray-200 dark:border-gray-600 inline-block">
-                                    <Image
-                                        src={table.qrUrl}
-                                        alt={`QR Code for Table ${table.tableNumber}`}
-                                        className="mx-auto rounded-lg"
-                                        width={460}
-                                        height={460}
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Table Info */}
-                        <div className="space-y-3">
-                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                <a
-                                    href={`/r/${slug}/t/${table.slug}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[#324F7B] hover:text-[#324F7B] hover:underline break-all"
-                                >
-                                    /r/{slug}/t/{table.slug}
-                                </a>
-                            </div>
-
-                            {/* Download Button */}
-                            {table.qrUrl && (
-                                <a
-                                    href={qrCodes[table._id]}
-                                    download={`table-${table.tableNumber}-qr.png`}
-                                    className="block w-full bg-[#324F7B] hover:bg-[#283f63] text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-                                >
-                                    <div className="flex items-center justify-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Download QR Code
-                                    </div>
-                                </a>
-                            )}
-
-                            {/* Delete Button */}
-                            <button
-                                onClick={() => handleDeleteTable(table)}
-                                disabled={deletingTableId === table._id}
-                                className="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed mt-3"
-                            >
-                                {deletingTableId === table._id ? (
-                                    <div className="flex items-center justify-center">
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                        Deleting...
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Delete Table
-                                    </div>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Empty State */}
-            {tables.length === 0 && !showForm && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Tables Created</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first table to generate QR codes for customer ordering</p>
-                    <Button
-                        onClick={() => setShowForm(true)}
-                        className="bg-[#324F7B] hover:bg-[#283f63] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Create First Table
-                        </div>
-                    </Button>
-                </div>
-            )}
-        </div>
-    );
+interface Table {
+  _id: string;
+  tableNumber: number;
+  slug: string;
+  restaurantId: string;
+  qrUrl: string;
 }
 
+export default function RestaurantTablesPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [restaurantName, setRestaurantName] = useState("");
+  const [tables, setTables] = useState<Table[]>([]);
+  const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [search, setSearch] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ tableNumber: "", slug: "" });
+
+  const [activeTable, setActiveTable] = useState<Table | null>(null);
+  const [deletingTableId, setDeletingTableId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [printOnly, setPrintOnly] = useState<string | null>(null);
+
+  const formRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (slug) fetchRestaurantAndTables();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  useEffect(() => {
+    function reset() {
+      setPrintOnly(null);
+    }
+    window.addEventListener("afterprint", reset);
+    return () => window.removeEventListener("afterprint", reset);
+  }, []);
+
+  async function fetchRestaurantAndTables() {
+    try {
+      const r = await fetch(`/api/restaurant/by-slug/${slug}`).then((x) => x.json());
+      if (!r.success) return;
+      setRestaurantId(r.restaurant._id);
+      setRestaurantName(r.restaurant.name || "");
+
+      const t = await fetch(`/api/tables?restaurantId=${r.restaurant._id}`).then((x) =>
+        x.json()
+      );
+      if (t.success) {
+        setTables(t.tables);
+        generateQRCodes(t.tables);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function generateQRCodes(arr: Table[]) {
+    const codes: Record<string, string> = {};
+    await Promise.all(
+      arr.map(async (table) => {
+        try {
+          const url = `${process.env.NEXT_PUBLIC_BASE_URL}/r/${slug}/t/${table.slug}`;
+          codes[table._id] = await QRCode.toDataURL(url, { width: 512, margin: 2 });
+        } catch {
+          /* ignore */
+        }
+      })
+    );
+    setQrCodes((prev) => ({ ...prev, ...codes }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!restaurantId) return;
+    try {
+      const res = await fetch("/api/tables", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tableNumber: parseInt(formData.tableNumber),
+          slug: formData.slug,
+          restaurantId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const next = [...tables, data.table];
+        setTables(next);
+        generateQRCodes(next);
+        setShowForm(false);
+        setFormData({ tableNumber: "", slug: "" });
+      } else {
+        alert(data.error || "Failed to create table");
+      }
+    } catch {
+      alert("Failed to create table");
+    }
+  }
+
+  function autoGenerateSlug() {
+    if (formData.tableNumber && restaurantId) {
+      const prefix = restaurantId.substring(0, 7).toUpperCase();
+      setFormData((f) => ({ ...f, slug: `R${prefix}-T${f.tableNumber}` }));
+    }
+  }
+
+  async function handleDeleteTable(table: Table) {
+    if (!confirm(`Delete Table ${table.tableNumber}? This action cannot be undone.`)) return;
+    if (!restaurantId) return;
+    setDeletingTableId(table._id);
+    try {
+      const res = await fetch(`/api/tables/${table._id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restaurantId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTables(tables.filter((t) => t._id !== table._id));
+        const c = { ...qrCodes };
+        delete c[table._id];
+        setQrCodes(c);
+        if (activeTable?._id === table._id) setActiveTable(null);
+      } else {
+        alert(data.error || "Failed to delete table");
+      }
+    } finally {
+      setDeletingTableId(null);
+    }
+  }
+
+  function getUrl(t: Table) {
+    return `${process.env.NEXT_PUBLIC_BASE_URL}/r/${slug}/t/${t.slug}`;
+  }
+
+  async function copyUrl(t: Table) {
+    try {
+      await navigator.clipboard.writeText(getUrl(t));
+      setCopiedId(t._id);
+      setTimeout(() => setCopiedId((c) => (c === t._id ? null : c)), 1800);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function printOne(t: Table) {
+    setPrintOnly(t._id);
+    setTimeout(() => window.print(), 60);
+  }
+  function printAll() {
+    setPrintOnly(null);
+    setTimeout(() => window.print(), 60);
+  }
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tables
+      .slice()
+      .sort((a, b) => a.tableNumber - b.tableNumber)
+      .filter(
+        (t) =>
+          !q ||
+          String(t.tableNumber).includes(q) ||
+          t.slug.toLowerCase().includes(q)
+      );
+  }, [tables, search]);
+
+  const printList = printOnly ? tables.filter((t) => t._id === printOnly) : filtered;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 print:hidden">
+        <div className="w-10 h-10 border-2 border-[#86A6DE]/30 border-t-[#324F7B] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Print sheet — visible only when printing */}
+      <div className="hidden print:block">
+        <PrintSheet
+          tables={printList}
+          qrCodes={qrCodes}
+          restaurantName={restaurantName}
+          restaurantSlug={slug}
+        />
+      </div>
+
+      <div className="space-y-4 print:hidden">
+        {/* Toolbar */}
+        <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-[#F8F8F8]/90 backdrop-blur border-b border-stone-200">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-baseline gap-2 flex-1 min-w-[160px]">
+              <h1 className="text-lg sm:text-xl font-semibold text-stone-900">Tables</h1>
+              <span className="text-xs text-stone-500">{tables.length}</span>
+            </div>
+
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search…"
+                className="w-44 sm:w-56 pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-lg text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#86A6DE]/40 focus:border-[#86A6DE]"
+              />
+            </div>
+
+            <div className="inline-flex rounded-lg bg-white border border-stone-200 p-0.5">
+              <button
+                onClick={() => setView("grid")}
+                className={`p-1.5 rounded-md transition-colors ${
+                  view === "grid"
+                    ? "bg-[#324F7B] text-white"
+                    : "text-stone-500 hover:text-[#324F7B]"
+                }`}
+                title="Grid view"
+                aria-label="Grid view"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setView("list")}
+                className={`p-1.5 rounded-md transition-colors ${
+                  view === "list"
+                    ? "bg-[#324F7B] text-white"
+                    : "text-stone-500 hover:text-[#324F7B]"
+                }`}
+                title="List view"
+                aria-label="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={printAll}
+              disabled={tables.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Print all QR codes"
+            >
+              <Printer className="w-4 h-4" />
+              Print all
+            </button>
+
+            <button
+              onClick={() => {
+                setShowForm((s) => !s);
+                setTimeout(
+                  () =>
+                    formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+                  60
+                );
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#324F7B] text-white text-sm font-semibold hover:bg-[#283f63]"
+            >
+              {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {showForm ? "Cancel" : "Add table"}
+            </button>
+          </div>
+        </div>
+
+        {/* Add form */}
+        {showForm && (
+          <div ref={formRef} className="rounded-2xl bg-white border border-stone-200 p-4 sm:p-5">
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start"
+            >
+              <div className="sm:col-span-3">
+                <label className="block text-xs font-medium text-stone-600 mb-1">
+                  Table number
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  required
+                  value={formData.tableNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tableNumber: e.target.value })
+                  }
+                  onBlur={autoGenerateSlug}
+                  placeholder="e.g. 7"
+                  className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#86A6DE]/40 focus:border-[#86A6DE]"
+                />
+              </div>
+              <div className="sm:col-span-6">
+                <label className="block text-xs font-medium text-stone-600 mb-1">Slug</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  placeholder="Auto-generated"
+                  className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#86A6DE]/40 focus:border-[#86A6DE]"
+                />
+                {formData.slug && (
+                  <p className="text-[11px] text-stone-500 mt-1 truncate">
+                    URL: <span className="font-mono">/r/{slug}/t/{formData.slug}</span>
+                  </p>
+                )}
+              </div>
+              <div className="sm:col-span-3 flex sm:justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 sm:flex-initial px-4 py-2 rounded-full border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 sm:flex-initial px-4 py-2 rounded-full bg-[#324F7B] text-white text-sm font-semibold hover:bg-[#283f63]"
+                >
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Empty / list / grid */}
+        {tables.length === 0 ? (
+          <div className="rounded-2xl border border-stone-200 bg-white p-10 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#86A6DE]/15 flex items-center justify-center">
+              <QrIcon className="w-6 h-6 text-[#324F7B]" />
+            </div>
+            <h3 className="text-base font-semibold text-stone-900">No tables yet</h3>
+            <p className="text-sm text-stone-500 mt-1">
+              Add your first table to generate a QR code.
+            </p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#324F7B] text-white text-sm font-semibold hover:bg-[#283f63]"
+            >
+              <Plus className="w-4 h-4" /> Add table
+            </button>
+          </div>
+        ) : view === "grid" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+            {filtered.map((t) => (
+              <button
+                key={t._id}
+                onClick={() => setActiveTable(t)}
+                className="group relative text-left rounded-2xl bg-white border border-stone-200 hover:border-[#86A6DE] hover:shadow-md transition-all p-3"
+                title="View QR & actions"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-lg bg-white border border-stone-200 p-1 flex-shrink-0">
+                    {qrCodes[t._id] ? (
+                      <img
+                        src={qrCodes[t._id]}
+                        alt=""
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-stone-100 rounded animate-pulse" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] uppercase tracking-wider text-stone-400">
+                      Table
+                    </div>
+                    <div className="text-2xl font-bold text-[#324F7B] leading-tight">
+                      {t.tableNumber}
+                    </div>
+                    <div className="text-[10px] font-mono text-stone-500 truncate">
+                      {t.slug}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-white border border-stone-200 overflow-hidden">
+            <div className="hidden md:grid grid-cols-12 gap-3 px-4 py-2 text-[11px] uppercase tracking-wider text-stone-500 border-b border-stone-200 bg-[#F8F8F8]">
+              <div className="col-span-1">QR</div>
+              <div className="col-span-1">Table</div>
+              <div className="col-span-3">Slug</div>
+              <div className="col-span-5">URL</div>
+              <div className="col-span-2 text-right">Actions</div>
+            </div>
+            <ul className="divide-y divide-stone-100">
+              {filtered.map((t) => (
+                <li key={t._id} className="px-4 py-2.5">
+                  <div className="grid md:grid-cols-12 gap-3 items-center">
+                    <div className="md:col-span-1">
+                      <button
+                        onClick={() => setActiveTable(t)}
+                        className="w-10 h-10 rounded bg-white border border-stone-200 p-0.5 hover:border-[#86A6DE]"
+                        title="View QR"
+                      >
+                        {qrCodes[t._id] && (
+                          <img
+                            src={qrCodes[t._id]}
+                            alt=""
+                            className="w-full h-full object-contain"
+                          />
+                        )}
+                      </button>
+                    </div>
+                    <div className="md:col-span-1 font-semibold text-[#324F7B]">
+                      {t.tableNumber}
+                    </div>
+                    <div className="md:col-span-3 font-mono text-xs text-stone-600 truncate">
+                      {t.slug}
+                    </div>
+                    <div className="md:col-span-5 text-xs text-stone-500 truncate">
+                      <a
+                        href={`/r/${slug}/t/${t.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="hover:text-[#324F7B] hover:underline"
+                      >
+                        /r/{slug}/t/{t.slug}
+                      </a>
+                    </div>
+                    <div className="md:col-span-2 flex md:justify-end gap-1">
+                      <IconBtn title="Copy URL" onClick={() => copyUrl(t)}>
+                        {copiedId === t._id ? (
+                          <Check className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </IconBtn>
+                      <IconBtn title="Print" onClick={() => printOne(t)}>
+                        <Printer className="w-4 h-4" />
+                      </IconBtn>
+                      <IconBtn
+                        title="Download"
+                        onClick={() => downloadQr(t, qrCodes[t._id])}
+                      >
+                        <Download className="w-4 h-4" />
+                      </IconBtn>
+                      <IconBtn
+                        title="Open"
+                        onClick={() => window.open(`/r/${slug}/t/${t.slug}`, "_blank")}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </IconBtn>
+                      <IconBtn
+                        title="Delete"
+                        danger
+                        disabled={deletingTableId === t._id}
+                        onClick={() => handleDeleteTable(t)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </IconBtn>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {filtered.length === 0 && tables.length > 0 && (
+          <div className="text-sm text-stone-500 text-center py-6">
+            No tables match &quot;{search}&quot;.
+          </div>
+        )}
+      </div>
+
+      {/* QR detail modal */}
+      {activeTable && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 print:hidden"
+          onClick={() => setActiveTable(null)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-stone-200 max-w-sm w-full overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <h3 className="font-semibold text-stone-900">
+                  Table {activeTable.tableNumber}
+                </h3>
+                <span className="text-[11px] font-mono text-stone-500 truncate">
+                  {activeTable.slug}
+                </span>
+              </div>
+              <button
+                onClick={() => setActiveTable(null)}
+                className="p-1 rounded hover:bg-stone-100 text-stone-500"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="bg-white border border-stone-200 rounded-xl p-3 mx-auto w-fit">
+                {qrCodes[activeTable._id] && (
+                  <img
+                    src={qrCodes[activeTable._id]}
+                    alt=""
+                    className="w-56 h-56"
+                  />
+                )}
+              </div>
+              {restaurantName && (
+                <p className="text-center text-sm font-semibold text-stone-900 mt-3">
+                  {restaurantName}
+                </p>
+              )}
+              <p className="text-center text-xs text-stone-500 mt-0.5">
+                Scan to order — Table {activeTable.tableNumber}
+              </p>
+              <p className="mt-3 text-[11px] text-stone-500 text-center break-all font-mono">
+                {getUrl(activeTable)}
+              </p>
+            </div>
+
+            <div className="px-4 py-3 border-t border-stone-200 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => printOne(activeTable)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-[#324F7B] text-white text-sm font-semibold hover:bg-[#283f63]"
+              >
+                <Printer className="w-4 h-4" /> Print
+              </button>
+              <button
+                onClick={() => downloadQr(activeTable, qrCodes[activeTable._id])}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50"
+              >
+                <Download className="w-4 h-4" /> Download
+              </button>
+              <button
+                onClick={() => copyUrl(activeTable)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50"
+              >
+                {copiedId === activeTable._id ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-600" /> Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" /> Copy URL
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() =>
+                  window.open(`/r/${slug}/t/${activeTable.slug}`, "_blank")
+                }
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50"
+              >
+                <ExternalLink className="w-4 h-4" /> Open
+              </button>
+              <button
+                onClick={() => handleDeleteTable(activeTable)}
+                disabled={deletingTableId === activeTable._id}
+                className="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border border-red-200 bg-white text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" />
+                {deletingTableId === activeTable._id ? "Deleting…" : "Delete table"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media print {
+          @page { margin: 14mm; }
+          body { background: white !important; }
+        }
+      `}</style>
+    </>
+  );
+}
+
+function IconBtn({
+  children,
+  title,
+  onClick,
+  danger,
+  disabled,
+}: {
+  children: React.ReactNode;
+  title: string;
+  onClick: () => void;
+  danger?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      disabled={disabled}
+      className={`p-1.5 rounded-md transition-colors disabled:opacity-40 ${
+        danger
+          ? "text-stone-500 hover:bg-red-50 hover:text-red-600"
+          : "text-stone-500 hover:bg-stone-100 hover:text-[#324F7B]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function downloadQr(t: Table, dataUrl?: string) {
+  if (!dataUrl) return;
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = `table-${t.tableNumber}-qr.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function PrintSheet({
+  tables,
+  qrCodes,
+  restaurantName,
+  restaurantSlug,
+}: {
+  tables: Table[];
+  qrCodes: Record<string, string>;
+  restaurantName: string;
+  restaurantSlug: string;
+}) {
+  return (
+    <div className="p-2">
+      <div className="grid grid-cols-2 gap-3">
+        {tables.map((t) => (
+          <div
+            key={t._id}
+            className="border border-stone-300 rounded-xl p-4 flex flex-col items-center"
+            style={{ pageBreakInside: "avoid", breakInside: "avoid" }}
+          >
+            {restaurantName && (
+              <p className="text-sm font-semibold text-stone-900">{restaurantName}</p>
+            )}
+            <p className="text-xs text-stone-500 mt-0.5">Scan to order</p>
+            <div className="my-2">
+              {qrCodes[t._id] && (
+                <img src={qrCodes[t._id]} alt="" className="w-44 h-44" />
+              )}
+            </div>
+            <p className="text-2xl font-bold text-stone-900">Table {t.tableNumber}</p>
+            <p className="text-[10px] font-mono text-stone-500 mt-1">
+              {restaurantSlug} / {t.slug}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
