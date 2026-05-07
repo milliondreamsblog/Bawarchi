@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -15,7 +15,7 @@ import {
   Cell,
 } from "recharts";
 
-/* ─── Types ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface DailyRevenue {
   date: string;
   revenue: number;
@@ -52,7 +52,7 @@ interface AnalyticsData {
   range: number;
 }
 
-/* ─── Helpers ─────────────────────────────────────────────── */
+/* â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(n);
 
@@ -67,7 +67,7 @@ const BAR_COLORS = [
   "#bbf7d0", "#059669", "#10b981", "#34d399",
 ];
 
-/* ─── Stat Card ───────────────────────────────────────────── */
+/* â”€â”€â”€ Stat Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function StatCard({
   label,
   value,
@@ -97,19 +97,19 @@ function StatCard({
   );
 }
 
-/* ─── Custom Tooltip ─────────────────────────────────────── */
+/* â”€â”€â”€ Custom Tooltip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function RevenueTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3 shadow-lg text-sm">
       <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">{label}</p>
-      <p className="text-green-600">Revenue: ₹{fmt(payload[0]?.value ?? 0)}</p>
+      <p className="text-[#324F7B]">Revenue: â‚¹{fmt(payload[0]?.value ?? 0)}</p>
       <p className="text-blue-600">Orders: {payload[1]?.value ?? 0}</p>
     </div>
   );
 }
 
-/* ─── Main Page ───────────────────────────────────────────── */
+/* â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function AnalyticsPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
     return (
       <div className="flex items-center justify-center py-24">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-500 dark:text-gray-400">Crunching your numbers...</p>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics</h1>
@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
               onClick={() => setRange(opt.value)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 range === opt.value
-                  ? "bg-white text-green-700 shadow-sm"
+                  ? "bg-white text-[#324F7B] shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
@@ -207,15 +207,15 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Summary Cards ── */}
+      {/* â”€â”€ Summary Cards â”€â”€ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Total Revenue"
-          value={`₹${fmt(summary.totalRevenue)}`}
+          value={`â‚¹${fmt(summary.totalRevenue)}`}
           sub={`Last ${range} days`}
-          accent="bg-green-100"
+          accent="bg-[#86A6DE]/20"
           icon={
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-[#324F7B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
         <StatCard
           label="Total Orders"
           value={fmt(summary.totalOrders)}
-          sub={`Avg ₹${fmt(summary.avgOrderValue)} / order`}
+          sub={`Avg â‚¹${fmt(summary.avgOrderValue)} / order`}
           accent="bg-blue-100"
           icon={
             <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,7 +233,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           label="Restaurant Earnings"
-          value={`₹${fmt(summary.totalRestaurantEarnings)}`}
+          value={`â‚¹${fmt(summary.totalRestaurantEarnings)}`}
           sub="After GST & platform fee"
           accent="bg-purple-100"
           icon={
@@ -244,8 +244,8 @@ export default function AnalyticsPage() {
         />
         <StatCard
           label="GST Collected"
-          value={`₹${fmt(summary.totalGst)}`}
-          sub={`Platform fee: ₹${fmt(summary.totalPlatformFee)}`}
+          value={`â‚¹${fmt(summary.totalGst)}`}
+          sub={`Platform fee: â‚¹${fmt(summary.totalPlatformFee)}`}
           accent="bg-orange-100"
           icon={
             <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +255,7 @@ export default function AnalyticsPage() {
         />
       </div>
 
-      {/* ── Revenue Over Time ── */}
+      {/* â”€â”€ Revenue Over Time â”€â”€ */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Revenue Trend</h2>
         <p className="text-sm text-gray-400 mb-6">Daily revenue and order volume</p>
@@ -279,7 +279,7 @@ export default function AnalyticsPage() {
               tick={{ fontSize: 11, fill: "#9ca3af" }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+              tickFormatter={(v) => `â‚¹${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
             />
             <Tooltip content={<RevenueTooltip />} />
             <Area
@@ -305,8 +305,8 @@ export default function AnalyticsPage() {
         </ResponsiveContainer>
         <div className="flex gap-6 mt-3 text-xs text-gray-500">
           <span className="flex items-center gap-1.5">
-            <span className="w-6 border-t-2 border-green-600 inline-block" />
-            Revenue (₹)
+            <span className="w-6 border-t-2 border-[#324F7B] inline-block" />
+            Revenue (â‚¹)
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-6 border-t-2 border-blue-500 border-dashed inline-block" />
@@ -315,7 +315,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Top Items + Peak Hours ── */}
+      {/* â”€â”€ Top Items + Peak Hours â”€â”€ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Items */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -399,7 +399,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Order Status Breakdown ── */}
+      {/* â”€â”€ Order Status Breakdown â”€â”€ */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">All-Time Order Status</h2>
         <p className="text-sm text-gray-400 mb-6">Total orders across all time by fulfillment stage</p>
@@ -407,7 +407,7 @@ export default function AnalyticsPage() {
           {[
             { label: "Pending", key: "pending", color: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500" },
             { label: "Preparing", key: "preparing", color: "bg-blue-100 text-blue-800", dot: "bg-blue-500" },
-            { label: "Served", key: "served", color: "bg-green-100 text-green-800", dot: "bg-green-500" },
+            { label: "Served", key: "served", color: "bg-[#86A6DE]/20 text-[#324F7B]", dot: "bg-[#86A6DE]/100" },
           ].map(({ label, key, color, dot }) => {
             const count = statusBreakdown[key as keyof typeof statusBreakdown];
             const pct = totalStatusOrders > 0 ? Math.round((count / totalStatusOrders) * 100) : 0;
@@ -433,7 +433,7 @@ export default function AnalyticsPage() {
               style={{ width: `${(statusBreakdown.preparing / totalStatusOrders) * 100}%` }}
             />
             <div
-              className="bg-green-500 h-full transition-all"
+              className="bg-[#86A6DE]/100 h-full transition-all"
               style={{ width: `${(statusBreakdown.served / totalStatusOrders) * 100}%` }}
             />
           </div>

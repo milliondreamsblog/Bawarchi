@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+﻿/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -80,7 +80,7 @@ export default function RestaurantSettingsPage() {
         return (
             <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin mb-4"></div>
                     <p className="text-gray-600 dark:text-gray-400">Loading settings...</p>
                 </div>
             </div>
@@ -98,8 +98,8 @@ export default function RestaurantSettingsPage() {
             {/* Payment Settings Card */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 max-w-2xl">
                 <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-[#86A6DE]/20 rounded-xl flex items-center justify-center mr-4">
+                        <svg className="w-5 h-5 text-[#324F7B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                     </div>
@@ -131,7 +131,7 @@ export default function RestaurantSettingsPage() {
                         </label>
                         <input
                             type="text"
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors"
                             value={formData.razorpayKeyId}
                             onChange={(e) =>
                                 setFormData({ ...formData, razorpayKeyId: e.target.value })
@@ -146,7 +146,7 @@ export default function RestaurantSettingsPage() {
                         </label>
                         <input
                             type="password"
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors"
                             value={formData.razorpayKeySecret}
                             onChange={(e) =>
                                 setFormData({ ...formData, razorpayKeySecret: e.target.value })
@@ -160,7 +160,7 @@ export default function RestaurantSettingsPage() {
                             GST Percentage
                         </label>
                         <select
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors bg-white"
                             value={formData.gstPercentage}
                             onChange={(e) =>
                                 setFormData({ ...formData, gstPercentage: parseInt(e.target.value) })
@@ -177,7 +177,7 @@ export default function RestaurantSettingsPage() {
                     <div className="pt-4">
                         <Button
                             type="submit"
-                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
+                            className="bg-[#324F7B] hover:bg-[#283f63] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50"
                             disabled={saving}
                         >
                             {saving ? (

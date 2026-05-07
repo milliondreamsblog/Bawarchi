@@ -94,6 +94,14 @@ export default function Header() {
             {/* Divider */}
             <div className="w-px h-6 bg-green-900/30 mx-3"></div>
 
+            {/* Login Link */}
+            <Link
+              href="/auth/login"
+              className="px-4 py-2 text-gray-300 hover:text-green-400 rounded-lg transition-colors duration-200 font-medium text-sm hover:bg-white/5"
+            >
+              Login
+            </Link>
+
             {/* Demo Button */}
             <button
               onClick={handleDemoClick}
@@ -106,6 +114,14 @@ export default function Header() {
 
           {/* Mobile & Tablet Header */}
           <div className="flex items-center space-x-3 lg:hidden">
+            {/* Login Link */}
+            <Link
+              href="/auth/login"
+              className="px-3 py-2.5 text-gray-300 hover:text-green-400 rounded-lg transition-colors duration-200 font-medium text-sm hover:bg-white/5"
+            >
+              Login
+            </Link>
+
             {/* Demo Button */}
             <button
               onClick={handleDemoClick}
@@ -197,6 +213,13 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   FAQ
+                </Link>
+                <Link
+                  href="/auth/login"
+                  className="block px-5 py-3.5 text-gray-300 hover:text-green-400 hover:bg-green-950/30 rounded-lg transition-all duration-200 font-medium text-lg"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
                 </Link>
               </div>
 

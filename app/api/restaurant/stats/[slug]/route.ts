@@ -30,7 +30,7 @@ export async function GET(
     endOfDay.setHours(23, 59, 59, 999);
 
     // Run queries in parallel
-    const [ordersToday, totalItems, totalTables, tablesOccupied, lowStockItems] = await Promise.all([
+    const [ordersToday, totalItems, totalTables, tablesOccupied, lowStockItems, pendingOrders, revenueAgg] = await Promise.all([
       Order.countDocuments({
         restaurantId,
         createdAt: { $gte: startOfDay, $lte: endOfDay }
@@ -42,7 +42,25 @@ export async function GET(
         restaurantId,
         stock: { $gt: 0, $lte: 5 },
       }),
+      Order.countDocuments({ restaurantId, status: "pending" }),
+      Order.aggregate([
+        {
+          $match: {
+            restaurantId,
+            createdAt: { $gte: startOfDay, $lte: endOfDay },
+            status: { $nin: ["cancelled", "refunded"] },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            revenue: { $sum: { $ifNull: ["$finalAmount", "$total"] } },
+          },
+        },
+      ]),
     ]);
+
+    const revenueToday = revenueAgg[0]?.revenue ?? 0;
 
     return NextResponse.json({
       success: true,
@@ -52,6 +70,8 @@ export async function GET(
         totalTables,
         tablesOccupied,
         lowStockItems,
+        pendingOrders,
+        revenueToday,
       }
     });
   } catch (error: any) {

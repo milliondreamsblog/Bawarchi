@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+﻿/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -69,21 +69,21 @@ export default function InventoryPage() {
     if (item.stock === -1) return "text-gray-500 dark:text-gray-400";
     if (item.stock === 0) return "text-red-600";
     if (item.stock <= item.lowStockThreshold) return "text-yellow-600";
-    return "text-green-600";
+    return "text-[#324F7B]";
   };
 
   const getStockBg = (item: InventoryItem) => {
     if (item.stock === -1) return "bg-gray-100 dark:bg-gray-700";
     if (item.stock === 0) return "bg-red-50 dark:bg-red-900/30";
     if (item.stock <= item.lowStockThreshold) return "bg-yellow-50 dark:bg-yellow-900/30";
-    return "bg-green-50 dark:bg-green-900/30";
+    return "bg-[#86A6DE]/10 dark:bg-[#324F7B]/30";
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="w-12 h-12 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading inventory...</p>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function InventoryPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{item.category}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-green-600">{"\u20B9"}{item.price}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-[#324F7B]">{"\u20B9"}{item.price}</td>
                   <td className="px-6 py-4 text-center">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${getStockBg(item)} ${getStockColor(item)}`}>
                       {item.stock === -1 ? "\u221E Unlimited" : item.stock}
@@ -174,7 +174,7 @@ export default function InventoryPage() {
                     ) : item.stock > 0 && item.stock <= item.lowStockThreshold ? (
                       <span className="text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full">Low Stock</span>
                     ) : (
-                      <span className="text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 px-2 py-1 rounded-full">In Stock</span>
+                      <span className="text-xs font-medium bg-[#86A6DE]/20 dark:bg-[#324F7B]/50 text-[#324F7B] dark:text-[#86A6DE] px-2 py-1 rounded-full">In Stock</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -189,14 +189,14 @@ export default function InventoryPage() {
                             updateStock(item._id, val);
                           }
                         }}
-                        className="w-20 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        className="w-20 px-2 py-1 text-center border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA]"
                         disabled={updatingId === item._id}
                       />
                       <div className="flex gap-1">
                         <button
                           onClick={() => updateStock(item._id, item.stock + 10)}
                           disabled={updatingId === item._id}
-                          className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded font-medium disabled:opacity-50"
+                          className="px-2 py-1 text-xs bg-[#324F7B] hover:bg-[#283f63] text-white rounded font-medium disabled:opacity-50"
                         >
                           +10
                         </button>

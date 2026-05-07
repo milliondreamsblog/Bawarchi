@@ -1,255 +1,309 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { redirect, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
+import {
+    UtensilsCrossed,
+    Boxes,
+    BookOpen,
+    Grid3x3,
+    Receipt,
+    ChefHat,
+    Star,
+    BarChart3,
+    Settings,
+    ArrowRight,
+    AlertTriangle,
+} from "lucide-react";
+
+interface Stats {
+    ordersToday: number;
+    totalItems: number;
+    totalTables: number;
+    tablesOccupied: number;
+    lowStockItems: number;
+    pendingOrders: number;
+    revenueToday: number;
+}
+
+interface PendingOrder {
+    _id: string;
+    tableSlug: string;
+    items: { itemId?: { name: string }; qty: number }[];
+    total: number;
+    finalAmount?: number;
+    createdAt: string;
+}
 
 export default function RestaurantDashboardPage() {
     const { data: session, status } = useSession();
     const params = useParams();
     const slug = params.slug as string;
     const [restaurant, setRestaurant] = useState<any>(null);
-    const [stats, setStats] = useState({
+    const [stats, setStats] = useState<Stats>({
         ordersToday: 0,
         totalItems: 0,
-        totalTables: 0
+        totalTables: 0,
+        tablesOccupied: 0,
+        lowStockItems: 0,
+        pendingOrders: 0,
+        revenueToday: 0,
     });
+    const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (status === "authenticated") {
-            fetchRestaurant();
-            fetchStats();
+            loadAll();
+            const id = setInterval(loadAll, 15000);
+            return () => clearInterval(id);
         }
     }, [status, slug]);
 
-    const fetchRestaurant = async () => {
+    const loadAll = async () => {
         try {
-            const res = await fetch(`/api/restaurant/by-slug/${slug}`);
-            const data = await res.json();
-            if (data.success) {
-                setRestaurant(data.restaurant);
+            const restRes = await fetch(`/api/restaurant/by-slug/${slug}`);
+            const restData = await restRes.json();
+            if (restData.success) {
+                setRestaurant(restData.restaurant);
+
+                const [statsRes, ordersRes] = await Promise.all([
+                    fetch(`/api/restaurant/stats/${slug}`).then((r) => r.json()),
+                    fetch(`/api/orders?restaurantId=${restData.restaurant._id}`).then((r) => r.json()),
+                ]);
+
+                if (statsRes.success) setStats(statsRes.stats);
+                if (ordersRes.success) {
+                    const pending = (ordersRes.orders || [])
+                        .filter((o: any) => o.status === "pending")
+                        .slice(0, 4);
+                    setPendingOrders(pending);
+                }
             }
-        } catch (error) {
-            console.error("Failed to fetch restaurant:", error);
+        } catch (err) {
+            console.error("Failed to load dashboard:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchStats = async () => {
-        try {
-            const res = await fetch(`/api/restaurant/stats/${slug}`);
-            const data = await res.json();
-            if (data.success) {
-                setStats(data.stats);
-            }
-        } catch (error) {
-            console.error("Failed to fetch stats:", error);
-        }
-    };
-
     if (status === "loading" || loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white dark:from-gray-900 dark:to-gray-800">
-                <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
-                </div>
+            <div className="flex items-center justify-center py-20">
+                <div className="w-10 h-10 border-2 border-[#86A6DE]/30 border-t-[#324F7B] rounded-full animate-spin" />
             </div>
         );
     }
 
-    if (!session || !restaurant) {
-        return null;
-    }
+    if (!session || !restaurant) return null;
+
+    const avgTicket = stats.ordersToday > 0 ? Math.round(stats.revenueToday / stats.ordersToday) : 0;
+    const occupancyPct = stats.totalTables > 0 ? Math.round((stats.tablesOccupied / stats.totalTables) * 100) : 0;
+
+    const elapsed = (createdAt: string) => {
+        const s = Math.floor((Date.now() - new Date(createdAt).getTime()) / 1000);
+        if (s < 60) return `${s}s`;
+        const m = Math.floor(s / 60);
+        return `${m}m`;
+    };
 
     const quickActions = [
-        {
-            href: `/admin/${slug}/items`,
-            title: "Manage Items",
-            description: "Add, edit, or remove menu items",
-            icon: (
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/menu`,
-            title: "Build Menu",
-            description: "Organize items into menu sections",
-            icon: (
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/tables`,
-            title: "Manage Tables",
-            description: "Create tables and generate QR codes",
-            icon: (
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/orders`,
-            title: "View Orders",
-            description: "Track incoming orders in real-time",
-            icon: (
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/feedback`,
-            title: "Customer Feedback",
-            description: "AI-analysed reviews and ratings",
-            icon: (
-                <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/kitchen`,
-            title: "Kitchen Display",
-            description: "Live order queue for kitchen staff",
-            icon: (
-                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/analytics`,
-            title: "Analytics",
-            description: "Revenue, top items & peak hours",
-            icon: (
-                <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                </div>
-            )
-        },
-        {
-            href: `/admin/${slug}/settings`,
-            title: "Settings",
-            description: "Configure payments and details",
-            icon: (
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </div>
-            )
-        },
+        { href: `/admin/${slug}/items`, label: "Items", icon: UtensilsCrossed },
+        { href: `/admin/${slug}/menu`, label: "Menu", icon: BookOpen },
+        { href: `/admin/${slug}/tables`, label: "Tables", icon: Grid3x3 },
+        { href: `/admin/${slug}/inventory`, label: "Inventory", icon: Boxes },
+        { href: `/admin/${slug}/feedback`, label: "Feedback", icon: Star },
+        { href: `/admin/${slug}/analytics`, label: "Analytics", icon: BarChart3 },
+        { href: `/admin/${slug}/settings`, label: "Settings", icon: Settings },
     ];
 
     return (
-        <div>
-            {/* Welcome Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Welcome back, {restaurant.owner}!
-                </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400">
-                    Manage your restaurant <strong className="text-green-600">{restaurant.name}</strong> from this dashboard.
-                </p>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.ordersToday}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Today&apos;s Orders</p>
-                        </div>
-                    </div>
+        <div className="max-w-6xl mx-auto space-y-5">
+            {/* Greeting + alert chips */}
+            <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p className="text-[10px] tracking-[0.3em] text-[#5067AA] uppercase mb-1">Today</p>
+                    <h1 className="text-2xl font-serif italic text-stone-900">
+                        Hi {restaurant.owner?.split(" ")[0] || "there"}
+                    </h1>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalItems}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Menu Items</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalTables}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Active Tables</p>
-                        </div>
-                    </div>
+                <div className="flex flex-wrap gap-2">
+                    {stats.pendingOrders > 0 && (
+                        <Link
+                            href={`/admin/${slug}/orders`}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-full text-xs font-medium"
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            {stats.pendingOrders} pending
+                        </Link>
+                    )}
+                    {stats.lowStockItems > 0 && (
+                        <Link
+                            href={`/admin/${slug}/inventory`}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-medium"
+                        >
+                            <AlertTriangle className="w-3 h-3" />
+                            {stats.lowStockItems} low stock
+                        </Link>
+                    )}
                 </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {quickActions.map((action, index) => (
-                    <Link
-                        key={index}
-                        href={action.href}
-                        className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-200 dark:hover:border-green-700 group"
-                    >
-                        <div className="flex items-center gap-4">
-                            {action.icon}
-                            <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-green-600 transition-colors">
-                                    {action.title}
-                                </h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {action.description}
-                                </p>
-                            </div>
-                            <div className="text-gray-400 dark:text-gray-500 group-hover:text-green-600 transition-colors">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
-                        </div>
-                    </Link>
-                ))}
+            {/* Top stats row — dense */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <StatCard
+                    label="Revenue today"
+                    value={`₹${stats.revenueToday.toLocaleString("en-IN")}`}
+                    sub={avgTicket > 0 ? `avg ₹${avgTicket}` : "—"}
+                    accent
+                />
+                <StatCard
+                    label="Orders today"
+                    value={stats.ordersToday.toString()}
+                    sub={stats.pendingOrders > 0 ? `${stats.pendingOrders} pending` : "all clear"}
+                />
+                <StatCard
+                    label="Tables in use"
+                    value={`${stats.tablesOccupied}/${stats.totalTables}`}
+                    sub={`${occupancyPct}% occupied`}
+                />
+                <StatCard
+                    label="Menu items"
+                    value={stats.totalItems.toString()}
+                    sub={stats.lowStockItems > 0 ? `${stats.lowStockItems} low stock` : "all stocked"}
+                />
             </div>
+
+            {/* Pending orders preview + Quick actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Pending orders */}
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-stone-200 overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100">
+                        <h2 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+                            <Receipt className="w-4 h-4 text-[#324F7B]" />
+                            Pending orders
+                        </h2>
+                        <Link
+                            href={`/admin/${slug}/orders`}
+                            className="text-xs font-medium text-[#5067AA] hover:text-[#324F7B] inline-flex items-center gap-1"
+                        >
+                            View all <ArrowRight className="w-3 h-3" />
+                        </Link>
+                    </div>
+
+                    {pendingOrders.length === 0 ? (
+                        <div className="px-5 py-10 text-center">
+                            <p className="text-sm text-stone-500">No pending orders right now</p>
+                            <p className="text-xs text-stone-400 mt-1">You're all caught up.</p>
+                        </div>
+                    ) : (
+                        <ul className="divide-y divide-stone-100">
+                            {pendingOrders.map((o) => (
+                                <li key={o._id}>
+                                    <Link
+                                        href={`/admin/${slug}/orders`}
+                                        className="flex items-center gap-4 px-5 py-3 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <div className="w-10 h-10 rounded-lg bg-[#324F7B]/10 text-[#324F7B] flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                            {o.tableSlug.replace(/^t/, "").slice(0, 2)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-stone-900 truncate">
+                                                {o.items
+                                                    .map((i) => `${i.itemId?.name || "—"} ×${i.qty}`)
+                                                    .join(", ")}
+                                            </p>
+                                            <p className="text-xs text-stone-500 mt-0.5">
+                                                Table {o.tableSlug} · {elapsed(o.createdAt)} ago
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-semibold text-[#324F7B] tabular-nums">
+                                                ₹{o.finalAmount ?? o.total}
+                                            </p>
+                                        </div>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                {/* Quick actions */}
+                <div className="bg-white rounded-2xl border border-stone-200 p-4">
+                    <h2 className="text-sm font-semibold text-stone-900 mb-3">Quick actions</h2>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Link
+                            href={`/admin/${slug}/orders`}
+                            className="col-span-2 flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#324F7B] text-white hover:bg-[#283f63] transition-colors"
+                        >
+                            <Receipt className="w-4 h-4" />
+                            <span className="text-sm font-medium">Open orders</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+                        </Link>
+                        <Link
+                            href={`/admin/${slug}/kitchen`}
+                            className="col-span-2 flex items-center gap-3 px-3 py-2.5 rounded-xl border border-[#86A6DE]/40 bg-[#86A6DE]/10 text-[#324F7B] hover:bg-[#86A6DE]/20 transition-colors"
+                        >
+                            <ChefHat className="w-4 h-4" />
+                            <span className="text-sm font-medium">Kitchen display</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+                        </Link>
+                        {quickActions.map(({ href, label, icon: Icon }) => (
+                            <Link
+                                key={href}
+                                href={href}
+                                className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border border-stone-200 hover:border-[#86A6DE] hover:bg-stone-50 transition-colors"
+                            >
+                                <Icon className="w-4 h-4 text-stone-600" />
+                                <span className="text-xs font-medium text-stone-700">{label}</span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function StatCard({
+    label,
+    value,
+    sub,
+    accent,
+}: {
+    label: string;
+    value: string;
+    sub: string;
+    accent?: boolean;
+}) {
+    return (
+        <div
+            className={`rounded-2xl border p-4 ${
+                accent ? "bg-[#324F7B] border-[#324F7B] text-white" : "bg-white border-stone-200"
+            }`}
+        >
+            <p
+                className={`text-[10px] tracking-[0.2em] uppercase ${
+                    accent ? "text-[#86A6DE]" : "text-stone-400"
+                }`}
+            >
+                {label}
+            </p>
+            <p
+                className={`text-2xl font-semibold mt-1 tabular-nums ${
+                    accent ? "text-white" : "text-stone-900"
+                }`}
+            >
+                {value}
+            </p>
+            <p className={`text-xs mt-0.5 ${accent ? "text-[#86A6DE]" : "text-stone-500"}`}>
+                {sub}
+            </p>
         </div>
     );
 }

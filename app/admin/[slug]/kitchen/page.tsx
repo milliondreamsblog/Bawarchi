@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 
-/* ─── Types ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface OrderItem {
   itemId: { _id: string; name: string; price: number; category: string } | null;
   qty: number;
@@ -19,7 +19,7 @@ interface Order {
   createdAt: string;
 }
 
-/* ─── Urgency helpers ─────────────────────────────────────── */
+/* â”€â”€â”€ Urgency helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function getElapsedSeconds(createdAt: string) {
   return Math.floor((Date.now() - new Date(createdAt).getTime()) / 1000);
 }
@@ -35,15 +35,15 @@ type Urgency = "fresh" | "warn" | "critical";
 
 function getUrgency(seconds: number): Urgency {
   if (seconds < 300) return "fresh";   // < 5 min
-  if (seconds < 600) return "warn";    // 5–10 min
+  if (seconds < 600) return "warn";    // 5â€“10 min
   return "critical";                    // > 10 min
 }
 
 const urgencyStyles: Record<Urgency, { border: string; timer: string; badge: string; pulse: boolean }> = {
   fresh: {
     border: "border-l-green-500",
-    timer: "text-green-600 bg-green-50",
-    badge: "bg-green-100 text-green-700",
+    timer: "text-[#324F7B] bg-[#86A6DE]/10",
+    badge: "bg-[#86A6DE]/20 text-[#324F7B]",
     pulse: false,
   },
   warn: {
@@ -60,7 +60,7 @@ const urgencyStyles: Record<Urgency, { border: string; timer: string; badge: str
   },
 };
 
-/* ─── Web Audio notification ─────────────────────────────── */
+/* â”€â”€â”€ Web Audio notification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function playNewOrderSound() {
   try {
     const ctx = new AudioContext();
@@ -76,11 +76,11 @@ function playNewOrderSound() {
       osc.stop(ctx.currentTime + delay + 0.3);
     });
   } catch {
-    // AudioContext blocked before user gesture — silent fail
+    // AudioContext blocked before user gesture â€” silent fail
   }
 }
 
-/* ─── Order Card ──────────────────────────────────────────── */
+/* â”€â”€â”€ Order Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function OrderCard({
   order,
   elapsed,
@@ -113,7 +113,7 @@ function OrderCard({
           </p>
         </div>
         <div className={`text-xs font-bold px-2.5 py-1.5 rounded-lg tabular-nums ${styles.timer}`}>
-          ⏱ {formatElapsed(elapsed)}
+          â± {formatElapsed(elapsed)}
         </div>
       </div>
 
@@ -127,11 +127,11 @@ function OrderCard({
                   {item.itemId.name}
                 </span>
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${styles.badge}`}>
-                  ×{item.qty}
+                  Ã—{item.qty}
                 </span>
               </>
             ) : (
-              <span className="text-sm text-red-400 italic">Item removed ×{item.qty}</span>
+              <span className="text-sm text-red-400 italic">Item removed Ã—{item.qty}</span>
             )}
           </div>
         ))}
@@ -139,12 +139,12 @@ function OrderCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-lg font-bold text-green-600">₹{amount}</p>
+        <p className="text-lg font-bold text-[#324F7B]">â‚¹{amount}</p>
         {order.status === "pending" ? (
           <button
             onClick={() => onAction(order._id, "preparing")}
             disabled={updating}
-            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+            className="bg-[#324F7B] hover:bg-[#283f63] disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
           >
             {updating ? "..." : "Accept Order"}
           </button>
@@ -154,7 +154,7 @@ function OrderCard({
             disabled={updating}
             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
           >
-            {updating ? "..." : "Mark Ready ✓"}
+            {updating ? "..." : "Mark Ready âœ“"}
           </button>
         )}
       </div>
@@ -162,7 +162,7 @@ function OrderCard({
   );
 }
 
-/* ─── Column ──────────────────────────────────────────────── */
+/* â”€â”€â”€ Column â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function Column({
   title,
   count,
@@ -199,7 +199,7 @@ function Column({
   );
 }
 
-/* ─── Main Page ───────────────────────────────────────────── */
+/* â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function KitchenDisplayPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -308,14 +308,14 @@ export default function KitchenDisplayPage() {
   if (!restaurantId) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -323,20 +323,20 @@ export default function KitchenDisplayPage() {
             <span
               className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
                 connected
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-[#86A6DE]/20 text-[#324F7B]"
                   : "bg-red-100 text-red-700"
               }`}
             >
               <span
                 className={`w-2 h-2 rounded-full ${
-                  connected ? "bg-green-500 animate-pulse" : "bg-red-500"
+                  connected ? "bg-[#86A6DE]/100 animate-pulse" : "bg-red-500"
                 }`}
               />
               {connected ? "Live" : "Reconnecting..."}
             </span>
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Real-time order queue • updates every 3 seconds
+            Real-time order queue â€¢ updates every 3 seconds
           </p>
         </div>
 
@@ -347,7 +347,7 @@ export default function KitchenDisplayPage() {
             title={soundOn ? "Mute notifications" : "Enable notifications"}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${
               soundOn
-                ? "border-green-200 bg-green-50 text-green-700"
+                ? "border-[#86A6DE]/40 bg-[#86A6DE]/10 text-[#324F7B]"
                 : "border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
             }`}
           >
@@ -383,20 +383,20 @@ export default function KitchenDisplayPage() {
         </div>
       </div>
 
-      {/* ── Urgency Legend ── */}
+      {/* â”€â”€ Urgency Legend â”€â”€ */}
       <div className="flex flex-wrap gap-3 text-xs font-medium">
-        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg border border-green-200">
-          <span className="w-2 h-2 rounded-full bg-green-500" /> Fresh (&lt;5 min)
+        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-[#86A6DE]/10 text-[#324F7B] rounded-lg border border-[#86A6DE]/40">
+          <span className="w-2 h-2 rounded-full bg-[#86A6DE]/100" /> Fresh (&lt;5 min)
         </span>
         <span className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200">
-          <span className="w-2 h-2 rounded-full bg-yellow-500" /> Waiting (5–10 min)
+          <span className="w-2 h-2 rounded-full bg-yellow-500" /> Waiting (5â€“10 min)
         </span>
         <span className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg border border-red-200">
           <span className="w-2 h-2 rounded-full bg-red-500" /> Urgent (&gt;10 min)
         </span>
       </div>
 
-      {/* ── Two-column Kanban ── */}
+      {/* â”€â”€ Two-column Kanban â”€â”€ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Column
           title="New Orders"
@@ -445,11 +445,11 @@ export default function KitchenDisplayPage() {
         </Column>
       </div>
 
-      {/* ── All clear state ── */}
+      {/* â”€â”€ All clear state â”€â”€ */}
       {orders.length === 0 && connected && (
         <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-          <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-20 h-20 bg-[#86A6DE]/10 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-10 h-10 text-[#86A6DE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>

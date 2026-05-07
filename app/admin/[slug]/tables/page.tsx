@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -138,7 +138,7 @@ export default function RestaurantTablesPage() {
         return (
             <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin mb-4"></div>
                     <p className="text-gray-600 dark:text-gray-400">Loading tables...</p>
                 </div>
             </div>
@@ -155,7 +155,7 @@ export default function RestaurantTablesPage() {
                 </div>
                 <Button
                     onClick={() => setShowForm(!showForm)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="bg-[#324F7B] hover:bg-[#283f63] text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                     {showForm ? (
                         <div className="flex items-center">
@@ -179,8 +179,8 @@ export default function RestaurantTablesPage() {
             {showForm && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
                     <div className="flex items-center mb-6">
-                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-10 h-10 bg-[#86A6DE]/20 rounded-xl flex items-center justify-center mr-4">
+                            <svg className="w-5 h-5 text-[#324F7B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
@@ -195,7 +195,7 @@ export default function RestaurantTablesPage() {
                                 </label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors"
                                     value={formData.tableNumber}
                                     onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
                                     onBlur={autoGenerateSlug}
@@ -210,7 +210,7 @@ export default function RestaurantTablesPage() {
                                 </label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-[#86A6DE] focus:border-[#5067AA] transition-colors"
                                     value={formData.slug}
                                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                                     placeholder="Auto-generated slug"
@@ -224,10 +224,10 @@ export default function RestaurantTablesPage() {
 
                         {/* Preview */}
                         {formData.slug && (
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                <p className="text-sm text-green-800">
+                            <div className="bg-[#86A6DE]/10 border border-[#86A6DE]/40 rounded-xl p-4">
+                                <p className="text-sm text-[#324F7B]">
                                     <strong>Table URL Preview:</strong><br />
-                                    <code className="text-xs bg-green-100 px-2 py-1 rounded">
+                                    <code className="text-xs bg-[#86A6DE]/20 px-2 py-1 rounded">
                                         {process.env.NEXT_PUBLIC_BASE_URL}/r/{slug}/t/{formData.slug}
                                     </code>
                                 </p>
@@ -237,7 +237,7 @@ export default function RestaurantTablesPage() {
                         <div className="flex gap-4 pt-4">
                             <Button
                                 type="submit"
-                                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                                className="bg-[#324F7B] hover:bg-[#283f63] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                             >
                                 <div className="flex items-center">
                                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,7 +271,7 @@ export default function RestaurantTablesPage() {
                                     {table.slug}
                                 </p>
                             </div>
-                            <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                            <div className="bg-[#86A6DE]/20 text-[#324F7B] px-2 py-1 rounded-full text-xs font-medium">
                                 Active
                             </div>
                         </div>
@@ -301,7 +301,7 @@ export default function RestaurantTablesPage() {
                                     href={`/r/${slug}/t/${table.slug}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-green-600 hover:text-green-700 hover:underline break-all"
+                                    className="text-[#324F7B] hover:text-[#324F7B] hover:underline break-all"
                                 >
                                     /r/{slug}/t/{table.slug}
                                 </a>
@@ -312,7 +312,7 @@ export default function RestaurantTablesPage() {
                                 <a
                                     href={qrCodes[table._id]}
                                     download={`table-${table.tableNumber}-qr.png`}
-                                    className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                                    className="block w-full bg-[#324F7B] hover:bg-[#283f63] text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                                 >
                                     <div className="flex items-center justify-center">
                                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,7 +360,7 @@ export default function RestaurantTablesPage() {
                     <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first table to generate QR codes for customer ordering</p>
                     <Button
                         onClick={() => setShowForm(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                        className="bg-[#324F7B] hover:bg-[#283f63] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
                         <div className="flex items-center">
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

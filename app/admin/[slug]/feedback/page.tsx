@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-/* ─── Types ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface Review {
   _id: string;
   tableSlug: string;
@@ -26,7 +26,7 @@ interface Summary {
   positivePercent: number;
 }
 
-/* ─── Helpers ─────────────────────────────────────────────── */
+/* â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function Stars({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) {
   const sz = size === "lg" ? "w-8 h-8" : "w-4 h-4";
   return (
@@ -46,12 +46,12 @@ function Stars({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) 
 }
 
 const sentimentStyle: Record<string, string> = {
-  positive: "bg-green-100 text-green-700 border border-green-200",
+  positive: "bg-[#86A6DE]/20 text-[#324F7B] border border-[#86A6DE]/40",
   neutral:  "bg-yellow-100 text-yellow-700 border border-yellow-200",
   negative: "bg-red-100 text-red-700 border border-red-200",
 };
 
-/* ─── Main Page ───────────────────────────────────────────── */
+/* â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function FeedbackPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -87,7 +87,7 @@ export default function FeedbackPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-[#324F7B] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -102,7 +102,7 @@ export default function FeedbackPage() {
 
       {summary && summary.total > 0 ? (
         <>
-          {/* ── Summary Cards ── */}
+          {/* â”€â”€ Summary Cards â”€â”€ */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Avg Rating */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center text-center">
@@ -145,7 +145,7 @@ export default function FeedbackPage() {
               <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">AI Sentiment</p>
               <div className="space-y-3">
                 {[
-                  { key: "positive", label: "Positive", color: "bg-green-500", dot: "bg-green-500" },
+                  { key: "positive", label: "Positive", color: "bg-[#86A6DE]/100", dot: "bg-[#86A6DE]/100" },
                   { key: "neutral",  label: "Neutral",  color: "bg-yellow-400", dot: "bg-yellow-400" },
                   { key: "negative", label: "Negative", color: "bg-red-500",   dot: "bg-red-500" },
                 ].map(({ key, label, color, dot }) => {
@@ -173,7 +173,7 @@ export default function FeedbackPage() {
             </div>
           </div>
 
-          {/* ── Filter Tabs ── */}
+          {/* â”€â”€ Filter Tabs â”€â”€ */}
           <div className="flex gap-2 flex-wrap">
             {[
               { key: "all",      label: `All (${reviews.length})` },
@@ -186,7 +186,7 @@ export default function FeedbackPage() {
                 onClick={() => setFilter(key as typeof filter)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   filter === key
-                    ? "bg-green-600 text-white"
+                    ? "bg-[#324F7B] text-white"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
@@ -195,7 +195,7 @@ export default function FeedbackPage() {
             ))}
           </div>
 
-          {/* ── Reviews List ── */}
+          {/* â”€â”€ Reviews List â”€â”€ */}
           <div className="space-y-4">
             {filtered.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-10 text-center text-gray-400 border border-gray-100 dark:border-gray-700">
