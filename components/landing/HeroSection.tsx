@@ -12,7 +12,7 @@ export default function HeroSection() {
 
   return (
     <section className="relative pt-28 min-h-screen flex items-center overflow-hidden bg-[#0A0F0D] text-white">
-      
+
       {/* Premium Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-green-500/10 rounded-full blur-[120px] animate-pulse-slow"></div>
@@ -45,17 +45,29 @@ export default function HeroSection() {
       `}</style>
 
       <div className="relative z-10 container max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        
+
         {/* Left Content */}
         <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 backdrop-blur-md">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            <span className="text-xs font-bold text-green-400 tracking-wider uppercase">50+ Restaurant Alreday Using it</span>
+
+          {/* Badges */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {/* Restaurant Count Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-bold text-green-400 tracking-wider uppercase">50+ Restaurant Alreday Using it</span>
+            </div>
+
+            {/* Orynth Badge */}
+            <a href="https://orynth.dev/projects/bawarchie" target="_blank" rel="noopener" className="inline-flex">
+              <img
+                src="https://orynth.dev/api/badge/bawarchie?theme=dark&style=minimal"
+                alt="Featured on Orynth"
+                className="h-8 w-auto"
+              />
+            </a>
           </div>
 
           {/* Headline */}
@@ -65,11 +77,11 @@ export default function HeroSection() {
               Slow Service
             </span>
           </h1>
-          
+
           {/* Subheadline */}
           <p className="text-xl text-gray-400 leading-relaxed max-w-xl">
-            Customers order in <span className="text-white font-semibold">30 seconds</span>. 
-            Payments verified instantly. Zero order mistakes. 
+            Customers order in <span className="text-white font-semibold">30 seconds</span>.
+            Payments verified instantly. Zero order mistakes.
             <span className="text-green-400 font-semibold"> All from their phone.</span>
           </p>
 
@@ -80,7 +92,7 @@ export default function HeroSection() {
               <h3 className="text-2xl font-bold text-white mb-1">3x Faster</h3>
               <p className="text-sm text-gray-500">Table Turnover</p>
             </div>
-            
+
             <div className="group p-5 bg-gradient-to-br from-green-500/5 to-transparent border border-green-500/20 rounded-2xl hover:border-green-500/40 transition-all backdrop-blur-sm">
               <CheckCircle className="w-8 h-8 text-green-400 mb-3" />
               <h3 className="text-2xl font-bold text-white mb-1">100%</h3>
@@ -90,18 +102,18 @@ export default function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Link 
+            <Link
               href="https://cal.com/bawarchie"
               className="group relative inline-flex items-center justify-center px-8 py-4 bg-green-600 text-white font-semibold rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-green-900/40"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <span className="relative flex items-center gap-2">
-                Book Free Demo 
+                Book Free Demo
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
-            
-            <Link 
+
+            <Link
               href="#pricing"
               className="inline-flex items-center justify-center px-8 py-4 text-gray-300 hover:text-white hover:bg-white/5 rounded-2xl border border-white/10 transition-all font-medium"
             >
@@ -128,15 +140,15 @@ export default function HeroSection() {
 
         {/* Right Content - Phone Scene */}
         <div className={`relative md:-right-10 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-          
+
           <div className="relative w-full max-w-[550px] mx-auto h-[600px]">
-            
+
             {/* Main Phone Mockup */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[560px] bg-[#0F1612] rounded-[3rem] border-8 border-gray-900 shadow-2xl overflow-hidden z-20">
-              
+
               {/* Phone Screen */}
               <div className="w-full h-full bg-gradient-to-b from-[#0A0F0D] to-[#0F1612] p-6 overflow-hidden">
-                
+
                 {/* Header */}
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30 mb-2">
@@ -151,12 +163,12 @@ export default function HeroSection() {
                   {/* Item 1 */}
                   <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
                     <div className="w-14 h-14 rounded-lg flex-shrink-0">
-                    <Image
+                      <Image
                         src="/paneer-tikka.png"
                         height={200}
-                        width={200} 
-                        alt={"Paneer Tikka"}/>
-                        </div>
+                        width={200}
+                        alt={"Paneer Tikka"} />
+                    </div>
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-white">Paneer Tikka</h4>
                       <p className="text-xs text-gray-500">Spicy & Delicious</p>
@@ -169,12 +181,12 @@ export default function HeroSection() {
                   {/* Item 2 - Selected */}
                   <div className="flex items-center gap-3 p-3 bg-green-500/10 rounded-xl border-2 border-green-500/40 shadow-lg shadow-green-900/20">
                     <div className="w-14 h-14 rounded-lg flex-shrink-0">
-                    <Image
+                      <Image
                         src="/dal-makhani.png"
                         height={200}
-                        width={200} 
-                        alt={"Dal Makhani"}/>
-                        </div>
+                        width={200}
+                        alt={"Dal Makhani"} />
+                    </div>
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-white">Dal Makhani</h4>
                       <p className="text-xs text-green-400 font-medium">✓ Added to cart</p>
@@ -185,11 +197,11 @@ export default function HeroSection() {
                   {/* Item 3 */}
                   <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
                     <div className="w-14 h-14 rounded-lg flex-shrink-0">
-                    <Image
+                      <Image
                         src="/naan.png"
                         height={200}
-                        width={200} 
-                        alt={"naan"}/></div>
+                        width={200}
+                        alt={"naan"} /></div>
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-white">Garlic Naan</h4>
                       <p className="text-xs text-gray-500">Fresh & Hot</p>
