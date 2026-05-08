@@ -10,8 +10,18 @@ RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxx
 # Razorpay Public Key (exposed to frontend)
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
 
-# OpenAI Configuration
+# LLM Configuration
+# Provider auto-selects: prefers Gemini if GEMINI_API_KEY is set, else OpenAI.
+# Override with LLM_PROVIDER=gemini|openai. Override the model with LLM_MODEL.
+
+# Gemini (recommended — cheaper + free tier; get a key at https://aistudio.google.com/apikey)
+GEMINI_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# LLM_MODEL=gemini-2.0-flash
+
+# OpenAI (kept as fallback / alternate)
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# LLM_PROVIDER=openai
+# LLM_MODEL=gpt-4o-mini
 
 # Cloudinary Configuration (for image uploads)
 CLOUDINARY_CLOUD_NAME=your-cloud-name

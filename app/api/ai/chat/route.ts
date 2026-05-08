@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import connectDB from "@/lib/db.js";
 import Item from "@/lib/models/Item.js";
 import Menu from "@/lib/models/Menu.js";
+import { chat, isLLMConfigured } from "@/lib/llm";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -47,9 +47,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.OPENAI_API_KEY) {
+    if (!isLLMConfigured()) {
       return NextResponse.json(
-        { success: false, error: "OpenAI API key not configured" },
+        { success: false, error: "LLM provider not configured" },
         { status: 500 }
       );
     }
@@ -151,10 +151,7 @@ Always respond with valid JSON in this exact format:
 Leave cartActions as [] if the customer is just asking a question (not ordering).
 Leave suggestedItemIds as [] if you are not recommending specific items.`;
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const completion = await chat({
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import connectDB from "@/lib/db.js";
 import Item from "@/lib/models/Item.js";
+import { chat, isLLMConfigured } from "@/lib/llm";
 
 interface IItem {
   _id: string;
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.OPENAI_API_KEY) {
+    if (!isLLMConfigured()) {
       return NextResponse.json(
-        { success: false, error: "OpenAI API key not configured" },
+        { success: false, error: "LLM provider not configured" },
         { status: 500 }
       );
     }
@@ -46,10 +46,6 @@ export async function POST(request: Request) {
         message: "No items available at the moment.",
       });
     }
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
 
     const itemsContext = items.map((item) => ({
       id: item._id.toString(),
@@ -72,8 +68,7 @@ Based on the user's query, recommend suitable items from this menu. Consider:
 
 Provide your recommendations as a JSON array of item IDs and explain your reasoning.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const completion = await chat({
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userQuery },

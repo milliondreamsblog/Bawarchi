@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import connectDB from "@/lib/db.js";
 import Feedback from "@/lib/models/Feedback.js";
 import { requireAuth } from "@/lib/utils/apiAuth";
+import { chat, isLLMConfigured } from "@/lib/llm";
 
 /* ── POST /api/feedback — submit a review (public, from customer) ── */
 export async function POST(request: Request) {
@@ -34,12 +34,9 @@ export async function POST(request: Request) {
       summary: string;
     } | undefined;
 
-    if (text?.trim() && process.env.OPENAI_API_KEY) {
+    if (text?.trim() && isLLMConfigured()) {
       try {
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
+        const completion = await chat({
           messages: [
             {
               role: "system",
