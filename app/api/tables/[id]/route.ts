@@ -2,11 +2,15 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Table from "@/lib/models/Table.js";
+import { requireAuth } from "@/lib/utils/apiAuth";
 
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { error } = await requireAuth();
+    if (error) return error;
+
     try {
         await connectDB();
         const { id } = await params;

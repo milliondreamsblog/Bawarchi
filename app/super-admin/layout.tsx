@@ -13,7 +13,7 @@ export default function SuperAdminLayout({
         <div className="min-h-screen flex flex-col">
             <AdminHeader />
 
-            <div className="flex-1 bg-gradient-to-br from-green-50 to-white">
+            <div className="flex-1 bg-gradient-to-br from-green-50 to-white dark:from-gray-900 dark:to-gray-800">
                 <div className="container max-w-7xl mx-auto py-8 px-6">
                     <main className="w-full">{children}</main>
                 </div>

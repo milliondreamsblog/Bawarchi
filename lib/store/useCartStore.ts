@@ -16,7 +16,7 @@ interface CartStore {
   setGstPercentage: (gst: number) => void;
   getBaseTotal: () => number;
   getBillingBreakdown: () => BillingBreakdown | null;
-  addItem: (item: Omit<CartItem, "qty">) => void;
+  addItem: (item: Omit<CartItem, "qty">, qty?: number) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, qty: number) => void;
   clearCart: () => void;
@@ -43,25 +43,23 @@ export const useCartStore = create<CartStore>()(
         return calculateBillingBreakdown(baseTotal, state.gstPercentage);
       },
 
-      addItem: (item) =>
+      addItem: (item, qty = 1) =>
         set((state) => {
-          console.log('🛒 Adding item to cart:', item);
           const existing = state.items.find((i) => i.itemId === item.itemId);
           let newItems;
 
           if (existing) {
             newItems = state.items.map((i) =>
-              i.itemId === item.itemId ? { ...i, qty: i.qty + 1 } : i
+              i.itemId === item.itemId ? { ...i, qty: i.qty + qty } : i
             );
           } else {
-            newItems = [...state.items, { ...item, qty: 1 }];
+            newItems = [...state.items, { ...item, qty }];
           }
 
           const newTotal = newItems.reduce(
             (sum, i) => sum + i.price * i.qty,
             0
           );
-          console.log('✅ Cart updated:', newItems.length, 'items, base total:', newTotal);
           return { items: newItems, total: newTotal };
         }),
 

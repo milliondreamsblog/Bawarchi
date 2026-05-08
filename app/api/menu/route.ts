@@ -20,7 +20,6 @@ export async function GET(request: Request) {
 
     const query: any = { restaurantId };
 
-    console.log('Fetching menu for restaurantId:', restaurantId);
 
     // Fetch menu and populate items
     let menu;
@@ -39,14 +38,12 @@ export async function GET(request: Request) {
     }
 
     if (!menu) {
-      console.log('Menu not found for restaurantId:', restaurantId);
       return NextResponse.json(
         { success: false, error: "Menu not found" },
         { status: 404 }
       );
     }
 
-    console.log('Menu found, processing sections...');
 
     // If populate failed, manually fetch items
     if (!populateSuccessful && menu.sections && Array.isArray(menu.sections)) {

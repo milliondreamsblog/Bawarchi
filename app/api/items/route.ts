@@ -32,8 +32,9 @@ export async function POST(request: Request) {
     await connectDB();
     const body = await request.json();
     
-    const { name, description, price, category, image, calories, available, restaurantId } = body;
-    
+    const { name, description, price, category, image, calories, available, restaurantId,
+            isVeg, isVegan, isGlutenFree, spiceLevel } = body;
+
     if (!name || !price || !restaurantId) {
       return NextResponse.json(
         { success: false, error: "Name, price, and restaurantId are required" },
@@ -50,6 +51,10 @@ export async function POST(request: Request) {
       calories,
       available: available !== undefined ? available : true,
       restaurantId,
+      isVeg:        !!isVeg,
+      isVegan:      !!isVegan,
+      isGlutenFree: !!isGlutenFree,
+      spiceLevel:   spiceLevel || "medium",
     });
 
     return NextResponse.json({ success: true, item });

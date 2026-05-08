@@ -18,7 +18,7 @@ interface IItem {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userQuery } = body;
+    const { userQuery, restaurantId } = body;
 
     if (!userQuery) {
       return NextResponse.json(
@@ -35,7 +35,9 @@ export async function POST(request: Request) {
     }
 
     await connectDB();
-    const items = await Item.find({ available: true }).lean() as unknown as IItem[];
+    const itemFilter: Record<string, unknown> = { available: true };
+    if (restaurantId) itemFilter.restaurantId = restaurantId;
+    const items = await Item.find(itemFilter).lean() as unknown as IItem[];
 
     if (items.length === 0) {
       return NextResponse.json({

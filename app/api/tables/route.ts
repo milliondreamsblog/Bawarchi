@@ -5,6 +5,7 @@ import Table from "@/lib/models/Table.js";
 import QRCode from "qrcode";
 import { v2 as cloudinary } from "cloudinary";
 import Restaurant from "@/lib/models/Restaurant";
+import { requireAuth } from "@/lib/utils/apiAuth";
 
 export interface RestaurantType {
   _id: string;
@@ -61,6 +62,9 @@ cloudinary.config({
 
 
 export async function POST(request: Request) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     await connectDB();
     const body = await request.json();
@@ -73,7 +77,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check duplicate slug within same restaurant
     const restaurant = await Restaurant.findById(restaurantId).lean<RestaurantType>();
 
     if (!restaurant) {
@@ -83,6 +86,8 @@ export async function POST(request: Request) {
       );
     }
 
+
+    // Check duplicate slug within same restaurant
     const existing = await Table.findOne({ slug, restaurantId });
     if (existing) {
       return NextResponse.json(

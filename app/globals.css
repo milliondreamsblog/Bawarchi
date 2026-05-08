@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Print / PDF Receipt styles ─────────────────────────────── */
+@media print {
+  /* Hide everything by default */
+  body > * {
+    display: none !important;
+  }
+
+  /* Show only the receipt wrapper */
+  .print-receipt {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  /* Hide non-receipt elements inside the page */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Receipt styling */
+  .receipt-content {
+    max-width: 480px;
+    margin: 0 auto;
+    font-size: 12pt;
+    color: #000;
+  }
+
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+}
