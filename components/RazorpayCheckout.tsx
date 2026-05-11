@@ -46,11 +46,12 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
         setLoading(true);
 
         try {
-            // Create payment order with base total (API will calculate full billing)
+            // Server recomputes billing from itemId+qty — never trust client totals.
+            const orderItems = items.map((i) => ({ itemId: i.itemId, qty: i.qty }));
             const orderResponse = await fetch("/api/payments/create-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: total, currency: "INR", tableSlug, restaurantId }),
+                body: JSON.stringify({ items: orderItems, currency: "INR", tableSlug, restaurantId }),
             });
 
             const orderData = await orderResponse.json();
@@ -83,35 +84,35 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
                         const verifyData = await verifyResponse.json();
 
                         if (verifyData.success) {
-                            // Create order with complete billing breakdown
-                            const billing = orderData.billingBreakdown;
+                            // Server recomputes the full breakdown from items + Razorpay
+                            // order amount. Client billing fields are not accepted.
                             const createOrderResponse = await fetch("/api/orders", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({
                                     tableSlug,
                                     restaurantId,
-                                    items: items.map((item) => ({
-                                        itemId: item.itemId,
-                                        qty: item.qty,
-                                    })),
-                                    total,
+                                    items: orderItems,
                                     razorpayOrderId: response.razorpay_order_id,
                                     razorpayPaymentId: response.razorpay_payment_id,
-                                    // Include complete billing breakdown
-                                    baseTotal: billing.baseTotal,
-                                    gstPercentage: billing.gstPercentage,
-                                    gstAmount: billing.gstAmount,
-                                    platformFee: billing.platformFee,
-                                    finalAmount: billing.finalAmount,
-                                    restaurantEarnings: billing.restaurantEarnings,
-                                    myEarnings: billing.myEarnings,
                                 }),
                             });
 
                             const orderResult = await createOrderResponse.json();
 
                             if (orderResult.success) {
+                                // Persist the cancel token so the order-success page
+                                // can cancel within the 5-min window without an account.
+                                if (orderResult.cancelToken) {
+                                    try {
+                                        localStorage.setItem(
+                                            `bawarchie:cancelToken:${orderResult.order._id}`,
+                                            orderResult.cancelToken
+                                        );
+                                    } catch {
+                                        // localStorage unavailable — cancel will require admin auth.
+                                    }
+                                }
                                 clearCart();
                                 if (onSuccess) {
                                     onSuccess();

@@ -1,4 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+//
+// Chain of trust for billing integrity:
+//   1. /api/payments/create-order sets Razorpay order amount from
+//      computeBilling(items)  — server-computed, never client-supplied.
+//   2. Razorpay binds order_id → that amount, immutably.
+//   3. This route verifies the signature is valid for (order_id, payment_id),
+//      proving the payment really happened against the server-set order.
+//   4. /api/orders POST fetches the Razorpay order and re-runs computeBilling
+//      against the items it receives. If amounts diverge, it rejects with 409.
+//
+// Net: signature here is sufficient; the amount cross-check lives in orders
+// POST where it can also catch post-payment item substitution attempts.
+//
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 

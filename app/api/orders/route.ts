@@ -1,16 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
+import Razorpay from "razorpay";
 import connectDB from "@/lib/db.js";
 import Order from "@/lib/models/Order.js";
 import Table from "@/lib/models/Table.js";
 import Item from "@/lib/models/Item.js";
+import Restaurant from "@/lib/models/Restaurant.js";
+import { computeBilling, BillingError } from "@/lib/billing";
+import { issueCancelToken } from "@/lib/cancelToken";
+import { requireAuth } from "@/lib/utils/apiAuth";
 
 export async function GET(request: Request) {
+  // Authenticated. Restaurants see only their own orders (restaurantId is
+  // derived from session, not the query string). Super-admins may pass an
+  // explicit ?restaurantId=... to scope; if omitted, no orders are returned.
+  const { error, session } = await requireAuth();
+  if (error) return error;
+
   try {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const restaurantId = searchParams.get("restaurantId");
+    const queryRestaurantId = searchParams.get("restaurantId");
+
+    let restaurantId: string | null = null;
+    if (session!.user.role === "super-admin") {
+      restaurantId = queryRestaurantId;
+    } else {
+      // role === "restaurant" — session.user.id is the restaurant _id
+      restaurantId = (session!.user as any).id;
+      if (queryRestaurantId && queryRestaurantId !== restaurantId) {
+        return NextResponse.json(
+          { success: false, error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+    }
 
     if (!restaurantId) {
       return NextResponse.json(
@@ -19,11 +44,10 @@ export async function GET(request: Request) {
       );
     }
 
-    // Populate item details to avoid null references
     const orders = await Order.find({ restaurantId })
       .populate({
         path: "items.itemId",
-        select: "name price description category"
+        select: "name price description category",
       })
       .sort({ createdAt: -1 })
       .lean();
@@ -45,28 +69,21 @@ export async function POST(request: Request) {
     const {
       tableSlug,
       items,
-      total,
       restaurantId,
       razorpayOrderId,
       razorpayPaymentId,
-      // New billing fields
-      baseTotal,
-      gstPercentage,
-      gstAmount,
-      platformFee,
-      finalAmount,
-      restaurantEarnings,
-      myEarnings,
+      // Schema-prep fields (Step 1 wires the actual diner logic; persisted now for forward compat)
+      dinerId,
+      customerPhone,
     } = body;
 
-    if (!tableSlug || !items || !total || !restaurantId) {
+    if (!tableSlug || !Array.isArray(items) || items.length === 0 || !restaurantId) {
       return NextResponse.json(
-        { success: false, error: "Table slug, items, total, and restaurantId are required" },
+        { success: false, error: "tableSlug, items, and restaurantId are required" },
         { status: 400 }
       );
     }
 
-    // Get restaurant ID from table
     const table = await Table.findOne({ slug: tableSlug, restaurantId });
     if (!table) {
       return NextResponse.json(
@@ -75,38 +92,68 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create order with all fields (new billing fields are optional for backward compatibility)
+    // Server-trusted recomputation. Any billing field in `body` is ignored.
+    const { breakdown } = await computeBilling({
+      restaurantId,
+      items: items.map((it: any) => ({ itemId: it.itemId, qty: it.qty })),
+    });
+
+    // Cross-check: if Razorpay paid amount diverges from what we'd charge
+    // for these items right now, reject. This closes the tamper window
+    // between create-order and orders POST (e.g. submitting cart B after
+    // paying for cart A, or after a menu price change mid-checkout).
+    if (razorpayOrderId) {
+      const restaurant = await Restaurant.findById(restaurantId).lean();
+      const key_id = (restaurant as any)?.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
+      const key_secret = (restaurant as any)?.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
+      if (!key_id || !key_secret) {
+        return NextResponse.json(
+          { success: false, error: "Payment gateway not configured" },
+          { status: 400 }
+        );
+      }
+      const razorpay = new Razorpay({ key_id, key_secret });
+      const rzpOrder = await razorpay.orders.fetch(razorpayOrderId);
+      const expectedPaise = Math.round(breakdown.finalAmount * 100);
+      if (Number(rzpOrder.amount) !== expectedPaise) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Order amount mismatch — items or prices changed after payment",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     const orderData: any = {
       tableSlug,
-      items,
-      total,
+      items: items.map((it: any) => ({ itemId: it.itemId, qty: it.qty })),
+      total: breakdown.finalAmount, // legacy field kept in sync with finalAmount
       restaurantId,
       status: "pending",
+      baseTotal: breakdown.baseTotal,
+      gstPercentage: breakdown.gstPercentage,
+      gstAmount: breakdown.gstAmount,
+      platformFee: breakdown.platformFee,
+      finalAmount: breakdown.finalAmount,
+      restaurantEarnings: breakdown.restaurantEarnings,
+      myEarnings: breakdown.myEarnings,
     };
 
-    // Add Razorpay IDs if present
     if (razorpayOrderId) orderData.razorpayOrderId = razorpayOrderId;
     if (razorpayPaymentId) orderData.razorpayPaymentId = razorpayPaymentId;
-
-    // Add billing breakdown fields if present
-    if (baseTotal !== undefined) orderData.baseTotal = baseTotal;
-    if (gstPercentage !== undefined) orderData.gstPercentage = gstPercentage;
-    if (gstAmount !== undefined) orderData.gstAmount = gstAmount;
-    if (platformFee !== undefined) orderData.platformFee = platformFee;
-    if (finalAmount !== undefined) orderData.finalAmount = finalAmount;
-    if (restaurantEarnings !== undefined) orderData.restaurantEarnings = restaurantEarnings;
-    if (myEarnings !== undefined) orderData.myEarnings = myEarnings;
+    if (dinerId) orderData.dinerId = dinerId;
+    if (customerPhone) orderData.customerPhone = customerPhone;
 
     const order = await Order.create(orderData);
 
-    // Auto-set table to occupied
     await Table.findOneAndUpdate(
       { slug: tableSlug, restaurantId },
       { status: "occupied", occupiedAt: new Date(), currentOrderId: order._id }
     );
 
-    // Decrement stock for each item (skip if stock is -1 = unlimited)
-    for (const { itemId, qty } of items) {
+    for (const { itemId, qty } of orderData.items) {
       const item = await Item.findById(itemId);
       if (item && item.stock > 0) {
         item.stock = Math.max(0, item.stock - qty);
@@ -115,8 +162,19 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, order }, { status: 201 });
+    const cancelToken = issueCancelToken(order._id.toString(), order.createdAt);
+
+    return NextResponse.json(
+      { success: true, order, cancelToken },
+      { status: 201 }
+    );
   } catch (error: any) {
+    if (error instanceof BillingError) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.status }
+      );
+    }
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

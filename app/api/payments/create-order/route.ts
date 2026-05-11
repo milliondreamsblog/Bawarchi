@@ -1,42 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
-import connectDB from "@/lib/db.js";
-import { calculateBillingBreakdown } from "@/lib/utils/billing";
+import Table from "@/lib/models/Table.js";
+import { computeBilling, BillingError } from "@/lib/billing";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { amount, currency = "INR", tableSlug, restaurantId } = body;
+    const { items, currency = "INR", tableSlug, restaurantId } = body;
 
-    if (!amount || !tableSlug || !restaurantId) {
+    if (!Array.isArray(items) || items.length === 0 || !tableSlug || !restaurantId) {
       return NextResponse.json(
-        { success: false, error: "Amount, tableSlug, and restaurantId are required" },
+        { success: false, error: "items, tableSlug, and restaurantId are required" },
         { status: 400 }
       );
     }
 
-    await connectDB();
-    const Table = (await import("@/lib/models/Table.js")).default;
-    const Restaurant = (await import("@/lib/models/Restaurant.js")).default;
+    // computeBilling validates restaurant + items + tenant isolation and
+    // returns the authoritative billing breakdown. Razorpay order amount
+    // is anchored to this server-computed finalAmount — any subsequent
+    // signature verification transitively verifies the amount because
+    // it's bound to the order_id Razorpay created here.
+    const { breakdown, restaurant } = await computeBilling({ restaurantId, items });
 
-    // Verify restaurant exists
-    const restaurant = await Restaurant.findById(restaurantId);
-    if (!restaurant) {
-      return NextResponse.json({ success: false, error: "Restaurant not found" }, { status: 404 });
-    }
-
-    // Verify table exists and belongs to restaurant
-    const table = await Table.findOne({ slug: tableSlug, restaurantId: restaurantId });
+    // Verify table exists and belongs to restaurant (kept here, not in
+    // computeBilling, because tableSlug is order-level, not billing-level).
+    const table = await Table.findOne({ slug: tableSlug, restaurantId });
     if (!table) {
-      return NextResponse.json({ success: false, error: "Table not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Table not found" },
+        { status: 404 }
+      );
     }
 
-    // Calculate billing breakdown with restaurant's GST
-    const gstPercentage = restaurant.gstPercentage || 0;
-    const billingBreakdown = calculateBillingBreakdown(amount, gstPercentage);
-
-    // Use restaurant keys or fallback to global env vars
     const key_id = restaurant.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
     const key_secret = restaurant.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
 
@@ -47,23 +43,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const razorpay = new Razorpay({
-      key_id,
-      key_secret,
-    });
+    const razorpay = new Razorpay({ key_id, key_secret });
 
     const options = {
-      amount: Math.round(billingBreakdown.finalAmount * 100), // Convert to paise, use finalAmount
+      amount: Math.round(breakdown.finalAmount * 100), // paise; server-trusted
       currency,
       receipt: `receipt_${Date.now()}`,
       notes: {
-        restaurantId: restaurant._id.toString(),
-        tableSlug: tableSlug,
-        baseTotal: billingBreakdown.baseTotal.toString(),
-        gstPercentage: gstPercentage.toString(),
-        gstAmount: billingBreakdown.gstAmount.toString(),
-        platformFee: billingBreakdown.platformFee.toString(),
-      }
+        restaurantId: restaurant._id,
+        tableSlug,
+        baseTotal: breakdown.baseTotal.toString(),
+        gstPercentage: breakdown.gstPercentage.toString(),
+        gstAmount: breakdown.gstAmount.toString(),
+        platformFee: breakdown.platformFee.toString(),
+      },
     };
 
     const order = await razorpay.orders.create(options);
@@ -73,10 +66,18 @@ export async function POST(request: Request) {
       order_id: order.id,
       amount: order.amount,
       currency: order.currency,
-      key_id: key_id, // Send key_id back to frontend
-      billingBreakdown, // Send complete breakdown to frontend
+      key_id,
+      // Breakdown is for client display only. The orders POST will
+      // recompute from items independently — it does not trust this.
+      billingBreakdown: breakdown,
     });
   } catch (error: any) {
+    if (error instanceof BillingError) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: error.status }
+      );
+    }
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

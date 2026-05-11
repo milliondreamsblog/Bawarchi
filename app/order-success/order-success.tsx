@@ -181,7 +181,13 @@ export default function OrderSuccessPage() {
 
     const fetchOrder = async () => {
         try {
-            const response = await fetch(`/api/orders/${orderId}`);
+            const cancelToken =
+                typeof window !== "undefined"
+                    ? localStorage.getItem(`bawarchie:cancelToken:${orderId}`)
+                    : null;
+            const response = await fetch(`/api/orders/${orderId}`, {
+                headers: cancelToken ? { "x-cancel-token": cancelToken } : {},
+            });
             const data = await response.json();
             if (data.success) {
                 setOrder(data.order);
@@ -253,10 +259,14 @@ export default function OrderSuccessPage() {
         if (!confirm("Are you sure you want to cancel this order? A refund will be initiated if payment was made.")) return;
         setCancelling(true);
         try {
+            const cancelToken =
+                typeof window !== "undefined"
+                    ? localStorage.getItem(`bawarchie:cancelToken:${order._id}`)
+                    : null;
             const res = await fetch(`/api/orders/${order._id}/cancel`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ reason: "Cancelled by customer", cancelledBy: "customer" }),
+                body: JSON.stringify({ reason: "Cancelled by customer", cancelToken }),
             });
             const data = await res.json();
             if (data.success) {

@@ -6,6 +6,8 @@ import Order from "@/lib/models/Order.js";
 import Item from "@/lib/models/Item.js";
 import Table from "@/lib/models/Table.js";
 import Restaurant from "@/lib/models/Restaurant.js";
+import { auth } from "@/lib/auth";
+import { verifyCancelToken } from "@/lib/cancelToken";
 
 export async function POST(
   request: Request,
@@ -14,8 +16,8 @@ export async function POST(
   try {
     await connectDB();
     const { id } = await params;
-    const body = await request.json();
-    const { reason, cancelledBy } = body;
+    const body = await request.json().catch(() => ({}));
+    const { reason, cancelToken } = body as { reason?: string; cancelToken?: string };
 
     const order = await Order.findById(id);
     if (!order) {
@@ -25,6 +27,41 @@ export async function POST(
       );
     }
 
+    // Determine who is cancelling, by credentials — not by request body.
+    //   - Admin session whose restaurant owns this order → admin cancel (any time)
+    //   - Valid cancelToken bound to this order → customer cancel (5-min window)
+    //   - Neither → 401
+    const session = await auth();
+    const isAdmin =
+      session?.user &&
+      (session.user.role === "super-admin" ||
+        (session.user.role === "restaurant" &&
+          (session.user as any).id &&
+          order.restaurantId.toString() === (session.user as any).id));
+
+    let cancelledBy: "customer" | "admin";
+    if (isAdmin) {
+      cancelledBy = "admin";
+    } else {
+      const tokenCheck = verifyCancelToken(
+        order._id.toString(),
+        order.createdAt,
+        cancelToken
+      );
+      if (!tokenCheck.ok) {
+        const reasonText =
+          tokenCheck.reason === "expired"
+            ? "Cancellation window (5 minutes) has expired"
+            : "Authentication required to cancel this order";
+        const status = tokenCheck.reason === "expired" ? 400 : 401;
+        return NextResponse.json(
+          { success: false, error: reasonText },
+          { status }
+        );
+      }
+      cancelledBy = "customer";
+    }
+
     if (["cancelled", "refunded", "served"].includes(order.status)) {
       return NextResponse.json(
         { success: false, error: `Cannot cancel an order that is already ${order.status}` },
@@ -32,18 +69,6 @@ export async function POST(
       );
     }
 
-    // For customer cancellation, enforce 5-minute window
-    if (cancelledBy === "customer") {
-      const elapsed = Date.now() - new Date(order.createdAt).getTime();
-      if (elapsed > 5 * 60 * 1000) {
-        return NextResponse.json(
-          { success: false, error: "Cancellation window (5 minutes) has expired" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Attempt Razorpay refund if payment was made
     let refundId: string | undefined;
     let refundStatus: string = "pending";
 
@@ -56,7 +81,7 @@ export async function POST(
         if (keyId && keySecret) {
           const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
           const refund = await (razorpay.payments as any).refund(order.razorpayPaymentId, {
-            amount: (order.finalAmount || order.total) * 100, // in paise
+            amount: (order.finalAmount || order.total) * 100,
           });
           refundId = refund.id;
           refundStatus = "processed";
@@ -67,10 +92,9 @@ export async function POST(
       }
     }
 
-    // Update order
     order.status = refundId ? "refunded" : "cancelled";
     order.cancelledAt = new Date();
-    order.cancelledBy = cancelledBy || "admin";
+    order.cancelledBy = cancelledBy;
     order.cancellationReason = reason || "";
     if (refundId) {
       order.refundId = refundId;
@@ -79,7 +103,6 @@ export async function POST(
     }
     await order.save();
 
-    // Restore stock for each item
     for (const { itemId, qty } of order.items) {
       await Item.findByIdAndUpdate(itemId, {
         $inc: { stock: qty },
@@ -87,7 +110,6 @@ export async function POST(
       });
     }
 
-    // Free the table
     await Table.findOneAndUpdate(
       { currentOrderId: id },
       { status: "free", occupiedAt: null, currentOrderId: null }
