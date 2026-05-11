@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Item from "@/lib/models/Item.js";
+import { embed, buildSearchDocument } from "@/lib/embeddings";
 
 export async function GET(request: Request) {
   try {
@@ -56,6 +57,13 @@ export async function POST(request: Request) {
       isGlutenFree: !!isGlutenFree,
       spiceLevel:   spiceLevel || "medium",
     });
+
+    try {
+      const vec = await embed(buildSearchDocument(item));
+      await Item.findByIdAndUpdate(item._id, { embedding: vec, embeddedAt: new Date() });
+    } catch (e: any) {
+      console.warn(`[items] embedding failed for ${item._id}: ${e?.message}`);
+    }
 
     return NextResponse.json({ success: true, item });
   } catch (error: any) {

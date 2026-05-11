@@ -3,6 +3,17 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Item from "@/lib/models/Item.js";
 import { requireAuth } from "@/lib/utils/apiAuth";
+import { embed, buildSearchDocument } from "@/lib/embeddings";
+
+const EMBEDDING_FIELDS = [
+  "name",
+  "description",
+  "category",
+  "isVeg",
+  "isVegan",
+  "isGlutenFree",
+  "spiceLevel",
+] as const;
 
 export async function PATCH(
   request: Request,
@@ -50,7 +61,21 @@ export async function PATCH(
     if (isGlutenFree !== undefined) existingItem.isGlutenFree = !!isGlutenFree;
     if (spiceLevel !== undefined) existingItem.spiceLevel = spiceLevel;
 
+    const reembed = EMBEDDING_FIELDS.some((f) => existingItem.isModified(f));
+
     await existingItem.save();
+
+    if (reembed) {
+      try {
+        const vec = await embed(buildSearchDocument(existingItem));
+        await Item.findByIdAndUpdate(existingItem._id, {
+          embedding: vec,
+          embeddedAt: new Date(),
+        });
+      } catch (e: any) {
+        console.warn(`[items] re-embedding failed for ${existingItem._id}: ${e?.message}`);
+      }
+    }
 
     return NextResponse.json({
       success: true,

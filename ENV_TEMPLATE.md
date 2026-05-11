@@ -11,17 +11,27 @@ RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxx
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
 
 # LLM Configuration
-# Provider auto-selects: prefers Gemini if GEMINI_API_KEY is set, else OpenAI.
+# Chat: provider auto-selects (prefers Gemini if GEMINI_API_KEY set, else OpenAI).
 # Override with LLM_PROVIDER=gemini|openai. Override the model with LLM_MODEL.
+#
+# Embeddings (RAG): LOCKED to Gemini gemini-embedding-001 with dimensions=768.
+# This model is MRL-trained; the 768-dim output matches the Atlas vector index.
+# Cross-model vectors are not comparable — switching requires full re-embedding
+# of every item via `node scripts/embed-all.mjs`.
+# GEMINI_API_KEY is REQUIRED for AI waiter / RAG features.
+#
+# Atlas Vector Search index `items_vector` must exist on the items collection
+# with: numDimensions: 768, similarity: cosine, filters on restaurantId + available.
 
-# Gemini (recommended — cheaper + free tier; get a key at https://aistudio.google.com/apikey)
+# Gemini (required for embeddings; get a key at https://aistudio.google.com/apikey)
 GEMINI_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # LLM_MODEL=gemini-2.0-flash
 
-# OpenAI (kept as fallback / alternate)
+# OpenAI (optional — used as chat fallback only; not used for embeddings)
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # LLM_PROVIDER=openai
 # LLM_MODEL=gpt-4o-mini
+# LLM_FALLBACK_MODEL=gpt-4o-mini
 
 # Cloudinary Configuration (for image uploads)
 CLOUDINARY_CLOUD_NAME=your-cloud-name

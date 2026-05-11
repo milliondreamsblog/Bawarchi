@@ -1,19 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
-import Item from "@/lib/models/Item.js";
 import { chat, isLLMConfigured } from "@/lib/llm";
-
-interface IItem {
-  _id: string;
-  name: string;
-  description?: string;
-  price: number;
-  available: boolean;
-  category: string;
-  image?: string;
-  calories?: number;
-}
+import { retrieveRelevantItems } from "@/lib/rag";
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +15,12 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
+    if (!restaurantId) {
+      return NextResponse.json(
+        { success: false, error: "restaurantId is required" },
+        { status: 400 }
+      );
+    }
     if (!isLLMConfigured()) {
       return NextResponse.json(
         { success: false, error: "LLM provider not configured" },
@@ -35,11 +29,9 @@ export async function POST(request: Request) {
     }
 
     await connectDB();
-    const itemFilter: Record<string, unknown> = { available: true };
-    if (restaurantId) itemFilter.restaurantId = restaurantId;
-    const items = await Item.find(itemFilter).lean() as unknown as IItem[];
+    const retrieved = await retrieveRelevantItems(userQuery, restaurantId, 8);
 
-    if (items.length === 0) {
+    if (retrieved.length === 0) {
       return NextResponse.json({
         success: true,
         recommendations: [],
@@ -47,26 +39,32 @@ export async function POST(request: Request) {
       });
     }
 
-    const itemsContext = items.map((item) => ({
-      id: item._id.toString(),
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      category: item.category,
-      calories: item.calories,
+    const itemsContext = retrieved.map((it) => ({
+      id: it._id.toString(),
+      name: it.name,
+      description: it.description,
+      price: it.price,
+      category: it.category,
+      calories: it.calories,
     }));
 
-    const systemPrompt = `You are a helpful restaurant assistant. You have access to the following menu items:
+    const systemPrompt = `You are a helpful restaurant assistant. Based on the user's query, pick the best fit from the candidate items below.
 
+CANDIDATE ITEMS (already pre-filtered by relevance):
 ${JSON.stringify(itemsContext, null, 2)}
 
-Based on the user's query, recommend suitable items from this menu. Consider:
+Consider:
 - Calorie requirements
 - Price constraints
 - Dietary preferences (vegetarian, etc.)
 - Meal combinations
 
-Provide your recommendations as a JSON array of item IDs and explain your reasoning.`;
+Respond with valid JSON in this shape:
+{
+  "recommended_ids": ["<id from list above>", ...],
+  "reasoning": "<brief explanation>",
+  "message": "<friendly summary for the customer>"
+}`;
 
     const completion = await chat({
       messages: [
@@ -77,11 +75,9 @@ Provide your recommendations as a JSON array of item IDs and explain your reason
     });
 
     const response = JSON.parse(completion.choices[0].message.content || "{}");
-
-    // Match recommended IDs to actual items
-    const recommendedIds = response.recommended_ids || [];
-    const recommendations = items.filter((item) =>
-      recommendedIds.includes(item._id.toString())
+    const recommendedIds: string[] = response.recommended_ids || [];
+    const recommendations = retrieved.filter((it) =>
+      recommendedIds.includes(it._id.toString())
     );
 
     return NextResponse.json({

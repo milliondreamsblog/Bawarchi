@@ -16,7 +16,9 @@ import {
   Pencil,
   ChevronRight,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
+import MenuIngestModal from "@/components/admin/MenuIngestModal";
 
 interface Item {
   _id: string;
@@ -58,6 +60,7 @@ export default function RestaurantMenuPage() {
   const [editingValue, setEditingValue] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [showIngest, setShowIngest] = useState(false);
 
   const drag = useRef<DragPayload | null>(null);
   const [over, setOver] = useState<{ kind: "lib" | "col"; index?: number } | null>(null);
@@ -196,6 +199,33 @@ export default function RestaurantMenuPage() {
     update({ ...menu, sections: next });
   }
 
+  async function handleIngestSaved(
+    assignments: { itemId: string; sectionName: string }[]
+  ) {
+    if (!restaurantId || assignments.length === 0) return;
+
+    const it = await fetch(`/api/items?restaurantId=${restaurantId}`).then((x) => x.json());
+    if (it.success) setItems(it.items);
+
+    const nextSections = menu.sections.map((s) => ({ ...s, items: [...s.items] }));
+    const sectionByName = new Map<string, number>(
+      nextSections.map((s, i) => [s.name.toLowerCase(), i])
+    );
+    for (const a of assignments) {
+      const key = a.sectionName.toLowerCase();
+      let idx = sectionByName.get(key);
+      if (idx === undefined) {
+        nextSections.push({ name: a.sectionName, items: [] });
+        idx = nextSections.length - 1;
+        sectionByName.set(key, idx);
+      }
+      if (!nextSections[idx].items.includes(a.itemId)) {
+        nextSections[idx].items.push(a.itemId);
+      }
+    }
+    update({ ...menu, sections: nextSections });
+  }
+
   async function saveMenu() {
     if (!restaurantId) return;
     setSaving(true);
@@ -303,6 +333,15 @@ export default function RestaurantMenuPage() {
               </span>
             )}
           </div>
+
+          <button
+            onClick={() => setShowIngest(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-stone-200 text-stone-700 text-sm font-medium hover:border-[#86A6DE] hover:text-[#324F7B] transition-colors"
+            title="Extract items from a menu photo using AI"
+          >
+            <Sparkles className="w-4 h-4 text-[#324F7B]" />
+            Import from photo
+          </button>
 
           <button
             onClick={saveMenu}
@@ -542,6 +581,14 @@ export default function RestaurantMenuPage() {
           )}
         </div>
       </div>
+
+      {showIngest && restaurantId && (
+        <MenuIngestModal
+          restaurantId={restaurantId}
+          onClose={() => setShowIngest(false)}
+          onSaved={handleIngestSaved}
+        />
+      )}
     </div>
   );
 }

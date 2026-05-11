@@ -88,10 +88,12 @@ export async function chat(
   params: Omit<ChatCompletionCreateParamsNonStreaming, "model"> & { model?: string }
 ) {
   const primary = getLLM();
+  const modelToUse = params.model || primary.defaultModel;
+  console.log(`[llm] chat → provider=${primary.provider} model=${modelToUse}`);
   try {
     return await primary.client.chat.completions.create({
       ...params,
-      model: params.model || primary.defaultModel,
+      model: modelToUse,
     });
   } catch (err) {
     if (!isTransient(err)) throw err;
