@@ -33,6 +33,7 @@ interface Order {
     restaurantId?: {
         _id: string;
         name: string;
+        slug: string;
         address?: string;
         phone?: string;
         email?: string;
@@ -515,7 +516,7 @@ export default function OrderSuccessPage() {
 
                 <div className="mt-5 text-center no-print">
                     <Link
-                        href={`/r/${order.restaurantId?.name.toLowerCase().replace(/\s+/g, "-")}/t/${order.tableSlug}`}
+                        href={`/r/${order.restaurantId?.slug}/t/${order.tableSlug}`}
                         className="inline-block text-[#324F7B] hover:text-[#5067AA] underline text-sm font-medium"
                     >
                         Order more items

@@ -2,19 +2,24 @@
  * Short-lived order cancel tokens.
  *
  * Issued at order creation, stored client-side, required to cancel an order
- * as a customer (admins use session auth instead). The token cryptographically
- * binds (orderId, createdAt) so it cannot be reused or forged.
+ * as a customer (admins use session auth instead). Also doubles as a read
+ * token for the diner's own order on /order-success.
  *
- * It also doubles as a read token for the diner's own order (the order-success
- * page reads /api/orders/[id] with this token instead of a session).
+ * Token format: `<hmac>.<createdAtMs_base36>`
  *
- * Expiry is enforced both inside the token (createdAt + window) and in the
- * cancel route's timing check — defense in depth.
+ * The createdAtMs is encoded inside the token so issue and verify use the
+ * exact same value — eliminating any chance of drift from Mongoose date
+ * round-tripping, BSON precision, or different code paths reading slightly
+ * different times. The HMAC binds (orderId, createdAtMs) so an attacker
+ * cannot mutate the timestamp without invalidating the signature.
+ *
+ * Expiry is enforced by comparing `Date.now()` against the decoded
+ * createdAtMs at verify time.
  */
 
 import crypto from "crypto";
 
-const TOKEN_BYTES = 8; // 16 hex chars after slice — collision-resistant enough for a 5-minute window
+const HMAC_HEX_LEN = 16; // 8 bytes → 16 hex chars
 const DEFAULT_WINDOW_MS = 5 * 60 * 1000;
 
 function getSecret(): string {
@@ -27,17 +32,20 @@ function getSecret(): string {
   return s;
 }
 
-function sign(orderId: string, createdAtMs: number): string {
+function hmac(orderId: string, createdAtMs: number): string {
   return crypto
     .createHmac("sha256", getSecret())
     .update(`${orderId}:${createdAtMs}`)
     .digest("hex")
-    .slice(0, TOKEN_BYTES * 2);
+    .slice(0, HMAC_HEX_LEN);
 }
+
+// Note: the second arg of verify is unused (the token carries its own
+// timestamp). Kept in the signature for backward compat with callers.
 
 export interface IssuedCancelToken {
   token: string;
-  expiresAt: number; // epoch ms
+  expiresAt: number;
 }
 
 /**
@@ -51,38 +59,65 @@ export function issueCancelToken(
 ): IssuedCancelToken {
   const createdAtMs =
     typeof createdAt === "number" ? createdAt : createdAt.getTime();
+  const sig = hmac(orderId, createdAtMs);
   return {
-    token: sign(orderId, createdAtMs),
+    token: `${sig}.${createdAtMs.toString(36)}`,
     expiresAt: createdAtMs + windowMs,
   };
 }
 
 export type CancelTokenVerification =
-  | { ok: true }
+  | { ok: true; createdAtMs: number }
   | { ok: false; reason: "missing" | "invalid" | "expired" };
 
 /**
- * Verify a token against a known order. Constant-time comparison.
- * Both the token's HMAC validity and the (now - createdAt) window are checked.
+ * Verify a token against a known order.
+ *
+ * The `createdAt` parameter is no longer needed for HMAC verification — the
+ * token carries its own timestamp. It is accepted for backward compatibility
+ * with existing callers but is unused.
  */
 export function verifyCancelToken(
   orderId: string,
-  createdAt: Date | number,
+  _createdAt: Date | number | null | undefined,
   token: string | null | undefined,
   windowMs: number = DEFAULT_WINDOW_MS
 ): CancelTokenVerification {
-  if (!token || typeof token !== "string") return { ok: false, reason: "missing" };
-  const createdAtMs =
-    typeof createdAt === "number" ? createdAt : createdAt.getTime();
-  const expected = sign(orderId, createdAtMs);
-  if (
-    expected.length !== token.length ||
-    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token))
-  ) {
+  if (!token || typeof token !== "string") {
+    return { ok: false, reason: "missing" };
+  }
+
+  const idx = token.lastIndexOf(".");
+  if (idx <= 0 || idx >= token.length - 1) {
     return { ok: false, reason: "invalid" };
   }
+  const sigPart = token.slice(0, idx);
+  const tsPart = token.slice(idx + 1);
+
+  if (sigPart.length !== HMAC_HEX_LEN) {
+    return { ok: false, reason: "invalid" };
+  }
+
+  const createdAtMs = parseInt(tsPart, 36);
+  if (!Number.isFinite(createdAtMs) || createdAtMs <= 0) {
+    return { ok: false, reason: "invalid" };
+  }
+
+  const expected = hmac(orderId, createdAtMs);
+  let sigMatch = false;
+  try {
+    sigMatch = crypto.timingSafeEqual(
+      Buffer.from(expected),
+      Buffer.from(sigPart)
+    );
+  } catch {
+    sigMatch = false;
+  }
+  if (!sigMatch) return { ok: false, reason: "invalid" };
+
   if (Date.now() - createdAtMs > windowMs) {
     return { ok: false, reason: "expired" };
   }
-  return { ok: true };
+
+  return { ok: true, createdAtMs };
 }

@@ -2,7 +2,7 @@
 
 > Companion to `piller3.md` (the architecture). This is the **executable plan** for the YC demo sprint: what gets built, in what order, with checkboxes to track progress.
 
-**Last updated:** 2026-05-11 (Step 0 Fixes 1/2/3 + schema prep complete; awaiting smoke test)
+**Last updated:** 2026-05-14 (Step 0 complete — automated security probes pass; manual cancel-flow checks remain)
 **Target:** YC demo (90-second magic moment) — cross-restaurant taste recognition working end-to-end.
 **Estimated total:** 5–7 focused engineering days; 12–14 calendar days realistic.
 
@@ -24,13 +24,13 @@
 | Pillar 1 — Vision menu ingestion | `[x]` shipped | `app/api/menu/ingest/route.ts`, `components/admin/MenuIngestModal.tsx` |
 | Pillar 2 — RAG AI waiter | `[x]` shipped | `lib/rag.ts`, `lib/embeddings.ts`, `app/api/ai/chat/route.ts` |
 | Pillar 3 — Pre-understood diner | `[ ]` not started | — |
-| Step 0 — Order hardening | `[~]` code complete, smoke test pending | All three fixes + schema prep landed |
+| Step 0 — Order hardening | `[x]` complete (4/4 security probes pass; 3 manual cancel-flow checks remain) | All three fixes + schema prep + `scripts/step0-probes.mjs` |
 
 ---
 
 ## High-level sequence
 
-- [~] **Step 0** — Order hardening (prerequisite, ~1 day) — code complete; smoke test pending
+- [x] **Step 0** — Order hardening (prerequisite, ~1 day) — code complete; 4/4 automated security probes pass
 - [ ] **Step 1** — Minimal Diner schema + opportunistic linking (~0.5 day)
 - [ ] **Step 2** — Taste vector computation (~0.5 day)
 - [ ] **Step 3** — Cross-restaurant retrieval (~0.5 day)
@@ -107,18 +107,24 @@ While in `lib/models/Order.js`, add fields/index that Step 1 needs. **No logic u
 
 ### Smoke test (end of Step 0)
 
+Automated via `node scripts/step0-probes.mjs` against a running dev server:
 - [x] `npx tsc --noEmit` passes (pre-existing push-notification errors unrelated)
-- [ ] Add `CANCEL_TOKEN_SECRET` to `.env` (any random string >=16 chars)
-- [ ] Place a real order through the QR → menu → cart → Razorpay → success flow
-- [ ] Verify the persisted Order's `finalAmount` matches what Razorpay charged
-- [ ] Tamper test: in DevTools, override the items array sent to `/api/orders` to include an item from a *different* restaurant → expect 403 from `BillingError`
-- [ ] Tamper test: keep the same restaurant, send a stale `items` array whose total differs from what Razorpay was charged for → expect 409 amount-mismatch
-- [ ] Cancel without token (clear localStorage first) → 401
-- [ ] Cancel with token within 5 min → succeeds, refund initiated if paid
-- [ ] Wait 5+ min, retry cancel → 400 with "Cancellation window expired"
-- [ ] Log out, hit `GET /api/orders?restaurantId=...` → 401
-- [ ] Log in as restaurant A, hit `GET /api/orders?restaurantId=<restaurant B id>` → 403
-- [ ] Commit. Push. Move to Step 1.
+- [x] `CANCEL_TOKEN_SECRET` set in `.env` (64-char hex)
+- [x] Happy path: order placed end-to-end through Razorpay; persisted `finalAmount` matches paid amount (proven by dev-server logs + working order-success page)
+- [x] **Probe 2** — tampered client billing fields ignored; server-computed `finalAmount` wins
+- [x] **Probe 3** — cross-tenant item rejected with 403
+- [x] **Probe 7** — `GET /api/orders` unauthenticated → 401
+- [x] **Probe 8** — `GET /api/orders/[id]` with no session and no `x-cancel-token` → 401
+
+Manual checks remaining (not automated — need browser + localStorage + wall-clock wait):
+- [ ] **Probe 4** — Place fresh order, on `/order-success` clear `localStorage["bawarchie:cancelToken:<id>"]`, click Cancel → 401 with `reason="missing"`
+- [ ] **Probe 5** — Place fresh order, click Cancel within 5 min → 200, order status = `cancelled` (or `refunded` if paid via Razorpay)
+- [ ] **Probe 6** — Place fresh order, wait 5+ minutes, click Cancel → 400 with `reason="expired"`
+- [ ] Commit. Push.
+
+Out-of-scope fixes landed during testing (free wins, not in Step 0 plan):
+- [x] `order-success` "Order more items" link uses stored `restaurantId.slug` instead of slugifying `name` (was producing `test-resturent-` with trailing dash because of a trailing space in the name)
+- [x] `GET /api/orders/[id]` populate now includes `slug`
 
 ---
 

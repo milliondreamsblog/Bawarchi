@@ -162,7 +162,10 @@ export async function POST(request: Request) {
       }
     }
 
-    const cancelToken = issueCancelToken(order._id.toString(), order.createdAt);
+    const { token: cancelToken } = issueCancelToken(
+      order._id.toString(),
+      order.createdAt
+    );
 
     return NextResponse.json(
       { success: true, order, cancelToken },

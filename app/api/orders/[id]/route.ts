@@ -22,7 +22,7 @@ export async function GET(
       })
       .populate({
         path: "restaurantId",
-        select: "name address phone email logo",
+        select: "name slug address phone email logo",
       })
       .lean();
 
@@ -61,12 +61,6 @@ export async function GET(
         token
       );
       if (!check.ok) {
-        // Diagnostic log — temporary, remove once Step 0 smoke test passes.
-        console.warn(
-          `[orders/[id] GET] 401 orderId=${(order as any)._id} role=${role ?? "none"} ` +
-            `sessionId=${sessionId ?? "none"} orderRestaurantId=${orderRestaurantId} ` +
-            `tokenPresent=${!!token} verifyReason=${check.reason}`
-        );
         const msg =
           check.reason === "missing"
             ? "Missing x-cancel-token header"
