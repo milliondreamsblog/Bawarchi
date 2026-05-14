@@ -87,18 +87,23 @@ export default function TableMenuPage() {
                     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
             localStorage.setItem(KEY, uuid);
         }
-        fetch("/api/diner/resolve", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uuid }),
-        })
-            .then((r) => r.json())
-            .then((data) => {
+        (async () => {
+            try {
+                const r = await fetch("/api/diner/resolve", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ uuid }),
+                });
+                // Only parse JSON if the server actually returned JSON; an
+                // HTML error page would otherwise crash the page load.
+                const ct = r.headers.get("content-type") || "";
+                if (!ct.includes("application/json")) return;
+                const data = await r.json();
                 if (data?.success && data.dinerId) setDinerId(data.dinerId);
-            })
-            .catch(() => {
+            } catch {
                 // Anonymous fallback — order will be created without dinerId.
-            });
+            }
+        })();
     }, []);
 
     useEffect(() => {
