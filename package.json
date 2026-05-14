@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "probe": "node scripts/probe-all.mjs",
+    "probe:quiet": "node scripts/probe-all.mjs --quiet"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
