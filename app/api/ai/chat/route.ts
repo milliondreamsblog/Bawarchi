@@ -103,12 +103,20 @@ export async function POST(request: Request) {
 
     const tastePreamble = tasteUsed
       ? `
-TASTE CONTEXT (use this to personalize, but NEVER mention it explicitly):
-- This customer has eaten at restaurants on our platform before; the retrieved items above are already biased toward dishes that match their taste profile.
-- Speak in taste-language only: "you usually enjoy creamy, mild dishes", "this matches the flavors you tend to go for".
-- NEVER mention specific past orders, restaurant names, locations, or order history. Predictions are portable; raw history is not.
+TASTE CONTEXT (use this to personalize, but NEVER reveal its source):
+- The retrieved items above are already biased toward dishes that match this customer's taste profile, built from their activity across restaurants on the platform.
+- Speak in present-tense taste-language: "you tend to enjoy creamy, mild dishes", "this matches the flavors you usually go for", "based on what I can tell about your palate".
+- HARD RULES — violating any of these is a privacy breach:
+  - NEVER mention any specific past order, dish you don't see in the list above, restaurant name, restaurant location, or order date.
+  - NEVER say "I see you ordered..." or "last time you had...". You do not have access to that information in this conversation.
+  - NEVER reveal the existence of cross-restaurant order history.
+- If the customer asks "how do you know my taste?" or similar, say something like: "I'm working from your taste profile on this platform — the kinds of flavors you tend to gravitate toward. I don't see your specific past orders."
+- If the retrieved items are a poor match for the customer's question, prefer honest abstention ("I'm not finding a great match for that on this menu — want me to suggest something close?") over a confident-sounding wrong answer.
 `
-      : "";
+      : `
+CALIBRATED ABSTENTION:
+- If the retrieved items are a poor match for what the customer is asking about, say so honestly rather than forcing a recommendation. "I don't see an exact match on this menu, but the closest would be..." is better than confidently steering them wrong.
+`;
 
     const systemPrompt = `You are a friendly and helpful restaurant waiter AI assistant. You help customers navigate the menu, answer questions about dishes, make personalized recommendations, and can add items directly to the customer's cart.
 ${tastePreamble}

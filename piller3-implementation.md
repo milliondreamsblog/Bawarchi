@@ -2,7 +2,7 @@
 
 > Companion to `piller3.md` (the architecture). This is the **executable plan** for the YC demo sprint: what gets built, in what order, with checkboxes to track progress.
 
-**Last updated:** 2026-05-14 (Steps 0–5 complete; magic-moment seed reproducible with 4/5 bullseye top-5 + arrabbiata-out-of-top-3)
+**Last updated:** 2026-05-14 (Steps 0–6 code complete; magic-moment seed reproducible 4/5; For You hero band + skeleton + tightened AI prompt landed)
 **Target:** YC demo (90-second magic moment) — cross-restaurant taste recognition working end-to-end.
 **Estimated total:** 5–7 focused engineering days; 12–14 calendar days realistic.
 
@@ -37,7 +37,7 @@
 - [x] **Step 3** — Cross-restaurant retrieval (~0.5 day) — verified (4/4 probes pass; AI chat speaks taste-language; cross-restaurant For You returned 3 items)
 - [x] **Step 4** — Restaurant-facing context card (~0.5 day) — verified (3/3 probes pass; taste summary rendered, three-tier disclosure enforced)
 - [x] **Step 5** — Seeded demo data (~2–3 hours) — `scripts/seed-demo.mjs` runs end-to-end; magic moment reproducible (4/5 bullseye + arrabbiata out of top-3)
-- [ ] **Step 6** — UX polish (~2–3 days)
+- [~] **Step 6** — UX polish (~2–3 days) — code polish landed: For You hero band, loading skeleton, confidence pill, tightened AI waiter prompt. Remaining: rehearse demo on a real phone, record 10× and ship best take (user actions).
 
 **Decision made:** Step 0 first, then Steps 1–6 in order. Engineering rigor over visible-progress momentum.
 

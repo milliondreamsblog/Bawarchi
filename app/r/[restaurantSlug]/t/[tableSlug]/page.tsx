@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { Sparkles } from "lucide-react";
 import ItemCard from "@/components/ItemCard";
 import Cart from "@/components/Cart";
 import RazorpayCheckout from "@/components/RazorpayCheckout";
@@ -62,6 +63,8 @@ export default function TableMenuPage() {
     const [dinerId, setDinerId] = useState<string | null>(null);
     const [forYouItems, setForYouItems] = useState<MenuItem[]>([]);
     const [forYouSource, setForYouSource] = useState<"taste" | "popular" | null>(null);
+    const [forYouLoading, setForYouLoading] = useState(false);
+    const [forYouConfidence, setForYouConfidence] = useState<number>(0);
 
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
@@ -168,6 +171,7 @@ export default function TableMenuPage() {
         if (dinerId) url.searchParams.set("dinerId", dinerId);
         url.searchParams.set("k", "6");
         let cancelled = false;
+        setForYouLoading(true);
         fetch(url.toString())
             .then(async (r) => {
                 const ct = r.headers.get("content-type") || "";
@@ -178,9 +182,13 @@ export default function TableMenuPage() {
                 if (cancelled || !data?.success) return;
                 setForYouItems((data.items || []) as MenuItem[]);
                 setForYouSource(data.source === "taste" ? "taste" : "popular");
+                setForYouConfidence(Number(data.confidence) || 0);
             })
             .catch(() => {
                 // Silent — the regular menu still renders below.
+            })
+            .finally(() => {
+                if (!cancelled) setForYouLoading(false);
             });
         return () => { cancelled = true; };
     }, [restaurant?._id, dinerId]);
@@ -358,25 +366,75 @@ export default function TableMenuPage() {
                     </div>
                 )}
 
-                {forYouItems.length > 0 && forYouSource && (
+                {(forYouLoading || forYouItems.length > 0) && (
                     <section className="mb-12 scroll-mt-24">
-                        <div className="flex items-baseline justify-between mb-5">
-                            <div className="flex items-baseline gap-3">
-                                <p className="text-[11px] uppercase tracking-[0.25em] text-[#86A6DE] font-semibold">
+                        {/* Hero band — visually distinct from the rest of the menu.
+                            Taste-based gets navy + sparkle; popular fallback stays softer. */}
+                        <div
+                            className={`rounded-3xl mb-5 px-6 py-7 sm:px-8 sm:py-8 ${
+                                forYouSource === "taste"
+                                    ? "bg-[#324F7B] text-white"
+                                    : "bg-[#86A6DE]/10 text-[#324F7B]"
+                            }`}
+                        >
+                            <div className="flex items-center gap-2 mb-2">
+                                <Sparkles
+                                    className={`w-4 h-4 ${
+                                        forYouSource === "taste" ? "text-[#86A6DE]" : "text-[#5067AA]"
+                                    }`}
+                                />
+                                <p
+                                    className={`text-[11px] uppercase tracking-[0.25em] font-semibold ${
+                                        forYouSource === "taste" ? "text-[#86A6DE]" : "text-[#5067AA]"
+                                    }`}
+                                >
                                     {forYouSource === "taste" ? "Picked for your taste" : "Popular tonight"}
                                 </p>
+                                {forYouSource === "taste" && forYouConfidence >= 0.7 && (
+                                    <span className="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/15 border border-white/20">
+                                        strong match
+                                    </span>
+                                )}
                             </div>
-                            <div className="hidden sm:block flex-1 mx-4 border-b border-dashed border-stone-300" />
+                            <h2 className={`text-2xl sm:text-3xl font-serif italic tracking-tight ${forYouSource === "taste" ? "text-white" : "text-[#324F7B]"}`}>
+                                {forYouSource === "taste"
+                                    ? "We think you’ll love these"
+                                    : "Tonight’s most-ordered dishes"}
+                            </h2>
+                            <p className={`text-sm mt-2 max-w-xl ${forYouSource === "taste" ? "text-[#86A6DE]" : "text-stone-600"}`}>
+                                {forYouSource === "taste"
+                                    ? "Based on the dishes you tend to enjoy. Updates as you order."
+                                    : "Crowd favorites here at this restaurant."}
+                            </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {forYouItems.map((item) => (
-                                <ItemCard
-                                    key={`foryou-${item._id}`}
-                                    item={item}
-                                    onAddToCart={handleAddToCart}
-                                />
-                            ))}
-                        </div>
+
+                        {forYouLoading && forYouItems.length === 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {[0, 1, 2].map((i) => (
+                                    <div
+                                        key={`skeleton-${i}`}
+                                        className="rounded-2xl border border-stone-200 bg-white overflow-hidden animate-pulse"
+                                    >
+                                        <div className="h-32 bg-stone-100" />
+                                        <div className="p-4 space-y-2">
+                                            <div className="h-4 w-2/3 bg-stone-100 rounded" />
+                                            <div className="h-3 w-full bg-stone-100 rounded" />
+                                            <div className="h-3 w-1/2 bg-stone-100 rounded" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {forYouItems.map((item) => (
+                                    <ItemCard
+                                        key={`foryou-${item._id}`}
+                                        item={item}
+                                        onAddToCart={handleAddToCart}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </section>
                 )}
 
