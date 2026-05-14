@@ -4,7 +4,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import { Check, ChefHat, Clock } from "lucide-react";
+import { Check, ChefHat, Clock, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 interface Order {
     _id: string;
@@ -186,6 +187,7 @@ export default function RestaurantOrdersPage() {
                             onAdvance={advance}
                             elapsed={elapsed(order.createdAt)}
                             updating={updatingId === order._id}
+                            slug={slug}
                         />
                     ))}
                 </div>
@@ -204,11 +206,13 @@ function OrderRow({
     onAdvance,
     elapsed,
     updating,
+    slug,
 }: {
     order: Order;
     onAdvance: (o: Order) => void;
     elapsed: string;
     updating: boolean;
+    slug: string;
 }) {
     const elapsedSec = Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 1000);
     const isUrgent = elapsedSec > 600 && order.status !== "served";
@@ -268,10 +272,17 @@ function OrderRow({
                 </div>
 
                 {/* Amount + action */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <p className="text-base font-semibold text-stone-900 tabular-nums hidden sm:block">
                         ₹{amount}
                     </p>
+                    <Link
+                        href={`/admin/${slug}/orders/${order._id}`}
+                        title="Diner context"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-[#86A6DE]/40 text-[#324F7B] hover:bg-[#86A6DE]/15 transition-colors"
+                    >
+                        <Sparkles className="w-3.5 h-3.5" />
+                    </Link>
                     {cfg.action && (
                         <button
                             onClick={() => onAdvance(order)}
