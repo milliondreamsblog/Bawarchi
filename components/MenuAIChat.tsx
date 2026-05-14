@@ -30,6 +30,7 @@ interface ChatMessage {
 
 interface MenuAIChatProps {
   restaurantId: string;
+  dinerId?: string | null;
   onAddToCart: (item: MenuItem, qty?: number) => void;
 }
 
@@ -40,7 +41,7 @@ const QUICK_PROMPTS = [
   "Low calorie meal ideas",
 ];
 
-export default function MenuAIChat({ restaurantId, onAddToCart }: MenuAIChatProps) {
+export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuAIChatProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -75,6 +76,7 @@ export default function MenuAIChat({ restaurantId, onAddToCart }: MenuAIChatProp
             content: m.content,
           })),
           restaurantId,
+          dinerId: dinerId || null,
         }),
       });
 

@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Item from "@/lib/models/Item.js";
 import { chat, isLLMConfigured } from "@/lib/llm";
-import { retrieveRelevantItems, RetrievedItem } from "@/lib/rag";
+import { search, RetrievedItem, HardFilters } from "@/lib/rag";
+import Diner from "@/lib/models/Diner.js";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -13,9 +14,10 @@ interface ChatMessage {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { messages, restaurantId } = body as {
+    const { messages, restaurantId, dinerId } = body as {
       messages: ChatMessage[];
       restaurantId: string;
+      dinerId?: string | null;
     };
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -40,7 +42,35 @@ export async function POST(request: Request) {
     await connectDB();
 
     const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content || "";
-    const retrieved = await retrieveRelevantItems(lastUser, restaurantId, 8);
+
+    // Pillar 3 Layer D — if we know this diner, fetch their taste vector and
+    // dietary hard filters so retrieval blends "what they're asking now" with
+    // "what they tend to like". Confidence threshold matches /api/ai/for-you.
+    let tasteVector: number[] | undefined;
+    let hardFilters: HardFilters | undefined;
+    let tasteUsed = false;
+    if (dinerId) {
+      const diner = await Diner.findById(dinerId)
+        .select("+tasteVector tasteConfidence dietaryPrefs")
+        .lean();
+      const d = diner as any;
+      if (d && Array.isArray(d.tasteVector) && d.tasteVector.length === 768 && d.tasteConfidence >= 0.4) {
+        tasteVector = d.tasteVector as number[];
+        tasteUsed = true;
+      }
+      const hf = d?.dietaryPrefs?.persistent?.hardFilters;
+      if (hf?.isVegan || hf?.isVeg) {
+        hardFilters = { isVegan: !!hf.isVegan, isVeg: !!hf.isVeg };
+      }
+    }
+
+    const retrieved = await search({
+      restaurantId,
+      queryText: lastUser,
+      tasteVector,
+      hardFilters,
+      k: 8,
+    });
 
     const menuContext = retrieved
       .map((i) => {
@@ -71,8 +101,17 @@ export async function POST(request: Request) {
       spiceLevel: i.spiceLevel,
     }));
 
-    const systemPrompt = `You are a friendly and helpful restaurant waiter AI assistant. You help customers navigate the menu, answer questions about dishes, make personalized recommendations, and can add items directly to the customer's cart.
+    const tastePreamble = tasteUsed
+      ? `
+TASTE CONTEXT (use this to personalize, but NEVER mention it explicitly):
+- This customer has eaten at restaurants on our platform before; the retrieved items above are already biased toward dishes that match their taste profile.
+- Speak in taste-language only: "you usually enjoy creamy, mild dishes", "this matches the flavors you tend to go for".
+- NEVER mention specific past orders, restaurant names, locations, or order history. Predictions are portable; raw history is not.
+`
+      : "";
 
+    const systemPrompt = `You are a friendly and helpful restaurant waiter AI assistant. You help customers navigate the menu, answer questions about dishes, make personalized recommendations, and can add items directly to the customer's cart.
+${tastePreamble}
 RELEVANT MENU ITEMS (semantically retrieved for this query):
 ${menuContext || "(no items currently available)"}
 

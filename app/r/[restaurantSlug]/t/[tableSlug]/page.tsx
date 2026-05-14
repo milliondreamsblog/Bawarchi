@@ -60,6 +60,8 @@ export default function TableMenuPage() {
     const [search, setSearch] = useState("");
     const [activeSection, setActiveSection] = useState<string | null>(null);
     const [dinerId, setDinerId] = useState<string | null>(null);
+    const [forYouItems, setForYouItems] = useState<MenuItem[]>([]);
+    const [forYouSource, setForYouSource] = useState<"taste" | "popular" | null>(null);
 
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
@@ -155,6 +157,33 @@ export default function TableMenuPage() {
 
         if (restaurantSlug && tableSlug) fetchData();
     }, [restaurantSlug, tableSlug, setGstPercentage]);
+
+    // Pillar 3 Layer D — "Picked for your taste" feed. Refetches when
+    // dinerId resolves so an initial popular-fallback can upgrade to a
+    // taste-based recommendation once the resolve call completes.
+    useEffect(() => {
+        if (!restaurant?._id) return;
+        const url = new URL("/api/ai/for-you", window.location.origin);
+        url.searchParams.set("restaurantId", restaurant._id);
+        if (dinerId) url.searchParams.set("dinerId", dinerId);
+        url.searchParams.set("k", "6");
+        let cancelled = false;
+        fetch(url.toString())
+            .then(async (r) => {
+                const ct = r.headers.get("content-type") || "";
+                if (!ct.includes("application/json")) return null;
+                return r.json();
+            })
+            .then((data) => {
+                if (cancelled || !data?.success) return;
+                setForYouItems((data.items || []) as MenuItem[]);
+                setForYouSource(data.source === "taste" ? "taste" : "popular");
+            })
+            .catch(() => {
+                // Silent — the regular menu still renders below.
+            });
+        return () => { cancelled = true; };
+    }, [restaurant?._id, dinerId]);
 
     const handleAddToCart = (item: MenuItem, qty = 1) => {
         addItem({ itemId: item._id, name: item.name, price: item.price }, qty);
@@ -329,6 +358,28 @@ export default function TableMenuPage() {
                     </div>
                 )}
 
+                {forYouItems.length > 0 && forYouSource && (
+                    <section className="mb-12 scroll-mt-24">
+                        <div className="flex items-baseline justify-between mb-5">
+                            <div className="flex items-baseline gap-3">
+                                <p className="text-[11px] uppercase tracking-[0.25em] text-[#86A6DE] font-semibold">
+                                    {forYouSource === "taste" ? "Picked for your taste" : "Popular tonight"}
+                                </p>
+                            </div>
+                            <div className="hidden sm:block flex-1 mx-4 border-b border-dashed border-stone-300" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {forYouItems.map((item) => (
+                                <ItemCard
+                                    key={`foryou-${item._id}`}
+                                    item={item}
+                                    onAddToCart={handleAddToCart}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 {filteredSections.map((section) => (
                     <section
                         key={section.name}
@@ -400,6 +451,7 @@ export default function TableMenuPage() {
             {restaurant && (
                 <MenuAIChat
                     restaurantId={restaurant._id}
+                    dinerId={dinerId}
                     onAddToCart={handleAddToCart}
                 />
             )}
