@@ -2,7 +2,7 @@
 
 > Companion to `piller3.md` (the architecture). This is the **executable plan** for the YC demo sprint: what gets built, in what order, with checkboxes to track progress.
 
-**Last updated:** 2026-05-14 (Step 0 complete + Step 1 code complete; 5/5 Step 1 API probes pass)
+**Last updated:** 2026-05-14 (Steps 0, 1 verified end-to-end; Step 2 code complete, awaiting fresh-order verification)
 **Target:** YC demo (90-second magic moment) — cross-restaurant taste recognition working end-to-end.
 **Estimated total:** 5–7 focused engineering days; 12–14 calendar days realistic.
 
@@ -32,8 +32,8 @@
 ## High-level sequence
 
 - [x] **Step 0** — Order hardening (prerequisite, ~1 day) — code complete; 4/4 automated security probes pass
-- [x] **Step 1** — Minimal Diner schema + opportunistic linking (~0.5 day) — code complete; 5/5 API probes pass; browser end-to-end smoke pending
-- [ ] **Step 2** — Taste vector computation (~0.5 day)
+- [x] **Step 1** — Minimal Diner schema + opportunistic linking (~0.5 day) — verified end-to-end (5/5 API probes + 4/4 browser checks)
+- [~] **Step 2** — Taste vector computation (~0.5 day) — code complete; awaiting fresh-order verification
 - [ ] **Step 3** — Cross-restaurant retrieval (~0.5 day)
 - [ ] **Step 4** — Restaurant-facing context card (~0.5 day)
 - [ ] **Step 5** — Seeded demo data (~2–3 hours)

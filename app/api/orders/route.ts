@@ -10,6 +10,7 @@ import { computeBilling, BillingError } from "@/lib/billing";
 import { issueCancelToken } from "@/lib/cancelToken";
 import { requireAuth } from "@/lib/utils/apiAuth";
 import { attachPhoneHash } from "@/lib/diner";
+import { recomputeTasteVector } from "@/lib/taste";
 
 export async function GET(request: Request) {
   // Authenticated. Restaurants see only their own orders (restaurantId is
@@ -180,6 +181,16 @@ export async function POST(request: Request) {
     if (dinerId && phoneForOrder) {
       attachPhoneHash(dinerId, phoneForOrder).catch((err) => {
         console.warn("[orders] attachPhoneHash failed:", err?.message);
+      });
+    }
+
+    // Layer C — recompute the diner's taste vector now that a new order
+    // has landed. Fire-and-forget; the order response doesn't wait for it.
+    // At MVP scale this completes in ~200-500ms; if Mongo is slow it just
+    // means the diner's vector is one order stale until the next scan.
+    if (dinerId) {
+      recomputeTasteVector(dinerId).catch((err) => {
+        console.warn("[orders] recomputeTasteVector failed:", err?.message);
       });
     }
 
