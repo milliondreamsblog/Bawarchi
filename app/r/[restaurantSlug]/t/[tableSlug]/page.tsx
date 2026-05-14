@@ -59,6 +59,7 @@ export default function TableMenuPage() {
     const [dietFilter, setDietFilter] = useState<DietFilter>("all");
     const [search, setSearch] = useState("");
     const [activeSection, setActiveSection] = useState<string | null>(null);
+    const [dinerId, setDinerId] = useState<string | null>(null);
 
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
@@ -69,6 +70,35 @@ export default function TableMenuPage() {
     useEffect(() => {
         useCartStore.persist.rehydrate();
         setIsHydrated(true);
+    }, []);
+
+    // Pillar 3 §4.1 — Layer A identity resolution. First scan mints a UUID
+    // in localStorage; subsequent scans reuse it. Server upserts a Diner row
+    // and returns the dinerId we attach to orders downstream. Fire-and-forget
+    // — menu still renders if this fails (anonymous fallback).
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const KEY = "bawarchie:dinerUuid";
+        let uuid = localStorage.getItem(KEY);
+        if (!uuid) {
+            uuid =
+                typeof crypto !== "undefined" && "randomUUID" in crypto
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            localStorage.setItem(KEY, uuid);
+        }
+        fetch("/api/diner/resolve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ uuid }),
+        })
+            .then((r) => r.json())
+            .then((data) => {
+                if (data?.success && data.dinerId) setDinerId(data.dinerId);
+            })
+            .catch(() => {
+                // Anonymous fallback — order will be created without dinerId.
+            });
     }, []);
 
     useEffect(() => {
@@ -354,7 +384,7 @@ export default function TableMenuPage() {
                             )}
 
                             <div className="mt-3">
-                                <RazorpayCheckout tableSlug={tableSlug} restaurantId={restaurant?._id} />
+                                <RazorpayCheckout tableSlug={tableSlug} restaurantId={restaurant?._id} dinerId={dinerId} />
                             </div>
                         </div>
                     </div>

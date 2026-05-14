@@ -9,6 +9,7 @@ import Restaurant from "@/lib/models/Restaurant.js";
 import { computeBilling, BillingError } from "@/lib/billing";
 import { issueCancelToken } from "@/lib/cancelToken";
 import { requireAuth } from "@/lib/utils/apiAuth";
+import { attachPhoneHash } from "@/lib/diner";
 
 export async function GET(request: Request) {
   // Authenticated. Restaurants see only their own orders (restaurantId is
@@ -102,6 +103,10 @@ export async function POST(request: Request) {
     // for these items right now, reject. This closes the tamper window
     // between create-order and orders POST (e.g. submitting cart B after
     // paying for cart A, or after a menu price change mid-checkout).
+    //
+    // Same pass also captures the contact number Razorpay collected (used
+    // below to opportunistically bind a phone hash to the Diner, §4.1).
+    let razorpayContact: string | null = null;
     if (razorpayOrderId) {
       const restaurant = await Restaurant.findById(restaurantId).lean();
       const key_id = (restaurant as any)?.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
@@ -113,7 +118,10 @@ export async function POST(request: Request) {
         );
       }
       const razorpay = new Razorpay({ key_id, key_secret });
-      const rzpOrder = await razorpay.orders.fetch(razorpayOrderId);
+      const fetches: Promise<any>[] = [razorpay.orders.fetch(razorpayOrderId)];
+      if (razorpayPaymentId) fetches.push(razorpay.payments.fetch(razorpayPaymentId));
+      const [rzpOrder, rzpPayment] = await Promise.all(fetches);
+
       const expectedPaise = Math.round(breakdown.finalAmount * 100);
       if (Number(rzpOrder.amount) !== expectedPaise) {
         return NextResponse.json(
@@ -123,6 +131,9 @@ export async function POST(request: Request) {
           },
           { status: 409 }
         );
+      }
+      if (rzpPayment && typeof rzpPayment.contact === "string" && rzpPayment.contact.trim()) {
+        razorpayContact = rzpPayment.contact.trim();
       }
     }
 
@@ -144,7 +155,8 @@ export async function POST(request: Request) {
     if (razorpayOrderId) orderData.razorpayOrderId = razorpayOrderId;
     if (razorpayPaymentId) orderData.razorpayPaymentId = razorpayPaymentId;
     if (dinerId) orderData.dinerId = dinerId;
-    if (customerPhone) orderData.customerPhone = customerPhone;
+    const phoneForOrder = customerPhone || razorpayContact;
+    if (phoneForOrder) orderData.customerPhone = phoneForOrder;
 
     const order = await Order.create(orderData);
 
@@ -160,6 +172,15 @@ export async function POST(request: Request) {
         if (item.stock === 0) item.available = false;
         await item.save();
       }
+    }
+
+    // Opportunistic identity binding (§4.1). If we have both a Diner and a
+    // phone from Razorpay, attach the hash. Fire-and-forget — order success
+    // doesn't depend on this, and the helper handles collisions gracefully.
+    if (dinerId && phoneForOrder) {
+      attachPhoneHash(dinerId, phoneForOrder).catch((err) => {
+        console.warn("[orders] attachPhoneHash failed:", err?.message);
+      });
     }
 
     const { token: cancelToken } = issueCancelToken(

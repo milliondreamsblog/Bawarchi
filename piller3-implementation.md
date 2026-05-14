@@ -2,7 +2,7 @@
 
 > Companion to `piller3.md` (the architecture). This is the **executable plan** for the YC demo sprint: what gets built, in what order, with checkboxes to track progress.
 
-**Last updated:** 2026-05-14 (Step 0 complete — automated security probes pass; manual cancel-flow checks remain)
+**Last updated:** 2026-05-14 (Step 0 complete + Step 1 code complete; 5/5 Step 1 API probes pass)
 **Target:** YC demo (90-second magic moment) — cross-restaurant taste recognition working end-to-end.
 **Estimated total:** 5–7 focused engineering days; 12–14 calendar days realistic.
 
@@ -23,15 +23,16 @@
 |---|---|---|
 | Pillar 1 — Vision menu ingestion | `[x]` shipped | `app/api/menu/ingest/route.ts`, `components/admin/MenuIngestModal.tsx` |
 | Pillar 2 — RAG AI waiter | `[x]` shipped | `lib/rag.ts`, `lib/embeddings.ts`, `app/api/ai/chat/route.ts` |
-| Pillar 3 — Pre-understood diner | `[ ]` not started | — |
+| Pillar 3 — Pre-understood diner | `[~]` Step 1 done | Diner model + identity routes + customer-page hook |
 | Step 0 — Order hardening | `[x]` complete (4/4 security probes pass; 3 manual cancel-flow checks remain) | All three fixes + schema prep + `scripts/step0-probes.mjs` |
+| Step 1 — Diner model + opportunistic linking | `[x]` complete (5/5 API probes pass; browser smoke remains) | `lib/models/Diner.js`, `lib/diner.ts`, `/api/diner/resolve`, `/api/diner/attach-phone`, customer page + RazorpayCheckout wiring, `scripts/step1-probes.mjs` |
 
 ---
 
 ## High-level sequence
 
 - [x] **Step 0** — Order hardening (prerequisite, ~1 day) — code complete; 4/4 automated security probes pass
-- [ ] **Step 1** — Minimal Diner schema + opportunistic linking (~0.5 day)
+- [x] **Step 1** — Minimal Diner schema + opportunistic linking (~0.5 day) — code complete; 5/5 API probes pass; browser end-to-end smoke pending
 - [ ] **Step 2** — Taste vector computation (~0.5 day)
 - [ ] **Step 3** — Cross-restaurant retrieval (~0.5 day)
 - [ ] **Step 4** — Restaurant-facing context card (~0.5 day)
@@ -162,21 +163,21 @@ Out-of-scope fixes landed during testing (free wins, not in Step 0 plan):
 
 ### Tasks
 
-- [ ] Create `lib/models/Diner.js` with the schema above
-- [ ] Create `lib/diner.ts` exporting:
+- [x] Create `lib/models/Diner.js` with the schema above + `state` enum (anonymous/opportunistic/identified)
+- [x] Create `lib/diner.ts` exporting:
   - `getOrCreateDinerByUuid(uuid)` → upsert anonymous diner
-  - `attachPhoneHash(dinerId, phoneE164)` → SHA-256, set state to `opportunistic`
-  - `hashPhone(e164)` → pure helper
-- [ ] Create `app/api/diner/resolve/route.ts` POST — `{ uuid }` → returns `{ dinerId }`
-- [ ] Create `app/api/diner/attach-phone/route.ts` POST — `{ dinerId, phone }` → upserts phoneHash
-- [ ] Edit `app/r/[restaurantSlug]/t/[tableSlug]/page.tsx`:
-  - On mount: read/write `localStorage["bawarchie:dinerUuid"]` (generate v4 UUID if missing)
-  - Call `/api/diner/resolve` once on first render
-  - Hold returned `dinerId` in component state
-- [ ] Edit `components/RazorpayCheckout.tsx`:
-  - In Razorpay `handler`, extract `response.razorpay_payment_id` → server-side fetch payment from Razorpay API to read contact number → POST `/api/diner/attach-phone`
-  - Pass `dinerId` to `POST /api/orders` so it lands on the Order row
-- [ ] Edit `app/api/orders/route.ts` POST — accept and persist `dinerId`, `customerPhone`
+  - `attachPhoneHash(dinerId, phone)` → SHA-256, set state to `opportunistic`; returns `{ ok, diner }` or `{ ok: false, merge: { existingDinerId, reason } }` on phone collision
+  - `hashPhone(phone)` → pure helper, normalizes to digits-only before hashing
+- [x] Create `app/api/diner/resolve/route.ts` POST — `{ uuid }` → `{ success, dinerId, state, tasteConfidence, dietaryPrefs }`
+- [x] Create `app/api/diner/attach-phone/route.ts` POST — `{ dinerId, phone }` → 200 on bind, 409 with merge marker on collision
+- [x] Edit `app/r/[restaurantSlug]/t/[tableSlug]/page.tsx`:
+  - On mount: read/write `localStorage["bawarchie:dinerUuid"]` (uses `crypto.randomUUID()` with a fallback)
+  - Call `/api/diner/resolve` once
+  - Hold returned `dinerId` in component state and pass to `RazorpayCheckout`
+- [x] Edit `components/RazorpayCheckout.tsx`: add `dinerId` prop, forward in `POST /api/orders`
+- [x] Server-side phone attach: `POST /api/orders` now fetches Razorpay payment in parallel with the order, extracts `contact`, stores on Order as `customerPhone`, and fires `attachPhoneHash(dinerId, contact)` opportunistically. Clean: no client wiring needed for phone binding.
+- [x] Edit `app/api/orders/route.ts` POST — accepts and persists `dinerId`, `customerPhone`
+- [x] `scripts/step1-probes.mjs` — 5/5 pass (resolve idempotency, attach-phone, collision-merge marker, bad input)
 
 **Demo shortcut:** for the YC demo recording, hardcode the demo diner's UUID and skip the phone-attach flow entirely. For V1, do the full opportunistic merge.
 

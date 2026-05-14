@@ -7,6 +7,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 interface RazorpayCheckoutProps {
     tableSlug: string;
     restaurantId: string;
+    dinerId?: string | null;
     onSuccess?: () => void;
 }
 
@@ -16,7 +17,7 @@ declare global {
     }
 }
 
-export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }: RazorpayCheckoutProps) {
+export default function RazorpayCheckout({ tableSlug, restaurantId, dinerId, onSuccess }: RazorpayCheckoutProps) {
     const { items, total, clearCart, getBillingBreakdown } = useCartStore();
     const [loading, setLoading] = React.useState(false);
     const billingBreakdown = getBillingBreakdown();
@@ -95,6 +96,10 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, onSuccess }:
                                     items: orderItems,
                                     razorpayOrderId: response.razorpay_order_id,
                                     razorpayPaymentId: response.razorpay_payment_id,
+                                    // Pillar 3 §4.1 — bind this order to the
+                                    // platform-level Diner. Null is fine
+                                    // (anonymous fallback if resolve failed).
+                                    dinerId: dinerId || null,
                                 }),
                             });
 
