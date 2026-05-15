@@ -139,6 +139,35 @@ export type CreateTableRequest = {
 
 export type CreateTableResponse = { table: TableItem };
 
+/**
+ * One inventory row as returned by GET /api/inventory?restaurantId=...
+ * The endpoint also exists at /api/items but with a smaller projection.
+ */
+export type InventoryItem = {
+  _id: string;
+  name: string;
+  category?: string;
+  stock: number;
+  lowStockThreshold?: number;
+  available: boolean;
+  image?: string;
+  price: number;
+};
+
+export type InventoryListResponse = { items: InventoryItem[] };
+
+/**
+ * PATCH /api/inventory bulk-update payload. `stock` setting auto-derives
+ * `available` server-side (stock === 0 -> available = false).
+ */
+export type InventoryUpdateRequest = {
+  updates: Array<{
+    itemId: string;
+    stock?: number;
+    lowStockThreshold?: number;
+  }>;
+};
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;
