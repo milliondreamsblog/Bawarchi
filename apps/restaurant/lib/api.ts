@@ -3,9 +3,12 @@ import type { ApiResponse } from "@bawarchie/types";
 const API_URL =
   process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
+const DEFAULT_TIMEOUT_MS = 10_000;
+
 type FetchOptions = {
   token?: string | null;
   signal?: AbortSignal;
+  timeoutMs?: number;
 };
 
 async function request<T>(
@@ -22,18 +25,39 @@ async function request<T>(
     headers.Authorization = `Bearer ${opts.token}`;
   }
 
+  // Wire a timeout. Native fetch has no built-in deadline, so a dropped
+  // packet would otherwise spin forever. Caller's signal still wins if
+  // provided — we just chain ours onto a fresh controller when they didn't.
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(),
+    opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  );
+  if (opts.signal) {
+    if (opts.signal.aborted) controller.abort();
+    else opts.signal.addEventListener("abort", () => controller.abort());
+  }
+
   try {
     const res = await fetch(`${API_URL}${path}`, {
       method,
       headers,
       body: body == null ? undefined : JSON.stringify(body),
-      signal: opts.signal,
+      signal: controller.signal,
     });
     const json = (await res.json()) as ApiResponse<T>;
     return json;
   } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return {
+        success: false,
+        error: `Request timed out after ${(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS) / 1000}s. Check that ${API_URL} is reachable from this device.`,
+      };
+    }
     const message = err instanceof Error ? err.message : "Network error";
     return { success: false, error: message };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
