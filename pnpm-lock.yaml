@@ -141,6 +141,9 @@ importers:
       expo-image:
         specifier: ~3.0.11
         version: 3.0.11(expo@54.0.34)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      expo-image-picker:
+        specifier: ^55.0.20
+        version: 55.0.20(expo@54.0.34)
       expo-linking:
         specifier: ~8.0.11
         version: 8.0.12(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -2997,6 +3000,16 @@ packages:
 
   expo-haptics@15.0.8:
     resolution: {integrity: sha512-lftutojy8Qs8zaDzzjwM3gKHFZ8bOOEZDCkmh2Ddpe95Ra6kt2izeOfOfKuP/QEh0MZ1j9TfqippyHdRd1ZM9g==}
+    peerDependencies:
+      expo: '*'
+
+  expo-image-loader@55.0.0:
+    resolution: {integrity: sha512-NOjp56wDrfuA5aiNAybBIjqIn1IxKeGJ8CECWZncQ/GzjZfyTYAHTCyeApYkdKkMBLHINzI4BbTGSlbCa0fXXQ==}
+    peerDependencies:
+      expo: '*'
+
+  expo-image-picker@55.0.20:
+    resolution: {integrity: sha512-lfWt/0rPWdKz8AdDEGmGHZIJSNlVc720Dlx5bfou10FU16ZV5wAbTU63nm2jkXd8hbXke4a/2Ha1dzxCVA+LQQ==}
     peerDependencies:
       expo: '*'
 
@@ -8616,6 +8629,15 @@ snapshots:
   expo-haptics@15.0.8(expo@54.0.34):
     dependencies:
       expo: 54.0.34(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
+
+  expo-image-loader@55.0.0(expo@54.0.34):
+    dependencies:
+      expo: 54.0.34(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
+
+  expo-image-picker@55.0.20(expo@54.0.34):
+    dependencies:
+      expo: 54.0.34(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
+      expo-image-loader: 55.0.0(expo@54.0.34)
 
   expo-image@3.0.11(expo@54.0.34)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:

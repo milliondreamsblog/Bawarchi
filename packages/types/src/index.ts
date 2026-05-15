@@ -168,6 +168,58 @@ export type InventoryUpdateRequest = {
   }>;
 };
 
+export type SpiceLevel = "mild" | "medium" | "hot" | "extra-hot";
+
+/**
+ * Full menu item record as stored in the items collection. Mirrors the
+ * Mongoose schema at apps/web/lib/models/Item.js — image is non-nullable
+ * at the schema level (every item must have a Cloudinary URL).
+ */
+export type ItemRecord = {
+  _id: string;
+  name: string;
+  description?: string;
+  price: number;
+  available: boolean;
+  category: string;
+  image: string;
+  calories?: number;
+  restaurantId: string;
+  isVeg: boolean;
+  isVegan: boolean;
+  isGlutenFree: boolean;
+  spiceLevel: SpiceLevel;
+  stock?: number;
+  lowStockThreshold?: number;
+};
+
+export type ItemsListResponse = { items: ItemRecord[] };
+
+export type ItemFormPayload = {
+  name: string;
+  description?: string;
+  price: number;
+  category?: string;
+  calories?: number;
+  image: string;
+  isVeg?: boolean;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  spiceLevel?: SpiceLevel;
+  available?: boolean;
+};
+
+export type CreateItemRequest = ItemFormPayload & { restaurantId: string };
+export type CreateItemResponse = { item: ItemRecord };
+
+export type UpdateItemRequest = Partial<ItemFormPayload> & {
+  restaurantId?: string;
+};
+export type UpdateItemResponse = { item: ItemRecord; message?: string };
+
+/** POST /api/upload-image response shape. */
+export type ImageUploadResponse = { imageUrl: string };
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;
