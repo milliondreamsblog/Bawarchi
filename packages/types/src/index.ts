@@ -276,6 +276,23 @@ export type MenuIngestResponse = {
   warnings: string[];
 };
 
+export type GstPercentage = 0 | 5 | 12 | 18;
+
+/**
+ * Restaurant payment + tax configuration, surfaced by
+ * GET /api/restaurant/[id]/settings. Razorpay secret is returned
+ * unmasked today; treat it accordingly on the client.
+ */
+export type RestaurantSettings = {
+  razorpayKeyId?: string;
+  razorpayKeySecret?: string;
+  gstPercentage: GstPercentage;
+};
+
+export type GetSettingsResponse = { settings: RestaurantSettings };
+
+export type UpdateSettingsRequest = Partial<RestaurantSettings>;
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;
