@@ -6,7 +6,21 @@
       "Bash(node *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(pnpm --version)",
+      "Bash(npm --version)",
+      "Bash(grep -v '\\\\.md$')",
+      "Bash(awk -F/ '{print $1}')",
+      "Bash(rm -rf .next node_modules)",
+      "Bash(rm -f tsconfig.tsbuildinfo next-env.d.ts)",
+      "Bash(mkdir -p apps/web packages)",
+      "Bash(mv .env apps/web/.env)",
+      "Bash(git mv *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm --filter @bawarchie/web exec next --version)",
+      "Bash(pnpm --filter @bawarchie/web dev)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/r/default-restaurant/t/table-1)"
     ]
   }
 }
