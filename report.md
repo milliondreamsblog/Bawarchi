@@ -91,7 +91,7 @@ I would like to express my deepest gratitude to my supervisor, **[SUPERVISOR NAM
 
 I am grateful to the **Department of Computer Science and Engineering at UIET, CSJM University, Kanpur** for providing the academic and infrastructural support that enabled this work.
 
-The three pilot deployment sites — **Cafeterian**, **Telogy Café**, and **Chai Sutta Bar** — generously allowed a final-year student to put unproven software in front of paying customers. Their willingness to participate is the only reason this project produced anything resembling real-world evidence. The owners and floor staff at each site fielded my questions, tolerated my QR-code sticker placement experiments, and offered unvarnished opinions when something didn't work. The deployment chapter would be empty without them.
+The three pilot deployment sites — **College Cafeteria**, **Tealogy**, and **Chai Sutta Bar** — generously allowed a final-year student to put unproven software in front of paying customers. Their willingness to participate is the only reason this project produced anything resembling real-world evidence. The owners and floor staff at each site fielded my questions, tolerated my QR-code sticker placement experiments, and offered unvarnished opinions when something didn't work. The deployment chapter would be empty without them.
 
 The diners who agreed to be interviewed during the field study deserve special mention. Walking up to someone mid-meal and asking them about an AI taste profile they didn't know existed is awkward; they were kind about it.
 
@@ -117,9 +117,9 @@ The system is composed of three pillars: **(1) Vision-based menu ingestion** usi
 
 Engineering quality has been treated as a first-class concern. The order-creation pipeline performs server-side billing computation against database-trusted item prices, closes a tamper window between create-order and order-persist via Razorpay amount cross-checking, and issues HMAC-signed short-lived cancel tokens for customer-initiated refunds within a 5-minute window. An automated regression harness runs sixteen probes plus an assertion-protected demo seed in under 50 seconds, producing a single `GO` / `NO-GO` signal before each demo recording.
 
-The platform has been deployed live at three pilot sites — Cafeterian, Telogy Café, and Chai Sutta Bar — over a six-week pilot. Qualitative user research conducted with twenty-seven diners and three restaurant operators reveals strong preference for the "Picked for your taste" hero section over conventional menus, particularly among repeat diners; restaurant operators valued the diner-context card primarily for upsell prompts rather than personalisation per se. The cross-restaurant magic moment, reproduced in a controlled seed environment, surfaces four-of-five "bullseye" matches in the top-five recommendations when a diner whose order history is paneer-and-dairy-heavy visits an Italian restaurant for the first time, with the spicy `arrabbiata` correctly excluded from the top-three by the calibrated-abstention mechanism.
+The platform has been deployed live at three pilot sites — College Cafeteria, Tealogy, and Chai Sutta Bar — over a six-week pilot. Qualitative user research conducted with twenty-seven diners and three restaurant operators reveals strong preference for the "Picked for your taste" hero section over conventional menus, particularly among repeat diners; restaurant operators valued the diner-context card primarily for upsell prompts rather than personalisation per se. The cross-restaurant magic moment, reproduced in a controlled seed environment, surfaces four-of-five "bullseye" matches in the top-five recommendations when a diner whose order history is paneer-and-dairy-heavy visits an Italian restaurant for the first time, with the spicy `arrabbiata` correctly excluded from the top-three by the calibrated-abstention mechanism.
 
-The final two chapters propose five concrete extensions that would raise the system from a working product to a credible piece of applied research: tool-calling AI agents, hybrid lexical-dense retrieval with cross-encoder reranking, implicit-feedback learning, an LLM-as-judge evaluation harness, and multimodal item embeddings.
+The final chapters distinguish between what has been shipped and what remains future work. Research extensions include tool-calling AI agents, hybrid lexical-dense retrieval with cross-encoder reranking, implicit-feedback learning, an LLM-as-judge evaluation harness, and multimodal item embeddings. Product extensions such as a dedicated operator mobile app, explicit OAuth accounts, and a social feed are framed as architectural follow-ons, not implemented features.
 
 **Keywords:** multi-tenant SaaS, recommender systems, cross-domain personalisation, retrieval-augmented generation, vector databases, privacy-preserving machine learning, embedding-based recommendation, restaurant technology, multimodal LLMs, MongoDB Atlas Vector Search.
 
@@ -220,8 +220,8 @@ Chapter 8   User Experience Design                              100
 
 Chapter 9   Real-World Deployment                               112
   9.1  Pilot site selection                                     112
-  9.2  Cafeterian                                               113
-  9.3  Telogy Café                                              115
+  9.2  College Cafeteria                                      113
+  9.3  Tealogy                                                115
   9.4  Chai Sutta Bar                                           117
   9.5  Onboarding-time measurements                             119
   9.6  Operational observations                                 121
@@ -250,6 +250,7 @@ Chapter 12  AI Novelty: Research Extensions                     152
   12.4 LLM-as-judge evaluation harness                          160
   12.5 Multimodal item embeddings                               163
   12.6 Inference cost optimisation                              165
+  12.7 Honest productisation roadmap                            166
 
 Chapter 13  Summary and Conclusions                             167
   13.1 Recap                                                    167
@@ -306,6 +307,8 @@ Appendix F  Selected code listings                              191
 | 8.3 | Admin workflow: order lifecycle state machine | 106 |
 | 8.4 | Brand palette and typography | 108 |
 | 9.1 | Pilot site locations and characteristics | 113 |
+| 9.2 | Pilot-site volume, menu complexity, and ticket comparison | 114 |
+| 9.3 | Site-wise feature adoption during pilot | 120 |
 | 10.1 | Sentiment distribution across pilot interviews | 132 |
 | 10.2 | Theme co-occurrence in qualitative coding | 138 |
 | 11.1 | Top-5 retrieval at Bella Cucina from cross-restaurant taste | 142 |
@@ -314,6 +317,7 @@ Appendix F  Selected code listings                              191
 | 12.2 | Hybrid retrieval pipeline | 156 |
 | 12.3 | Implicit-feedback learning loop | 159 |
 | 12.4 | LLM-as-judge evaluation harness | 161 |
+| 12.5 | Three-layer productisation roadmap | 166 |
 | C.1 | Database schema ER diagram | 184 |
 
 ---
@@ -341,6 +345,7 @@ Appendix F  Selected code listings                              191
 | 11.1 | Cross-restaurant retrieval — bullseye precision | 142 |
 | 11.2 | End-to-end latency measurements | 144 |
 | 11.3 | Onboarding-time savings vs manual entry | 145 |
+| 12.1 | Shipped primitives and future product layers | 166 |
 
 ---
 
@@ -451,16 +456,16 @@ The three "without" clauses are what differentiate this problem from the convent
 1. **Architectural** — Design and implement a three-pillar system in which (i) restaurant menus are ingested through a vision-based LLM pipeline, (ii) item-level recommendation is grounded in retrieval-augmented generation against per-restaurant embeddings, and (iii) cross-restaurant personalisation is mediated by a platform-level Diner entity carrying a taste vector derived from cross-tenant aggregation.
 2. **Algorithmic** — Develop a taste-vector derivation function that weights item embeddings by quantity, recency (exponential decay with 90-day half-life), and repeat-frequency (capped boost reflecting the "twice >> once; thrice = conviction" principle); produce a calibrated confidence score that gates downstream fallback to popular-tonight recommendations.
 3. **Engineering** — Implement the system on Next.js 16 + MongoDB Atlas (with native Vector Search) + Razorpay payments + Gemini LLMs; harden the order-creation pipeline against client-supplied tampering of billing and ownership; produce a regression harness that exercises sixteen probes plus an assertion-protected magic-moment seed in under one minute.
-4. **Empirical** — Deploy the system at three live cafés (Cafeterian, Telogy Café, Chai Sutta Bar) and conduct a semi-structured qualitative user study (n=27 diners, n=3 restaurant operators) over a six-week pilot.
-5. **Reflective** — Propose five concrete research extensions (tool-calling agents, hybrid retrieval with cross-encoder reranking, implicit-feedback learning, an LLM-as-judge evaluation harness, and multimodal item embeddings) that would raise the system from product to applied-research contribution.
+4. **Empirical** — Deploy the system at three live food-service sites (College Cafeteria, Tealogy, Chai Sutta Bar) and conduct a semi-structured qualitative user study (n=27 diners, n=3 restaurant operators) over a six-week pilot.
+5. **Reflective** — Propose concrete research extensions (tool-calling agents, hybrid retrieval with cross-encoder reranking, implicit-feedback learning, an LLM-as-judge evaluation harness, and multimodal item embeddings) and an honest productisation roadmap that separates shipped primitives from future features.
 
 ## 1.4 Scope of work
 
 The scope of this work covers the full software life-cycle of a dine-in ordering platform with cross-restaurant personalisation: requirements, architecture, implementation, deployment, and evaluation. The investigation is bounded as follows.
 
-**In scope.** Multi-tenant ordering pipeline; vision-based menu ingestion; vector embedding and retrieval; cross-restaurant taste graph derivation and retrieval; conversational AI grounded in retrieval; restaurant-side context card with three-tier disclosure; server-side billing integrity; automated regression testing; pilot deployment at three cafés; qualitative user research.
+**In scope.** Multi-tenant ordering pipeline; vision-based menu ingestion; vector embedding and retrieval; cross-restaurant taste graph derivation and retrieval; conversational AI grounded in retrieval; restaurant-side context card with three-tier disclosure; server-side billing integrity; automated regression testing; pilot deployment at three food-service sites; qualitative user research.
 
-**Out of scope.** Full DPDP-compliant consent ceremony (the architectural scaffolding is in place; a production-grade consent flow with audit log replay is a V1-production concern); merge logic when an opportunistically-linked diner produces a phone collision with an existing record (we log and defer); allergen severity tiers and verified-by-restaurant nutritional data (V2/V3 in the architecture roadmap); inventory forecasting; staff scheduling; loyalty programmes; offline-first PWA caching beyond installation.
+**Out of scope.** Full DPDP-compliant consent ceremony (the architectural scaffolding is in place; a production-grade consent flow with audit log replay is a V1-production concern); explicit OAuth accounts beyond the built anonymous/phone-linked identity states; a dedicated native operator mobile app beyond the responsive admin web; social feed aggregation beyond calorie-aware item/order metadata and printable receipt surfaces; merge logic when an opportunistically-linked diner produces a phone collision with an existing record (we log and defer); allergen severity tiers and verified-by-restaurant nutritional data (V2/V3 in the architecture roadmap); inventory forecasting; staff scheduling; loyalty programmes; offline-first PWA caching beyond installation.
 
 The system has been verified end-to-end at the API level (16/16 probes pass) and at the integration level (a regression seed reproduces the magic moment with a 4-of-5 bullseye top-5 outcome).
 
@@ -844,7 +849,7 @@ The LLMProvider seam is partially implemented in the current codebase (chat is p
 
 ## 4.1 The onboarding problem
 
-Restaurants in India typically maintain their menus on three substrates: a paper printout on the wall or table; a Microsoft Word document on the owner's laptop; and, occasionally, a PDF served from a Google Drive link. The number of items per restaurant in the pilot pool ranged from 28 (Chai Sutta Bar) to 87 (Cafeterian). Typing these into a SaaS admin panel — including item name, description, price, dietary class, spice level, and at least one categorisation — takes a non-trivial amount of operator time. Pilot operators estimated 3–4 hours of work for a 50-item menu, spread over multiple sessions because of typing fatigue and the cognitive load of categorising every dish.
+Restaurants in India typically maintain their menus on three substrates: a paper printout on the wall or table; a Microsoft Word document on the owner's laptop; and, occasionally, a PDF served from a Google Drive link. The number of items per restaurant in the pilot pool ranged from 28 (Chai Sutta Bar) to 87 (College Cafeteria). Typing these into a SaaS admin panel — including item name, description, price, dietary class, spice level, and at least one categorisation — takes a non-trivial amount of operator time. Pilot operators estimated 3–4 hours of work for a 50-item menu, spread over multiple sessions because of typing fatigue and the cognitive load of categorising every dish.
 
 This onboarding friction is the **single largest reason** a small-format café declines to adopt a new SaaS product. Pilot interviews repeatedly surfaced this objection.
 
@@ -1015,10 +1020,10 @@ The vision-extraction quality across the three pilot menus was measured manually
 
 | Pilot site | Items in menu | Items correctly extracted | Manual correction needed | Onboarding time (vs estimated manual) |
 |---|---|---|---|---|
-| Cafeterian | 87 | 81 (93%) | Price corrections on 6 items | 12 min vs ~4 hr |
-| Telogy Café | 41 | 40 (98%) | One description rewritten | 6 min vs ~2 hr |
+| College Cafeteria | 87 | 81 (93%) | Price corrections on 6 items | 12 min vs ~4 hr |
+| Tealogy | 41 | 40 (98%) | One description rewritten | 6 min vs ~2 hr |
 | Chai Sutta Bar | 28 | 28 (100%) | None | 4 min vs ~1.5 hr |
-*Table 4.2: Menu ingestion accuracy on pilot sites. Accuracy was highest where the menu was clean and well-photographed; the Cafeterian menu had handwritten daily-specials inserts that the extractor occasionally treated as separate items.*
+*Table 4.2: Menu ingestion accuracy on pilot sites. Accuracy was highest where the menu was clean and well-photographed; the College Cafeteria menu had handwritten daily-specials inserts that the extractor occasionally treated as separate items.*
 
 The 4–12-minute onboarding range is consistent with the project's design goal of "5-minute restaurant onboarding". Most failure cases were in price extraction when the menu used non-standard formatting (e.g., dotted leader lines obscuring numbers). The admin review step caught all observed errors before persistence — no incorrect prices reached the live menu.
 
@@ -1028,7 +1033,7 @@ The 4–12-minute onboarding range is consistent with the project's design goal 
 
 ## 5.1 Why retrieve before prompting
 
-The naïve implementation of "AI menu assistant" sends the entire menu into the LLM's system prompt every turn. For a 50-item menu this costs roughly 4000 tokens of context; for the Cafeterian 87-item menu, more like 7000 tokens. Across thousands of chat turns the cost is non-trivial. More importantly, the LLM's attention scales sub-linearly across long contexts, so it gets *worse* at finding the right item the longer the prompt becomes.
+The naïve implementation of "AI menu assistant" sends the entire menu into the LLM's system prompt every turn. For a 50-item menu this costs roughly 4000 tokens of context; for the College Cafeteria 87-item menu, more like 7000 tokens. Across thousands of chat turns the cost is non-trivial. More importantly, the LLM's attention scales sub-linearly across long contexts, so it gets *worse* at finding the right item the longer the prompt becomes.
 
 RAG inverts this. Embed the customer's query, retrieve the top-K most-similar items via vector search, and inject only those into the prompt. The LLM works with a focused 8-item context, regardless of menu size.
 
@@ -1194,6 +1199,8 @@ stateDiagram-v2
 | `opportunistic` | Phone captured at Razorpay checkout | Medium | Taste-based recommendations across restaurants |
 | `identified` | Explicit OTP verification | High | Full personalisation, server-side context card, cross-restaurant Receipts |
 *Table 6.1: Diner state transitions and triggers.*
+
+The implemented identity model therefore covers the first two layers: anonymous UUID continuity and opportunistic phone-linked continuity after payment. Explicit account creation through OAuth is intentionally not claimed as shipped. It is a future Layer-3 addition that can attach to the existing `identified` state without changing the lower layers of the taste graph.
 
 **Phone-hash binding.** When a customer pays via Razorpay, the order route fetches the Razorpay payment record server-side, extracts the contact number, and calls `attachPhoneHash(dinerId, phone)` which (a) normalises to digits, (b) SHA-256 hashes, and (c) writes the hash to the Diner record if no collision exists. The raw phone never leaves the order document. The hash is what enables a single diner to be recognised across devices: a diner who scans on phone A on Monday and on phone B on Tuesday, if both transactions captured the same phone, will be recognised as the same Diner.
 
@@ -1715,6 +1722,8 @@ stateDiagram-v2
 ```
 *Figure 8.3: Admin order lifecycle state machine. The pending/preparing/served path is the happy path; cancellation branches off and triggers refund if payment had occurred.*
 
+The operator-side implementation shipped as a responsive web admin, not as a native mobile application. During the pilot this mattered because owners often checked orders from phones; the existing REST API and responsive dashboard layout made that possible in a mobile browser. A dedicated Android/iOS companion app is therefore a productisation extension, not a separate backend project.
+
 ## 8.4 Visual design system
 
 The system uses a deliberately restrained brand palette (documented in `CLAUDE.md`).
@@ -1757,12 +1766,12 @@ Several specific design decisions reduce diner cognitive load.
 
 ## 9.1 Pilot site selection
 
-Three pilot sites were selected to span the small-format café spectrum.
+Three pilot sites were selected to span the small-format dine-in spectrum.
 
 ```mermaid
 flowchart LR
-  C[Cafeterian<br/>Multi-cuisine, 87 items<br/>8 tables, mid-tier price]
-  T[Telogy Café<br/>Coffee + light meals, 41 items<br/>5 tables, premium price]
+  C[College Cafeteria<br/>Multi-cuisine, 87 items<br/>8 tables, mid-tier price]
+  T[Tealogy<br/>Coffee + light meals, 41 items<br/>5 tables, premium price]
   CSB[Chai Sutta Bar<br/>Chai + snacks chain, 28 items<br/>10 tables, low price]
   C -. high menu complexity .-> X[span]
   T -. premium positioning .-> X
@@ -1772,30 +1781,39 @@ flowchart LR
 
 | Site | Cuisine | Menu size | Tables | Avg. ticket | Daily orders |
 |---|---|---|---|---|---|
-| Cafeterian | Multi-cuisine | 87 | 8 | ₹420 | ~60 |
-| Telogy Café | Coffee + Continental | 41 | 5 | ₹350 | ~35 |
+| College Cafeteria | Multi-cuisine | 87 | 8 | ₹420 | ~60 |
+| Tealogy | Coffee + Continental | 41 | 5 | ₹350 | ~35 |
 | Chai Sutta Bar | Chai + Indian snacks | 28 | 10 | ₹110 | ~180 |
 *Table 9.1: Pilot site characteristics.*
 
 The three sites were chosen deliberately to vary along three axes: menu complexity (28 → 87 items), per-ticket value (₹110 → ₹420), and order volume (35 → 180 daily orders). Conclusions from any one site would have been brittle; the three-site spread allows differentiating site-specific quirks from cross-cutting findings.
 
-## 9.2 Cafeterian deployment
+```mermaid
+xychart-beta
+  title "Pilot-site comparison before final thesis data freeze"
+  x-axis "Metric" ["CC menu", "CC ticket", "CC orders", "Tealogy menu", "Tealogy ticket", "Tealogy orders", "CSB menu", "CSB ticket", "CSB orders"]
+  y-axis "Normalised score (0-100)" 0 --> 100
+  bar [100, 100, 33, 47, 83, 19, 32, 26, 100]
+```
+*Figure 9.2: Draft pilot-site comparison graph. CC = College Cafeteria; CSB = Chai Sutta Bar. Values are normalised from the working pilot notes to make the three sites visually comparable; replace with final measured values before submission.*
 
-**Site description.** Cafeterian is a mid-tier multi-cuisine café in central Kanpur, with a mixed customer base of college students, IT professionals, and walk-in tourists. The owner had previously experimented with two food-delivery aggregators (Swiggy, Zomato) for off-peak revenue, but discontinued both due to commission costs; the café operates entirely on dine-in and direct takeaway.
+## 9.2 College Cafeteria deployment
 
-**Onboarding.** Menu ingestion took 12 minutes from photo upload to live menu, including admin review. The Cafeterian menu has a daily-specials insert handwritten on paper; the vision extractor occasionally treated insert items as menu items. The admin caught these during review.
+**Site description.** College Cafeteria is a mid-tier multi-cuisine café in central Kanpur, with a mixed customer base of college students, IT professionals, and walk-in tourists. The owner had previously experimented with two food-delivery aggregators (Swiggy, Zomato) for off-peak revenue, but discontinued both due to commission costs; the café operates entirely on dine-in and direct takeaway.
+
+**Onboarding.** Menu ingestion took 12 minutes from photo upload to live menu, including admin review. The College Cafeteria menu has a daily-specials insert handwritten on paper; the vision extractor occasionally treated insert items as menu items. The admin caught these during review.
 
 **Live operation.** Bawarchie was deployed at all 8 tables for a 14-day period during the pilot. Initially the operator was reluctant to enable the "diner context card" (concerned about creepy-factor); after observing the three-tier disclosure shape (operational + service-relevant only, no raw history), this was enabled in week 2.
 
 **Quantitative observation.** Average order placement time (QR scan → payment confirmation) was 4 minutes 12 seconds — roughly the same as paper-menu + human-waiter baseline. The AI waiter was used in 31% of orders; 84% of AI-waiter interactions resulted in at least one item being added to cart through a `cartAction`.
 
-## 9.3 Telogy Café deployment
+## 9.3 Tealogy deployment
 
-**Site description.** Telogy is a premium café targeting the laptop-and-coffee remote-work crowd. Average dwell time is high (~90 min/customer); orders per visit are typically two (one beverage, one snack/meal). The owner is also the chef and barista.
+**Site description.** Tealogy is a premium café targeting the laptop-and-coffee remote-work crowd. Average dwell time is high (~90 min/customer); orders per visit are typically two (one beverage, one snack/meal). The owner is also the chef and barista.
 
 **Onboarding.** 6 minutes. The 41-item menu was clean and well-formatted, photographed on a uniform background. Vision extraction was effectively perfect (40-of-41 correct; one item description was rewritten for brand voice).
 
-**Live operation.** 21-day pilot. Telogy's customer base is heavily repeat — the owner estimated 60% of weekly customers are recognisable regulars. The For You section was disproportionately valuable here: 47% of orders included at least one item that appeared in the For You section, vs 22% at Cafeterian and 18% at Chai Sutta Bar. The owner attributed this to the small menu — once the system knew a diner's preferences, there were genuinely fewer "next-best" options to surface.
+**Live operation.** 21-day pilot. Tealogy's customer base is heavily repeat — the owner estimated 60% of weekly customers are recognisable regulars. The For You section was disproportionately valuable here: 47% of orders included at least one item that appeared in the For You section, vs 22% at College Cafeteria and 18% at Chai Sutta Bar. The owner attributed this to the small menu — once the system knew a diner's preferences, there were genuinely fewer "next-best" options to surface.
 
 **Operator feedback.** The owner specifically requested that the diner-context card include a "spend range" hint (which the architecture supports but has not been implemented). She also noted that her staff started informally treating the context card as a shift-handoff document — when she stepped away, the next person on shift could read the card and continue the conversation.
 
@@ -1813,12 +1831,21 @@ The three sites were chosen deliberately to vary along three axes: menu complexi
 
 | Site | Vision extraction | Admin review | Total | Estimated manual entry |
 |---|---|---|---|---|
-| Cafeterian | 4 min | 8 min | 12 min | ~4 hours |
-| Telogy Café | 2 min | 4 min | 6 min | ~2 hours |
+| College Cafeteria | 4 min | 8 min | 12 min | ~4 hours |
+| Tealogy | 2 min | 4 min | 6 min | ~2 hours |
 | Chai Sutta Bar | 1 min | 3 min | 4 min | ~1.5 hours |
 *Table 9.2: Onboarding time per pilot site.*
 
 The achieved 6× to 22× speedup over manual entry held across the three sites. The largest savings were on the largest menus, where typing fatigue is most punishing.
+
+```mermaid
+xychart-beta
+  title "Feature adoption by pilot site"
+  x-axis "Feature/site" ["CC For You", "CC AI", "Tealogy For You", "Tealogy AI", "CSB For You", "CSB AI"]
+  y-axis "Orders using feature (%)" 0 --> 50
+  bar [22, 31, 47, 23, 18, 8]
+```
+*Figure 9.3: Draft feature-adoption graph for thesis discussion. CC = College Cafeteria; CSB = Chai Sutta Bar. These bars show which parts of the implementation mattered at each site; replace the working percentages with exported analytics once the final dataset is frozen.*
 
 ## 9.6 Operational observations
 
@@ -1826,7 +1853,7 @@ Five operational observations crossed all three sites:
 
 1. **The QR code sticker placement is non-trivial.** Stickers placed on table edges were ignored by some customers; stickers placed flat in the table centre were occasionally hidden by plates. The eventual best practice was a small acrylic table-tent with the QR on both sides.
 2. **First-load latency matters more than steady-state latency.** Customers reach for the menu within 2 seconds of scanning; if the page is still rendering, they reach for the paper backup. The For You section visibility within ≤1.5 seconds was important.
-3. **The AI waiter is more popular at slower-paced cafés** (Telogy 23% usage, Cafeterian 31%, Chai Sutta Bar 8%). Pace of the establishment is a determinant.
+3. **The AI waiter is more popular at slower-paced cafés** (Tealogy 23% usage, College Cafeteria 31%, Chai Sutta Bar 8%). Pace of the establishment is a determinant.
 4. **The diner-context card is read but not always trusted on first sight.** Operators in two of three sites described double-checking the predictions against their own memory of the customer for the first ~5 uses, after which they began trusting the prediction.
 5. **Customer phone-prefill in Razorpay is occasionally a friction point.** Roughly 10% of customers expressed concern at having to type a phone number; this was the primary reason the opportunistic phone-hash binding was placed *after* payment rather than before.
 
@@ -1847,7 +1874,7 @@ The qualitative study was structured around four primary research questions.
 
 The study used semi-structured interviews supplemented with passive observation, conducted on-site at the three pilot deployments.
 
-**Participants.** 27 diners (8 at Cafeterian, 13 at Telogy, 6 at Chai Sutta Bar) and 3 restaurant operators (one per site). Diners were recruited opportunistically — approached after they had completed an order during the pilot — and offered a ₹100 café credit as an incentive. The interview lasted 8–15 minutes per participant.
+**Participants.** 27 diners (8 at College Cafeteria, 13 at Tealogy, 6 at Chai Sutta Bar) and 3 restaurant operators (one per site). Diners were recruited opportunistically — approached after they had completed an order during the pilot — and offered a ₹100 café credit as an incentive. The interview lasted 8–15 minutes per participant.
 
 **Sampling.** Convenience sampling. The study makes no claim of statistical representativeness; the goal is theme identification, not effect-size estimation.
 
@@ -1857,8 +1884,8 @@ The study used semi-structured interviews supplemented with passive observation,
 
 | Participant pool | n | Age range | Gender mix | Repeat-visit pattern |
 |---|---|---|---|---|
-| Cafeterian diners | 8 | 19–34 | 5M / 3F | 2 first-time, 6 repeat |
-| Telogy diners | 13 | 22–42 | 7M / 6F | 1 first-time, 12 repeat |
+| College Cafeteria diners | 8 | 19–34 | 5M / 3F | 2 first-time, 6 repeat |
+| Tealogy diners | 13 | 22–42 | 7M / 6F | 1 first-time, 12 repeat |
 | Chai Sutta Bar diners | 6 | 18–28 | 5M / 1F | 4 first-time, 2 repeat |
 | Operators | 3 | 28–45 | 2M / 1F | n/a |
 *Table 10.1: Interview participant demographics.*
@@ -1924,11 +1951,11 @@ xychart-beta
 
 ### Selected illustrative excerpts (paraphrased from interview notes)
 
-> **Diner #14 (Telogy, repeat customer, 28F):**
+> **Diner #14 (Tealogy, repeat customer, 28F):**
 > "I noticed the 'Picked for you' thing the second time. The first time I thought it was the popular section. The second time I realised these were *my* picks. That's when I started using it."
 > — *Surfaces an onboarding gap: first-time users may misread the eyebrow.*
 
-> **Diner #7 (Cafeterian, first-time at site but repeat user on platform, 24M):**
+> **Diner #7 (College Cafeteria, first-time at site but repeat user on platform, 24M):**
 > "OK so it knew I'd like the pasta even though I've never been here. That's… that's actually impressive. How does that work? I won't pretend I understand the privacy bit fully, but as long as you're not telling them I'm at the gym on Tuesdays, fine."
 > — *Surfaces the awe-then-concern pattern; satisfied by the predictions-portable framing.*
 
@@ -1936,17 +1963,17 @@ xychart-beta
 > "I know what I want at this place. I don't need an app. But it was fast and I didn't have to wait for someone to take my order, so OK."
 > — *Confirms low value of personalisation at fast-turnover sites; high value of order-without-waiting.*
 
-> **Diner #4 (Cafeterian, repeat, 31F, vegetarian):**
+> **Diner #4 (College Cafeteria, repeat, 31F, vegetarian):**
 > "I really, really appreciate that I didn't see any chicken on the suggested section. Other apps don't filter — they just show vegetarian as a chip you can tap. The fact that this was the default for me was the nicest thing."
 > — *Demonstrates value of hard dietary filters as a first-class affordance, not a checkbox.*
 
-> **Diner #19 (Telogy, repeat, 35M, gluten-intolerant):**
+> **Diner #19 (Tealogy, repeat, 35M, gluten-intolerant):**
 > "The summary said I lean gluten-free. I didn't tell anyone that. The system inferred it from my orders. Useful — but also, please give me a way to confirm or override it."
 > — *Surfaces a feature gap: diner-side preference review/edit.*
 
 ## 10.5 Findings — restaurant side
 
-| Theme | Cafeterian | Telogy | Chai Sutta Bar |
+| Theme | College Cafeteria | Tealogy | Chai Sutta Bar |
 |---|---|---|---|
 | Frequency of context-card use | Low (a few times daily) | High (used on most repeat customers) | None (too fast-paced) |
 | Stated value: upsell | High | Medium | Low |
@@ -1956,7 +1983,7 @@ xychart-beta
 | Feature requests | Spend-range tag | "Used to come with X friend" annotation | Pin urgent orders (not personalisation-related) |
 *Table 10.5: Sentiment-coded findings — restaurant side.*
 
-The shift-handoff value at Telogy was the most unexpected operator finding. The owner described showing the card to a new shift-starter at change-of-shift, who would then read it and approach the table with informed conversation. This was not a use case the system was designed for; it emerged from operational improvisation.
+The shift-handoff value at Tealogy was the most unexpected operator finding. The owner described showing the card to a new shift-starter at change-of-shift, who would then read it and approach the table with informed conversation. This was not a use case the system was designed for; it emerged from operational improvisation.
 
 ## 10.6 Thematic analysis
 
@@ -1996,7 +2023,7 @@ Two findings warrant being elevated as cross-cutting insights:
 
 1. **The "Picked for your taste" eyebrow needs to differentiate more clearly on first encounter.** Diners #14, #18, and #23 all initially read the section as popular-tonight on first visit. A subtle "based on your taste" sub-tagline or an animated reveal on first scroll could close this gap.
 2. **Diner-side preference confirmation/override should be added.** Diner #19's request to confirm the inferred gluten-free leaning is a recurrent theme; a "what we think we know about you" view that lets the diner correct the inference would build trust.
-3. **Spend-range disclosure to operators is requested.** Both operators at sites with higher-value menus (Cafeterian and Telogy) requested a typical-spend signal. This is supportable from existing data with no new collection.
+3. **Spend-range disclosure to operators is requested.** Both operators at sites with higher-value menus (College Cafeteria and Tealogy) requested a typical-spend signal. This is supportable from existing data with no new collection.
 4. **Speed-of-render is non-negotiable.** Below ~2 seconds, customers fall back to paper. Above ~2 seconds, customers wait. Engineering effort to optimise the first paint is high-leverage.
 5. **AI-waiter conversational tone should remain functional, not chatty.** Diners described the AI as a "tool" rather than a "person"; pretending otherwise (long pleasantries, emotional language) was experienced as wasted time.
 
@@ -2060,8 +2087,8 @@ The architecture's design target of "<500ms end-to-end for retrieval" is met at 
 
 | Site | Onboarding (Bawarchie) | Estimated manual entry | Speedup |
 |---|---|---|---|
-| Cafeterian | 12 min | ~4 hours | **20×** |
-| Telogy Café | 6 min | ~2 hours | **20×** |
+| College Cafeteria | 12 min | ~4 hours | **20×** |
+| Tealogy | 6 min | ~2 hours | **20×** |
 | Chai Sutta Bar | 4 min | ~1.5 hours | **22×** |
 *Table 11.3: Onboarding-time savings vs manual entry.*
 
@@ -2118,7 +2145,7 @@ This work has limitations that are important to acknowledge.
 
 # Chapter 12 — AI Novelty: Research Extensions
 
-This chapter proposes five concrete extensions that would raise the system from a working product to an applied-research contribution. Each is selected against three criteria: (a) it is implementable within an additional 1–3 months of effort, (b) it is defensible in a B.Tech viva as a legitimate piece of novelty, and (c) it produces measurable improvements that can be reported in a follow-up paper or thesis appendix.
+This chapter proposes concrete extensions that would raise the system from a working product to an applied-research contribution, followed by a separate productisation roadmap. The research extensions are selected against three criteria: (a) they are implementable within an additional 1–3 months of effort, (b) they are defensible in a B.Tech viva as legitimate technical novelty, and (c) they produce measurable improvements that can be reported in a follow-up paper or thesis appendix.
 
 ## 12.1 Tool-calling AI waiter
 
@@ -2247,6 +2274,35 @@ At scale, three concrete cost optimisations matter.
 | Batch taste-vector recompute | 70% on Mongoose write load | Medium (1 week) |
 | Tiered model routing | 40–60% on token spend | Medium (2 weeks) |
 
+## 12.7 Honest productisation roadmap
+
+Some adjacent product ideas are natural extensions of the architecture, but they should not be claimed as shipped work. Framing them as future work is stronger because each one is anchored in an implemented primitive.
+
+```mermaid
+flowchart LR
+  subgraph BUILT["Built primitives"]
+    A[Responsive operator admin]
+    B[Anonymous + phone-linked diner identity]
+    C[Calorie-aware items + printable receipt]
+  end
+  subgraph FUTURE["Future product layers"]
+    M[Native operator mobile companion]
+    O[Explicit OAuth account layer]
+    F[Share cards + social feed]
+  end
+  A --> M
+  B --> O
+  C --> F
+```
+*Figure 12.5: Three-layer productisation roadmap. Each future feature extends a shipped primitive rather than requiring a rewrite.*
+
+| Future layer | Shipped primitive it builds on | Honest claim |
+|---|---|---|
+| Operator mobile companion | Responsive admin web plus existing REST API surface | The admin already works in mobile browsers; a native app is future work and should require no backend rework. |
+| Explicit user accounts | UUID identity plus opportunistic phone-hash binding | Phone-linked identity is built; OAuth is a Layer-3 identity extension justified by opt-in willingness and cross-device continuity. |
+| Social feed | Calorie-aware item data, AI calorie queries, and printable order receipt | The system has partial content primitives for shareable food/order cards; the share-card generator and aggregating feed are future work, not shipped. |
+*Table 12.1: Shipped primitives and future product layers.*
+
 ---
 
 # Chapter 13 — Summary and Conclusions
@@ -2255,7 +2311,7 @@ At scale, three concrete cost optimisations matter.
 
 This work has presented **Bawarchie**, a multi-tenant QR-based restaurant ordering platform whose central technical contribution is a privacy-preserving cross-restaurant taste graph. The architecture is structured as three pillars — vision-based menu ingestion, RAG-grounded AI waiter, and the pre-understood diner system — implemented atop a deliberately boring infrastructure stack (Next.js, MongoDB Atlas, Razorpay, Gemini).
 
-The thesis's central claim — that cross-cuisine recommendation can be derived from primitive-level embedding geometry alone, with the privacy property enforced by code organisation rather than by policy — has been validated through (a) a reproducible regression assertion producing 4-of-5 bullseye matches on a canonical Mughlai-Italian pair, (b) a six-week pilot deployment at three live cafés in Kanpur, and (c) a qualitative user study with twenty-seven diners and three restaurant operators.
+The thesis's central claim — that cross-cuisine recommendation can be derived from primitive-level embedding geometry alone, with the privacy property enforced by code organisation rather than by policy — has been validated through (a) a reproducible regression assertion producing 4-of-5 bullseye matches on a canonical Mughlai-Italian pair, (b) a six-week pilot deployment at three live food-service sites in Kanpur, and (c) a qualitative user study with twenty-seven diners and three restaurant operators.
 
 ## 13.2 Contributions
 
@@ -2279,6 +2335,7 @@ The most immediate future-work directions, in order of expected impact:
 5. **Multimodal embeddings** (§12.5).
 6. **Implicit-feedback learning** (§12.3).
 7. **Inference cost optimisation** (§12.6) — necessary at production scale.
+8. **Productisation roadmap** (§12.7) — native operator mobile companion, explicit OAuth accounts, and a social feed are future layers, each grounded in a shipped primitive rather than claimed as complete.
 
 Longer-horizon directions that exceed a B.Tech follow-up scope but are worth flagging: federated taste vectors that keep aggregation on the diner's device, formal differential-privacy guarantees on the taste description, and the V2/V3 nutritional-data tiers from the architecture roadmap.
 
