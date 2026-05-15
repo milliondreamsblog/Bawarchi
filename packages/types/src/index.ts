@@ -114,6 +114,31 @@ export type FeedbackListResponse = {
   summary: FeedbackSummary;
 };
 
+/**
+ * One table row as returned by GET /api/tables?restaurantId=...
+ * `qrUrl` is a Cloudinary-hosted QR PNG generated server-side at create time.
+ */
+export type TableItem = {
+  _id: string;
+  tableNumber: number;
+  slug: string;
+  restaurantId: string;
+  qrUrl?: string;
+  status: "free" | "occupied";
+  occupiedAt?: string | null;
+  currentOrderId?: string | null;
+};
+
+export type TablesListResponse = { tables: TableItem[] };
+
+export type CreateTableRequest = {
+  tableNumber: number;
+  slug: string;
+  restaurantId: string;
+};
+
+export type CreateTableResponse = { table: TableItem };
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;
