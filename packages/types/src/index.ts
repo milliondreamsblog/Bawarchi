@@ -77,6 +77,43 @@ export type OrdersListResponse = {
   orders: OrderListItem[];
 };
 
+export type FeedbackSentimentLabel = "positive" | "neutral" | "negative";
+
+/**
+ * One review row as returned by GET /api/feedback (admin view).
+ * `sentiment` is populated by the OpenAI sentiment step in the POST handler;
+ * absent when the customer left no text or when the LLM was unavailable.
+ */
+export type FeedbackItem = {
+  _id: string;
+  restaurantId: string;
+  orderId?: string;
+  tableSlug: string;
+  rating: number;
+  text: string;
+  sentiment?: {
+    score: number;
+    label: FeedbackSentimentLabel;
+    tags: string[];
+    summary: string;
+  };
+  createdAt: string;
+};
+
+export type FeedbackSummary = {
+  total: number;
+  avgRating: number;
+  ratingDist: { star: number; count: number }[];
+  sentimentCounts: { positive: number; neutral: number; negative: number };
+  positivePercent: number;
+};
+
+/** GET /api/feedback?restaurantId=... response payload. */
+export type FeedbackListResponse = {
+  reviews: FeedbackItem[];
+  summary: FeedbackSummary;
+};
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;
