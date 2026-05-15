@@ -16,6 +16,7 @@
   "dependencies": {
     "@bawarchie/types": "workspace:*",
     "@vercel/analytics": "^1.6.1",
+    "jose": "^6.2.3",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.8.0",
     "dotenv": "^17.2.3",

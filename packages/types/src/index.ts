@@ -21,3 +21,33 @@ export type OrderStatus =
   | "served"
   | "cancelled"
   | "refunded";
+
+/**
+ * Authenticated principal — same shape whether resolved from a NextAuth
+ * cookie (web) or from a Bearer JWT (native).
+ *
+ * `slug` is set for role === "restaurant"; absent for super-admin.
+ */
+export type SessionUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: "super-admin" | "restaurant";
+  slug?: string;
+};
+
+/** POST /api/auth/native request body. */
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+/**
+ * Payload of POST /api/auth/native on success. Combined with ApiSuccess
+ * at the route, the wire shape is:
+ *   { success: true, token: string, user: SessionUser }
+ */
+export type LoginResponse = {
+  token: string;
+  user: SessionUser;
+};
