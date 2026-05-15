@@ -2,9 +2,13 @@
 
 Multi-tenant QR-based restaurant ordering SaaS. Customers scan a table QR → menu → AI waiter → cart → Razorpay checkout → live order tracking. Restaurant admins manage menu/items/tables/orders/inventory/feedback. Super admin approves restaurants.
 
+The repo is a **pnpm + Turborepo monorepo** with one Next.js web app and two Expo native apps. Shared TypeScript types live in `packages/types`.
+
 ## Stack
 
-- **Next.js 16** (App Router) + **React 19** + **TypeScript** + **Tailwind CSS 4**
+- **Web** (`apps/web`): Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4
+- **Restaurant native app** (`apps/restaurant`): Expo SDK 54 + Expo Router + React Native 0.81 — staff order queue / push notifications (in progress)
+- **Customer native app** (`apps/customer`): Expo SDK 54 + Expo Router — opt-in social/loyalty layer on top of the anonymous QR flow (in progress)
 - **MongoDB** via Mongoose 8
 - **NextAuth 5** (Credentials provider, JWT sessions)
 - **OpenAI GPT-4o-mini** (AI waiter, sentiment analysis)
@@ -16,42 +20,64 @@ Multi-tenant QR-based restaurant ordering SaaS. Customers scan a table QR → me
 ## Repo layout
 
 ```
-app/
-  api/                          # All route handlers (33 routes)
-    auth/[...nextauth]/         # NextAuth handler (delegates to lib/auth.ts)
-    auth/signup/                # Restaurant registration (status=pending)
-    auth/restaurants/           # Super admin approval
-    menu/, items/, tables/      # Restaurant admin CRUD
-    orders/, orders/stream/     # Order lifecycle + SSE feed
-    payments/                   # Razorpay create-order + verify
-    feedback/, ai/              # Reviews + GPT integration
-    analytics/, super-admin/    # Aggregations
-    push/                       # PWA push subscriptions
-    setup/                      # One-time seed
-  r/[restaurantSlug]/t/[tableSlug]/  # Customer QR landing
-  admin/[slug]/                 # Restaurant dashboard (menu/items/tables/orders/kitchen/inventory/feedback/analytics/settings)
-  super-admin/                  # Platform admin
-  auth/, order-success/, chat/
+apps/
+  web/                            # Next.js 16 app — the API surface + browser experience
+    app/
+      api/                        # All route handlers (33 routes)
+        auth/[...nextauth]/       # NextAuth handler (delegates to lib/auth.ts)
+        auth/signup/              # Restaurant registration (status=pending)
+        auth/restaurants/         # Super admin approval
+        menu/, items/, tables/    # Restaurant admin CRUD
+        orders/, orders/stream/   # Order lifecycle + SSE feed
+        payments/                 # Razorpay create-order + verify
+        feedback/, ai/            # Reviews + GPT integration
+        analytics/, super-admin/  # Aggregations
+        push/                     # PWA push subscriptions
+        setup/                    # One-time seed
+      r/[restaurantSlug]/t/[tableSlug]/  # Customer QR landing
+      admin/[slug]/               # Restaurant dashboard
+      super-admin/, auth/, order-success/, chat/
+    components/                   # ItemCard, Cart, RazorpayCheckout, MenuAIChat, admin/*, landing/*
+    lib/
+      auth.ts                     # NextAuth config — super-admin check + restaurant credential check
+      db.js                       # Mongoose connection (cached)
+      models/                     # Restaurant, Item, Order, Table, Feedback, Diner, PushSubscription
+      store/useCartStore.ts       # Zustand cart with billing breakdown
+      utils/                      # password (bcrypt), slug, etc.
+    scripts/                      # seed.mjs, seed-demo.mjs, probe-all.mjs, etc.
+    .env                          # Web-app secrets (gitignored — never commit)
+    next.config.ts                # turbopack.root set to monorepo root
 
-components/                     # ItemCard, Cart, RazorpayCheckout, MenuAIChat, admin/*
-lib/
-  auth.ts                       # NextAuth config — super-admin check + restaurant credential check
-  db.js                         # Mongoose connection (cached)
-  models/                       # Restaurant, Item, Order, Table, Feedback, PushSubscription
-  store/useCartStore.ts         # Zustand cart with billing breakdown
-  utils/                        # password (bcrypt), slug, etc.
-.env                            # Secrets (gitignored — never commit)
+  restaurant/                     # Expo app — staff
+    app/(tabs)/                   # Expo Router file-based routing
+    .env.local                    # EXPO_PUBLIC_API_URL (gitignored)
+
+  customer/                       # Expo app — diners (opt-in)
+    app/(tabs)/
+    .env.local
+
+packages/
+  tsconfig/                       # Shared TS base + nextjs preset
+    base.json
+    nextjs.json                   # adds the next plugin
+  types/                          # Shared cross-app types
+    src/index.ts                  # ApiResponse<T>, OrderStatus, …
+
+package.json                      # workspace root — turbo orchestrates
+pnpm-workspace.yaml
+turbo.json
 ```
 
 ## Roles & Auth
 
-Two roles only: `super-admin` and `restaurant`. Customers don't have accounts.
+Two roles only (in the current web app): `super-admin` and `restaurant`. Customers don't have web accounts; the customer Expo app will introduce an **opt-in registered diner identity** that strengthens the cross-restaurant taste graph (see `report.md` ch. 6).
 
-- **Super admin**: env-based, no DB record. Hardcoded check in `lib/auth.ts:20-33`. Reads `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` env vars.
-- **Restaurant**: stored in `restaurants` collection. Status enum: `pending` / `approved` / `blocked`. Login fails if not approved (`lib/auth.ts:56-58`).
-- **Customer**: visits `/r/[restaurantSlug]/t/[tableSlug]` directly via QR — no auth.
+- **Super admin**: env-based, no DB record. Hardcoded check in `apps/web/lib/auth.ts:20-33`. Reads `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` env vars.
+- **Restaurant**: stored in `restaurants` collection. Status enum: `pending` / `approved` / `blocked`. Login fails if not approved (`apps/web/lib/auth.ts:56-58`).
+- **Customer (anonymous web)**: visits `/r/[restaurantSlug]/t/[tableSlug]` directly via QR — no auth, anonymous device cookie.
+- **Customer (registered, native app)**: future — opt-in account, ties device cookie → real identity.
 
-JWT session shape: `{ id, role, slug?, email, name }`. Use `auth()` from `lib/auth.ts` server-side; use `useSession()` client-side.
+JWT session shape: `{ id, role, slug?, email, name }`. Use `auth()` from `apps/web/lib/auth.ts` server-side; use `useSession()` client-side.
 
 ## Multi-tenant pattern
 
@@ -79,7 +105,9 @@ URLs use slugs (human-readable) for customer-facing routes and `_id` for admin/A
 
 **Tailwind usage:** prefer arbitrary values for the brand hex codes (`bg-[#324F7B]`, `text-[#86A6DE]`). Stone scale is fine for neutrals.
 
-**Component conventions:**
+The palette applies to the native apps too. Use the same hex codes in React Native `style` props or via a small theme constants module — do not reinvent.
+
+**Component conventions (web):**
 - Buttons: `rounded-full`, navy bg with white text for primary, sky-blue accent for inverse-on-dark
 - Cards: `rounded-2xl` or `rounded-3xl`, white bg, `border-stone-200`
 - Hero/dark sections: `bg-[#324F7B]` with `text-white` body and `text-[#86A6DE]` for eyebrow labels
@@ -89,14 +117,22 @@ URLs use slugs (human-readable) for customer-facing routes and `_id` for admin/A
 
 ## Common commands
 
+Run from the **repo root** with pnpm (npm/yarn won't resolve workspace deps correctly):
+
 ```powershell
-npm run dev              # next dev (binds 0.0.0.0 for LAN access — phones on same WiFi can scan QR)
-npm run build            # production build
-npm run lint             # eslint
-npm run seed             # node scripts/seed.mjs (seed test data)
+pnpm install             # install everything across the workspace
+pnpm dev:web             # boot only the Next.js web app on :3000
+pnpm --filter @bawarchie/restaurant start   # boot the restaurant Expo dev server
+pnpm --filter @bawarchie/customer start     # boot the customer Expo dev server
+pnpm build               # turbo run build (all apps)
+pnpm lint                # turbo run lint
+pnpm typecheck           # turbo run typecheck
+pnpm seed                # seed test data via apps/web/scripts/seed.mjs
+pnpm seed:demo           # cross-restaurant demo seed
+pnpm probe               # regression probes
 ```
 
-LAN testing: `NEXT_PUBLIC_BASE_URL` and `NEXTAUTH_URL` in `.env` should point to the dev machine's LAN IP (e.g., `http://192.168.1.2:3000`) for QR scanning to work from a phone.
+LAN testing: `NEXT_PUBLIC_BASE_URL` and `NEXTAUTH_URL` in `apps/web/.env` should point to the dev machine's LAN IP (e.g., `http://192.168.1.2:3000`). Mirror that same IP into `EXPO_PUBLIC_API_URL` in each Expo app's `.env.local` so phones on the same WiFi can reach the web API.
 
 ## Default credentials (dev only)
 
@@ -105,11 +141,13 @@ LAN testing: `NEXT_PUBLIC_BASE_URL` and `NEXTAUTH_URL` in `.env` should point to
 
 ## Patterns to follow
 
-**API routes:** export named methods (`GET`, `POST`, etc.). Connect DB at top via `await connectDB()`. Return `NextResponse.json({ success, ... })` — the codebase uses a consistent `{ success: boolean, ... }` envelope. Read role from `auth()` for protected routes.
+**API routes:** export named methods (`GET`, `POST`, etc.). Connect DB at top via `await connectDB()`. Return `NextResponse.json<ApiResponse<...>>({ success, ... })` — the envelope type lives in `@bawarchie/types`. Read role from `auth()` for protected routes.
 
 **Mongoose models:** use `.lean()` when returning to client. Cast `_id` with `.toString()` when comparing strings. Always index `restaurantId` on tenant-scoped collections.
 
-**Client data fetching:** plain `fetch` with `useEffect` is the most common pattern. SWR is used in `app/admin/[slug]/orders/page.tsx` for auto-refreshing the order queue. Pick whichever fits — SWR for live polling lists, plain fetch for one-shot loads. Handle `data.success === false` as error.
+**Client data fetching (web):** plain `fetch` with `useEffect` is the most common pattern. SWR is used in `apps/web/app/admin/[slug]/orders/page.tsx` for auto-refreshing the order queue. Handle `data.success === false` as error.
+
+**Client data fetching (native):** call `process.env.EXPO_PUBLIC_API_URL` + path. The response envelope is the same `ApiResponse<T>` from `@bawarchie/types`, so the narrow on `data.success` works identically.
 
 **Forms:** controlled components, simple `useState`. No form library.
 
@@ -117,22 +155,29 @@ LAN testing: `NEXT_PUBLIC_BASE_URL` and `NEXTAUTH_URL` in `.env` should point to
 
 **Razorpay:** order creation in `/api/payments/create-order`, signature verification in `/api/payments/verify` (HMAC-SHA256 — never skip).
 
+**Shared types:** when adding a type that more than one app will consume, put it in `packages/types/src/` and import via `@bawarchie/types`. Don't duplicate Mongoose lean shapes across apps.
+
 ## Things NOT to do
 
 - Don't query collections without `restaurantId` filter (cross-tenant leak)
-- Don't add `NEXT_PUBLIC_*` env vars for secrets — they ship to the browser bundle
+- Don't add `NEXT_PUBLIC_*` or `EXPO_PUBLIC_*` env vars for secrets — they ship in the JS bundle
 - Don't introduce new brand colors outside the palette above
-- Don't create new auth roles — two-role model is intentional
+- Don't create new auth roles for the web app — the two-role model is intentional. The forthcoming customer-app registered identity is a separate `Diner` model, not a new web auth role.
 - Don't bypass the approval gate on login (`status !== "approved"` must throw)
 - Don't compute totals client-side and trust them server-side — `/api/orders` recalculates from item IDs
-- Don't commit `.env` (gitignored — keep it that way)
+- Don't commit `.env` or `.env.local` (gitignored — keep it that way)
+- Don't use `npm` or `yarn` — this is a pnpm workspace
+- Don't run `next dev` directly from `apps/web/`; use `pnpm dev:web` from root so turbo's task graph picks up cross-package changes
 
 ## Useful starting points when extending
 
 | Task | Start here |
 |---|---|
-| New API route | Copy structure from `app/api/items/route.ts` (auth-protected) or `app/api/menu/route.ts` (mixed) |
-| New admin page | Copy layout from `app/admin/[slug]/items/page.tsx` |
-| New customer feature | Edit `app/r/[restaurantSlug]/t/[tableSlug]/page.tsx` |
-| New Mongoose model | Copy `lib/models/Item.js`, register in any route via import |
-| New AI feature | Pattern in `app/api/ai/chat/route.ts` and `app/api/feedback/route.ts` (sentiment) |
+| New API route | Copy structure from `apps/web/app/api/items/route.ts` (typed envelope) or `apps/web/app/api/menu/route.ts` |
+| New admin page | Copy layout from `apps/web/app/admin/[slug]/items/page.tsx` |
+| New web customer feature | Edit `apps/web/app/r/[restaurantSlug]/t/[tableSlug]/page.tsx` |
+| New Mongoose model | Copy `apps/web/lib/models/Item.js`, register via import |
+| New AI feature | Pattern in `apps/web/app/api/ai/chat/route.ts` and `apps/web/app/api/feedback/route.ts` (sentiment) |
+| New native screen (restaurant) | Add a tab in `apps/restaurant/app/(tabs)/` |
+| New native screen (customer) | Add a tab in `apps/customer/app/(tabs)/` |
+| New shared type | Add to `packages/types/src/index.ts`, import via `@bawarchie/types` |
