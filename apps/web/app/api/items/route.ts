@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
+import type { ApiResponse } from "@bawarchie/types";
 import connectDB from "@/lib/db.js";
 import Item from "@/lib/models/Item.js";
 import { embed, buildSearchDocument } from "@/lib/embeddings";
@@ -7,21 +8,24 @@ import { embed, buildSearchDocument } from "@/lib/embeddings";
 export async function GET(request: Request) {
   try {
     await connectDB();
-    
+
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get("restaurantId");
-    
+
     if (!restaurantId) {
-      return NextResponse.json(
+      return NextResponse.json<ApiResponse>(
         { success: false, error: "restaurantId is required" },
         { status: 400 }
       );
     }
-    
+
     const items = await Item.find({ restaurantId }).lean();
-    return NextResponse.json({ success: true, items });
+    return NextResponse.json<ApiResponse<{ items: typeof items }>>({
+      success: true,
+      items,
+    });
   } catch (error: any) {
-    return NextResponse.json(
+    return NextResponse.json<ApiResponse>(
       { success: false, error: error.message },
       { status: 500 }
     );

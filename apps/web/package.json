@@ -14,6 +14,7 @@
     "probe:quiet": "node scripts/probe-all.mjs --quiet"
   },
   "dependencies": {
+    "@bawarchie/types": "workspace:*",
     "@vercel/analytics": "^1.6.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.8.0",
@@ -33,6 +34,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@bawarchie/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.19.25",
