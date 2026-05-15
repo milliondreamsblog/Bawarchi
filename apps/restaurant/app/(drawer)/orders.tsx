@@ -3,13 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { brand } from "@/constants/brand";
 import { api } from "@/lib/api";
@@ -41,7 +39,7 @@ function formatRelative(iso: string): string {
 }
 
 export default function OrdersScreen() {
-  const { user, token, signOut } = useAuth();
+  const { token } = useAuth();
   const [orders, setOrders] = useState<OrderListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,20 +77,7 @@ export default function OrdersScreen() {
   }, [fetchOrders]);
 
   return (
-    <SafeAreaView style={styles.flex} edges={["top"]}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.eyebrow}>{user?.name ?? "Restaurant"}</Text>
-          <Text style={styles.title}>Live orders</Text>
-        </View>
-        <Pressable
-          onPress={signOut}
-          style={({ pressed }) => [styles.signOut, pressed && styles.signOutPressed]}
-        >
-          <Text style={styles.signOutText}>Sign out</Text>
-        </Pressable>
-      </View>
-
+    <View style={styles.flex}>
       {error && (
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>{error}</Text>
@@ -126,7 +111,7 @@ export default function OrdersScreen() {
           renderItem={({ item }) => <OrderCard order={item} />}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -160,45 +145,9 @@ function OrderCard({ order }: { order: OrderListItem }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: brand.offwhite },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-  },
-  headerLeft: { flex: 1 },
-  eyebrow: {
-    color: brand.sky,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    fontWeight: "600",
-    marginBottom: 4,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: brand.navy,
-    fontSize: 28,
-    fontWeight: "700",
-  },
-  signOut: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: brand.stoneBorder,
-    backgroundColor: brand.white,
-  },
-  signOutPressed: { opacity: 0.7 },
-  signOutText: {
-    color: brand.stoneText,
-    fontSize: 13,
-    fontWeight: "500",
-  },
   errorBox: {
-    marginHorizontal: 24,
-    marginBottom: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
     backgroundColor: "#FEE2E2",
     borderRadius: 12,
     paddingHorizontal: 14,
@@ -223,7 +172,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
-  listContent: { paddingHorizontal: 24, paddingBottom: 32 },
+  listContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32 },
   sep: { height: 12 },
   card: {
     backgroundColor: brand.white,

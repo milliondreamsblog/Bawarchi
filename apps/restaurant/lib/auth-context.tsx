@@ -129,7 +129,7 @@ export function useProtectedRoute() {
     if (!user && !onLoginScreen) {
       router.replace("/login");
     } else if (user && onLoginScreen) {
-      router.replace("/(tabs)");
+      router.replace("/orders");
     }
   }, [user, loading, segments, router]);
 }
