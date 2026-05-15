@@ -220,6 +220,62 @@ export type UpdateItemResponse = { item: ItemRecord; message?: string };
 /** POST /api/upload-image response shape. */
 export type ImageUploadResponse = { imageUrl: string };
 
+/**
+ * One menu item as nested inside a Menu section, when the route has
+ * populated the items array. Lightweight subset of ItemRecord — fields
+ * the customer landing page actually renders.
+ */
+export type MenuItemRef = {
+  _id: string;
+  name: string;
+  price: number;
+  image?: string;
+  isVeg?: boolean;
+  category?: string;
+  description?: string;
+  available?: boolean;
+};
+
+export type MenuSection = {
+  name: string;
+  items: MenuItemRef[];
+};
+
+export type MenuStructure = {
+  _id?: string;
+  title?: string;
+  sections: MenuSection[];
+  restaurantId: string;
+};
+
+/** GET /api/menu?restaurantId=... response payload. */
+export type MenuGetResponse = { menu: MenuStructure };
+
+/**
+ * One menu item as extracted by POST /api/menu/ingest from a photo.
+ * Not yet persisted — these become Item records once the admin confirms.
+ */
+export type MenuIngestItem = {
+  name: string;
+  description: string;
+  price: number;
+  isVeg: boolean;
+  spiceLevel: "mild" | "medium" | "hot" | null;
+  confidence: number;
+};
+
+export type MenuIngestSection = {
+  name: string;
+  items: MenuIngestItem[];
+};
+
+/** POST /api/menu/ingest response payload. */
+export type MenuIngestResponse = {
+  restaurantName: string | null;
+  sections: MenuIngestSection[];
+  warnings: string[];
+};
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;
