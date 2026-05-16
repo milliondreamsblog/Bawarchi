@@ -1,10 +1,18 @@
 import type { LoginResponse, SessionUser } from "@bawarchie/types";
 import { useRouter, useSegments } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Platform } from "react-native";
 
 import { api } from "@/lib/api";
+import { registerForPushAsync, unregisterPushAsync } from "@/lib/notifications";
 
 const TOKEN_KEY = "bawarchie.restaurant.token";
 const USER_KEY = "bawarchie.restaurant.user";
@@ -13,7 +21,10 @@ type AuthState = {
   user: SessionUser | null;
   token: string | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
   signOut: () => Promise<void>;
 };
 
@@ -59,6 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Keep the current device's Expo push token in a ref so signOut can
+  // unregister cleanly even if the component tree has rerendered since
+  // registration completed.
+  const pushTokenRef = useRef<string | null>(null);
+
   useEffect(() => {
     (async () => {
       try {
@@ -75,6 +91,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })();
   }, []);
+
+  // Whenever we have a valid token, make sure this device is registered
+  // for push. Re-running on auth-token change is fine: the backend upsert
+  // is idempotent, so a second register just refreshes lastUsedAt.
+  useEffect(() => {
+    if (!token || Platform.OS === "web") return;
+    let cancelled = false;
+    (async () => {
+      const pushToken = await registerForPushAsync(token);
+      if (!cancelled && pushToken) {
+        pushTokenRef.current = pushToken;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   async function signIn(email: string, password: string) {
     const res = await api.post<LoginResponse>("/api/auth/native", {
@@ -94,6 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
+    const expiringAuthToken = token;
+    const expiringPushToken = pushTokenRef.current;
+    // Drop push token *before* the auth token disappears — the backend
+    // requires Bearer auth to unregister.
+    await unregisterPushAsync(expiringAuthToken, expiringPushToken);
+    pushTokenRef.current = null;
     await Promise.all([storageDel(TOKEN_KEY), storageDel(USER_KEY)]);
     setToken(null);
     setUser(null);
@@ -115,7 +154,7 @@ export function useAuth(): AuthState {
 }
 
 /**
- * Redirect between /login and /(tabs) based on auth state.
+ * Redirect between /login and /(drawer)/orders based on auth state.
  * Mount once at the root, after the segments hook has settled.
  */
 export function useProtectedRoute() {

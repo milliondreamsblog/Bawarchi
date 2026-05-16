@@ -80,7 +80,7 @@ export async function notifyRestaurant(input: {
     restaurantId: input.restaurantId,
   })
     .select("token")
-    .lean()) as Array<{ token: string }>;
+    .lean()) as unknown as Array<{ token: string }>;
 
   if (tokens.length === 0) return;
 

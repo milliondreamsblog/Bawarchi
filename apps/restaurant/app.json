@@ -40,6 +40,14 @@
             "backgroundColor": "#324F7B"
           }
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#324F7B",
+          "sounds": []
+        }
       ]
     ],
     "experiments": {

@@ -71,11 +71,12 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse>> {
 }
 
 /**
- * DELETE /api/native/push/register
- * Body: { token }
+ * DELETE /api/native/push/register?token=ExponentPushToken[...]
  *
  * Drops a token on sign-out / app uninstall hint. Idempotent — deleting an
- * unknown token still returns success.
+ * unknown token still returns success. Token in the query string so native
+ * clients can use plain DELETE without a body (fetch on RN doesn't carry
+ * DELETE bodies reliably across runtimes).
  */
 export async function DELETE(req: Request): Promise<NextResponse<ApiResponse>> {
   const { error } = await requireAuth();
@@ -83,11 +84,11 @@ export async function DELETE(req: Request): Promise<NextResponse<ApiResponse>> {
 
   try {
     await connectDB();
-    const body = await req.json();
-    const token = typeof body?.token === "string" ? body.token.trim() : "";
+    const url = new URL(req.url);
+    const token = (url.searchParams.get("token") ?? "").trim();
     if (!token) {
       return NextResponse.json(
-        { success: false, error: "token is required" },
+        { success: false, error: "token query param is required" },
         { status: 400 }
       );
     }
