@@ -1,0 +1,41 @@
+{
+  "personaId": "p001-creamy-veg-mild",
+  "description": "Vegetarian diner who prefers creamy, dairy-forward, mild dishes. Home cuisine is Mughlai/North-Indian. Avoids spicy, fermented, and raw foods. Orders paneer-based dishes and rich cream-based gravies regularly. This is the canonical seed-demo persona — its result is the publishable bullseye in scripts/seed-demo.mjs.",
+  "tasteAxes": {
+    "dietaryClass": "vegetarian",
+    "spicePreference": "mild",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["creamy", "dairy-forward", "mild"],
+    "avoidance": ["spicy", "fermented", "raw"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 38 },
+        { "name": "Butter Naan", "qty": 1, "daysAgo": 38 },
+        { "name": "Paneer Butter Masala", "qty": 1, "daysAgo": 31 },
+        { "name": "Garlic Naan", "qty": 1, "daysAgo": 31 },
+        { "name": "Dal Makhani", "qty": 1, "daysAgo": 24 },
+        { "name": "Jeera Rice", "qty": 1, "daysAgo": 24 },
+        { "name": "Paneer Tikka Masala", "qty": 1, "daysAgo": 17 },
+        { "name": "Butter Naan", "qty": 1, "daysAgo": 17 },
+        { "name": "Shahi Paneer", "qty": 1, "daysAgo": 10 },
+        { "name": "Malai Kofta", "qty": 1, "daysAgo": 4 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": [
+      "Four-Cheese Gnocchi",
+      "Mushroom Risotto",
+      "Penne Alfredo",
+      "Ricotta-Stuffed Shells",
+      "Margherita Bianca",
+      "Margherita Pizza"
+    ],
+    "shouldRankLow": ["Spaghetti Bolognese", "Chicken Parmigiana", "Caprese Salad"],
+    "antiMatches": ["Penne Arrabbiata"]
+  }
+}

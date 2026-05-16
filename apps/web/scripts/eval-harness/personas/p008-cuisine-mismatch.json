@@ -1,0 +1,29 @@
+{
+  "personaId": "p008-cuisine-mismatch",
+  "description": "Heavy meat-eater (non-vegetarian, savory-only) at a destination restaurant that is overwhelmingly vegetarian. The destination (Italian) has only 2 non-veg items out of 12. Tests system behavior under cuisine mismatch — good retrieval is constrained by the menu, so a high score here means the system honestly surfaced the available non-veg items at the top; a low score means it gave up and surfaced veg items.",
+  "tasteAxes": {
+    "dietaryClass": "non-vegetarian",
+    "spicePreference": "medium",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["meat", "savory", "grilled"],
+    "avoidance": ["dessert", "sweet", "raw"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 35 },
+        { "name": "Butter Chicken", "qty": 1, "daysAgo": 28 },
+        { "name": "Chicken Tikka", "qty": 2, "daysAgo": 21 },
+        { "name": "Butter Chicken", "qty": 1, "daysAgo": 14 },
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 7 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Chicken Parmigiana", "Spaghetti Bolognese"],
+    "shouldRankLow": ["Margherita Pizza", "Tiramisu", "Caprese Salad"],
+    "antiMatches": ["Tiramisu", "Affogato"]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "personaId": "p005-jain-mild",
+  "description": "Jain diner — strict vegetarian, traditionally avoids onion and garlic. Prefers mild dishes. Home cuisine is Mughlai. NOTE: production retrieval (lib/rag.ts) does not enforce onion/garlic hard filters and the seed-demo items do not carry onion/garlic tags. This persona tests whether the soft vector signal alone surfaces dietarily-appropriate items, and exposes a documented production limitation (see report §11.6).",
+  "tasteAxes": {
+    "dietaryClass": "jain",
+    "spicePreference": "mild",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["mild", "vegetarian", "no-onion-garlic"],
+    "avoidance": ["onion", "garlic", "fermented", "spicy", "meat"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 32 },
+        { "name": "Dal Makhani", "qty": 1, "daysAgo": 25 },
+        { "name": "Jeera Rice", "qty": 1, "daysAgo": 18 },
+        { "name": "Malai Kofta", "qty": 1, "daysAgo": 11 },
+        { "name": "Gulab Jamun", "qty": 1, "daysAgo": 5 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Four-Cheese Gnocchi", "Margherita Bianca", "Penne Alfredo", "Ricotta-Stuffed Shells"],
+    "shouldRankLow": ["Chicken Parmigiana", "Spaghetti Bolognese", "Penne Arrabbiata"],
+    "antiMatches": ["Penne Arrabbiata", "Spaghetti Bolognese", "Chicken Parmigiana"]
+  }
+}

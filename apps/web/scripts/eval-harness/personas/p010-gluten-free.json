@@ -1,0 +1,32 @@
+{
+  "personaId": "p010-gluten-free",
+  "description": "Gluten-free vegetarian, mild, dairy-tolerant. Avoids breads, pasta, and any wheat-based items. Home cuisine is Mughlai. NOTE: production retrieval (lib/rag.ts) does not enforce isGlutenFree hard filters and the seed-demo items contain no items tagged isGlutenFree=true. This persona tests whether the soft vector signal naturally surfaces rice/non-wheat items at the destination, and exposes the documented gluten-free filter gap (see report §11.6).",
+  "tasteAxes": {
+    "dietaryClass": "gluten-free",
+    "spicePreference": "mild",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["creamy", "rice-based", "no-wheat"],
+    "avoidance": ["wheat", "bread", "pasta"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 32 },
+        { "name": "Jeera Rice", "qty": 1, "daysAgo": 32 },
+        { "name": "Dal Makhani", "qty": 1, "daysAgo": 24 },
+        { "name": "Jeera Rice", "qty": 1, "daysAgo": 24 },
+        { "name": "Shahi Paneer", "qty": 1, "daysAgo": 12 },
+        { "name": "Jeera Rice", "qty": 1, "daysAgo": 12 },
+        { "name": "Malai Kofta", "qty": 1, "daysAgo": 4 },
+        { "name": "Jeera Rice", "qty": 1, "daysAgo": 4 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Mushroom Risotto", "Caprese Salad"],
+    "shouldRankLow": ["Penne Alfredo", "Spaghetti Bolognese", "Penne Arrabbiata", "Margherita Pizza", "Margherita Bianca"],
+    "antiMatches": ["Penne Arrabbiata", "Penne Alfredo", "Spaghetti Bolognese"]
+  }
+}

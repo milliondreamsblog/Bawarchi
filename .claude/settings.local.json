@@ -20,7 +20,32 @@
       "Bash(pnpm --filter @bawarchie/web exec next --version)",
       "Bash(pnpm --filter @bawarchie/web dev)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
-      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/r/default-restaurant/t/table-1)"
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/r/default-restaurant/t/table-1)",
+      "Bash(curl -s -o /dev/null -w \"/ %{http_code}\\\\n\" http://localhost:3000)",
+      "Bash(curl -s -o /dev/null -w \"/api/items?restaurantId=missing %{http_code}\\\\n\" \"http://localhost:3000/api/items?restaurantId=000000000000000000000000\")",
+      "Bash(pnpm --filter @bawarchie/web exec tsc --noEmit)",
+      "Bash(npx --yes create-expo-app@latest restaurant --template default --no-install)",
+      "Bash(pnpm --filter @bawarchie/restaurant exec expo --version)",
+      "Bash(npx --yes create-expo-app@latest customer --template default --no-install)",
+      "Bash(grep -E '^SUPER_ADMIN_' apps/web/.env)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H \"Content-Type: application/json\" -d '{}' -w \"  HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H \"Content-Type: application/json\" -d '{\"email\":\"nobody@nowhere.com\",\"password\":\"x\"}' -w \"  HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H 'Content-Type: application/json' -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}' -w '  HTTP %{http_code}\\\\n')",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H 'Content-Type: application/json' -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}' -w '\\\\n HTTP %{http_code}\\\\n')",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H 'Content-Type: application/json' -d '{\"email\":\"default@restaurant.com\",\"password\":\"defaultpass123\"}' -w '\\\\n  HTTP %{http_code}\\\\n')",
+      "Bash(pnpm --filter @bawarchie/restaurant add expo-secure-store)",
+      "Bash(pnpm --filter @bawarchie/restaurant exec tsc --noEmit)",
+      "Bash(git rm *)",
+      "Bash(pnpm --filter @bawarchie/restaurant add expo-image-picker)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H 'Content-Type: application/json' -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"wrong\"}' -w '  HTTP %{http_code}\\\\n')",
+      "Bash(curl -s -o /dev/null -w \"GET / -> HTTP %{http_code}\\\\n\" --max-time 5 http://localhost:3000)",
+      "Bash(pnpm dev:web)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 2 http://localhost:3000)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H 'Content-Type: application/json' -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}' -w '\\\\n  HTTP %{http_code}\\\\n')",
+      "Bash(curl -s -X POST http://localhost:3000/api/native/push/register -H 'Content-Type: application/json' -d '{\"token\":\"ExponentPushToken[abc]\"}' -w '  HTTP %{http_code}\\\\n')",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H \"Content-Type: application/json\" -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}')",
+      "Bash(pnpm --filter @bawarchie/restaurant add expo-notifications expo-device)"
     ]
   }
 }

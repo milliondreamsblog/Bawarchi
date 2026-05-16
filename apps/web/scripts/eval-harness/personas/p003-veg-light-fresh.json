@@ -1,0 +1,30 @@
+{
+  "personaId": "p003-veg-light-fresh",
+  "description": "Vegetarian diner who prefers light, fresh dishes — pizzas, salads, lighter pastas. Home cuisine is Italian. Avoids heavy cream gravies and sweet desserts. NOTE: the brief originally called this persona 'vegan-mediterranean'; the seed-demo has no vegan items, so we reframed to light-fresh vegetarian to keep the persona testable. The cross-search target (Mughlai) is dominated by heavy cream dishes, so this persona is expected to score moderately — the test is whether the system gracefully surfaces the LIGHTEST available Mughlai items (rice, breads) rather than picking heavy cream dishes.",
+  "tasteAxes": {
+    "dietaryClass": "vegetarian",
+    "spicePreference": "mild",
+    "homeCuisine": "italian",
+    "primaryTraits": ["light", "fresh", "pizza-leaning"],
+    "avoidance": ["heavy-cream", "deep-fried", "sweet-desserts"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-italian",
+      "items": [
+        { "name": "Margherita Pizza", "qty": 1, "daysAgo": 35 },
+        { "name": "Caprese Salad", "qty": 1, "daysAgo": 35 },
+        { "name": "Mushroom Risotto", "qty": 1, "daysAgo": 25 },
+        { "name": "Margherita Bianca", "qty": 1, "daysAgo": 18 },
+        { "name": "Margherita Pizza", "qty": 1, "daysAgo": 10 },
+        { "name": "Caprese Salad", "qty": 1, "daysAgo": 4 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-mughlai"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Jeera Rice", "Garlic Naan", "Butter Naan"],
+    "shouldRankLow": ["Dal Makhani", "Shahi Paneer", "Malai Kofta", "Butter Chicken"],
+    "antiMatches": ["Gulab Jamun", "Kulfi"]
+  }
+}

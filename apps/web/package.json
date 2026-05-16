@@ -11,7 +11,10 @@
     "seed": "node scripts/seed.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
     "probe": "node scripts/probe-all.mjs",
-    "probe:quiet": "node scripts/probe-all.mjs --quiet"
+    "probe:quiet": "node scripts/probe-all.mjs --quiet",
+    "eval": "node scripts/eval-harness/run-harness.mjs",
+    "eval:dry": "node scripts/eval-harness/run-harness.mjs --dry-run",
+    "eval:sample": "node scripts/eval-harness/run-harness.mjs --sample 2"
   },
   "dependencies": {
     "@bawarchie/types": "workspace:*",

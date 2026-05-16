@@ -1,0 +1,30 @@
+{
+  "personaId": "p007-contradictory",
+  "description": "Diner with mixed signals — orders both spicy non-veg (chicken tikka) and mild creamy veg (paneer makhani, dal makhani) regularly. Home cuisine is Mughlai. Tests how the system handles ambiguous taste vectors: it should surface items that work for EITHER lean (e.g., Chicken Parmigiana, Penne Alfredo) rather than over-committing to one direction.",
+  "tasteAxes": {
+    "dietaryClass": "non-vegetarian",
+    "spicePreference": "mixed",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["mixed", "varied", "both-spicy-and-creamy"],
+    "avoidance": []
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 36 },
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 29 },
+        { "name": "Dal Makhani", "qty": 1, "daysAgo": 22 },
+        { "name": "Butter Chicken", "qty": 1, "daysAgo": 15 },
+        { "name": "Paneer Tikka Masala", "qty": 1, "daysAgo": 8 },
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 2 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Penne Alfredo", "Spaghetti Bolognese", "Chicken Parmigiana", "Four-Cheese Gnocchi"],
+    "shouldRankLow": ["Tiramisu", "Affogato"],
+    "antiMatches": []
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "personaId": "p009-recent-shift",
+  "description": "Diner who recently shifted from non-vegetarian to vegetarian. Older orders (3-5 weeks ago) are meat-heavy; recent orders (1-2 weeks ago) are vegetarian/creamy. Tests the recency-decay weighting in lib/taste.ts: recent orders should dominate the taste vector via exp(-ln(2)/90 × ageDays) decay. The vector should lean vegetarian/creamy despite the older non-veg signal.",
+  "tasteAxes": {
+    "dietaryClass": "vegetarian",
+    "spicePreference": "mild",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["creamy", "vegetarian", "mild"],
+    "avoidance": ["meat", "spicy"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 38 },
+        { "name": "Butter Chicken", "qty": 1, "daysAgo": 35 },
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 32 },
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 14 },
+        { "name": "Dal Makhani", "qty": 1, "daysAgo": 9 },
+        { "name": "Shahi Paneer", "qty": 1, "daysAgo": 4 },
+        { "name": "Malai Kofta", "qty": 1, "daysAgo": 2 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Four-Cheese Gnocchi", "Mushroom Risotto", "Penne Alfredo", "Ricotta-Stuffed Shells"],
+    "shouldRankLow": ["Spaghetti Bolognese", "Chicken Parmigiana"],
+    "antiMatches": ["Spaghetti Bolognese", "Chicken Parmigiana"]
+  }
+}

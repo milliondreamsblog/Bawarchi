@@ -1,0 +1,31 @@
+{
+  "personaId": "p004-dessert-leaner",
+  "description": "Vegetarian diner with a strong sweet tooth. Orders desserts and dessert-adjacent items (lassi) more than mains. Home cuisine is Mughlai. Prefers sweet, milk-based, cold desserts. Avoids spicy and heavily savory dishes. The cross-search test: does retrieval surface Italian desserts (tiramisu, affogato) at the top?",
+  "tasteAxes": {
+    "dietaryClass": "vegetarian",
+    "spicePreference": "mild",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["sweet", "milk-based", "dessert"],
+    "avoidance": ["spicy", "savory-heavy"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Gulab Jamun", "qty": 2, "daysAgo": 30 },
+        { "name": "Kulfi", "qty": 1, "daysAgo": 30 },
+        { "name": "Mango Lassi", "qty": 1, "daysAgo": 22 },
+        { "name": "Sweet Lassi", "qty": 1, "daysAgo": 15 },
+        { "name": "Gulab Jamun", "qty": 1, "daysAgo": 10 },
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 10 },
+        { "name": "Kulfi", "qty": 1, "daysAgo": 3 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Tiramisu", "Affogato"],
+    "shouldRankLow": ["Penne Arrabbiata", "Spaghetti Bolognese", "Chicken Parmigiana"],
+    "antiMatches": ["Penne Arrabbiata"]
+  }
+}

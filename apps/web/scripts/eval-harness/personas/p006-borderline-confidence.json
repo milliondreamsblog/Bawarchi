@@ -1,0 +1,28 @@
+{
+  "personaId": "p006-borderline-confidence",
+  "description": "Low-confidence diner — only 2 unique items across the entire order history (Paneer Makhani × 2 visits, Butter Naan × 2). Per lib/taste.ts, taste confidence = log(1+uniqueItems)/log(6); 2 unique items → confidence ≈ 0.61, well below the 1.0 saturation point. Tests whether the system produces reasonable retrievals on a thin signal.",
+  "tasteAxes": {
+    "dietaryClass": "vegetarian",
+    "spicePreference": "mild",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["creamy", "mild"],
+    "avoidance": ["spicy"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 20 },
+        { "name": "Butter Naan", "qty": 1, "daysAgo": 20 },
+        { "name": "Paneer Makhani", "qty": 1, "daysAgo": 8 },
+        { "name": "Butter Naan", "qty": 1, "daysAgo": 8 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Four-Cheese Gnocchi", "Penne Alfredo", "Ricotta-Stuffed Shells", "Margherita Bianca"],
+    "shouldRankLow": ["Spaghetti Bolognese", "Chicken Parmigiana", "Penne Arrabbiata"],
+    "antiMatches": ["Penne Arrabbiata"]
+  }
+}

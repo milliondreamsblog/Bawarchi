@@ -1,0 +1,30 @@
+{
+  "personaId": "p002-spicy-nonveg-hot",
+  "description": "Non-vegetarian diner who prefers HOT, spicy, smoky flavors. Home cuisine is Mughlai. Orders grilled and tandoori chicken regularly. Strongly avoids mild, sweet, or dairy-heavy dishes. This persona stress-tests the destination (Italian) which has only one spicy item — the system should correctly surface it or honestly score low.",
+  "tasteAxes": {
+    "dietaryClass": "non-vegetarian",
+    "spicePreference": "hot",
+    "homeCuisine": "mughlai",
+    "primaryTraits": ["spicy", "smoky", "grilled"],
+    "avoidance": ["mild", "sweet", "dairy-heavy"]
+  },
+  "simulatedOrders": [
+    {
+      "homeRestaurantSlug": "demo-mughlai",
+      "items": [
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 35 },
+        { "name": "Butter Chicken", "qty": 1, "daysAgo": 28 },
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 21 },
+        { "name": "Paneer Tikka Masala", "qty": 1, "daysAgo": 14 },
+        { "name": "Chicken Tikka", "qty": 1, "daysAgo": 7 },
+        { "name": "Butter Chicken", "qty": 1, "daysAgo": 2 }
+      ]
+    }
+  ],
+  "targetRestaurantSlugs": ["demo-italian"],
+  "expectedBehavior": {
+    "shouldRankHigh": ["Penne Arrabbiata", "Spaghetti Bolognese", "Chicken Parmigiana"],
+    "shouldRankLow": ["Margherita Bianca", "Penne Alfredo", "Tiramisu", "Affogato"],
+    "antiMatches": ["Tiramisu", "Affogato"]
+  }
+}
