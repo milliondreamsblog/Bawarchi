@@ -1,4 +1,4 @@
-import { Sparkles, Scan, ShoppingCart, CheckCircle, CreditCard, Settings, BarChart3, TrendingUp } from "lucide-react";
+import { Sparkles, Scan, ShoppingCart, CheckCircle, CreditCard, Settings, BarChart3, TrendingUp, Bot, MessageSquareHeart } from "lucide-react";
 
 export default function SolutionSection() {
     return (
@@ -58,6 +58,66 @@ export default function SolutionSection() {
                             )}
                         </div>
                     ))}
+                </div>
+
+                {/* AI Layer — thesis pillar: conversational ordering + sentiment feedback */}
+                <div className="mt-24">
+                    <div className="text-center mb-12">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 mb-4">
+                            <Sparkles className="w-4 h-4 text-[var(--accent)]" />
+                            <span className="text-sm font-medium text-[var(--accent)]">POWERED BY AI</span>
+                        </div>
+                        <h3 className="text-3xl font-bold mb-4">The AI Layer Built In</h3>
+                        <p className="text-[var(--text-muted)] max-w-2xl mx-auto">
+                            More than a digital menu — a conversational waiter and a sentiment-aware feedback loop, included.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                        <div className="p-8 bg-gradient-to-br from-green-500/5 to-transparent border border-green-500/20 rounded-2xl hover:border-green-500/40 transition-all">
+                            <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-5">
+                                <Bot className="w-7 h-7 text-[var(--accent)]" />
+                            </div>
+                            <h4 className="text-2xl font-bold mb-3">AI Waiter</h4>
+                            <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-5">
+                                A GPT-4o-mini waiter that knows the full menu. Customers ask in plain language — &quot;something spicy under ₹300, no paneer&quot; — and it suggests, pairs, and flags allergens in seconds.
+                            </p>
+                            <ul className="space-y-2">
+                                {[
+                                    "Allergy & diet-aware suggestions",
+                                    "Pairing & combo recommendations",
+                                    "Answers in English & Hinglish",
+                                ].map((item, idx) => (
+                                    <li key={idx} className="flex items-start gap-2 text-[var(--text-muted)] text-sm">
+                                        <CheckCircle className="w-4 h-4 text-[var(--accent)] flex-shrink-0 mt-0.5" />
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="p-8 bg-gradient-to-br from-green-500/5 to-transparent border border-green-500/20 rounded-2xl hover:border-green-500/40 transition-all">
+                            <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-5">
+                                <MessageSquareHeart className="w-7 h-7 text-[var(--accent)]" />
+                            </div>
+                            <h4 className="text-2xl font-bold mb-3">Smart Feedback</h4>
+                            <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-5">
+                                Every review is scored for sentiment automatically. Spot unhappy diners before they walk out, and surface what your regulars actually love about your kitchen.
+                            </p>
+                            <ul className="space-y-2">
+                                {[
+                                    "Auto sentiment analysis on every review",
+                                    "Trends by dish, day, and shift",
+                                    "Alerts for negative spikes",
+                                ].map((item, idx) => (
+                                    <li key={idx} className="flex items-start gap-2 text-[var(--text-muted)] text-sm">
+                                        <CheckCircle className="w-4 h-4 text-[var(--accent)] flex-shrink-0 mt-0.5" />
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Restaurant Side */}
