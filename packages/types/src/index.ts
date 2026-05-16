@@ -295,6 +295,18 @@ export type GetSettingsResponse = { settings: RestaurantSettings };
 
 export type UpdateSettingsRequest = Partial<RestaurantSettings>;
 
+/** POST /api/native/push/register request body. */
+export type RegisterPushRequest = {
+  token: string;
+  platform?: "ios" | "android" | "web";
+  deviceName?: string;
+};
+
+/** DELETE /api/native/push/register request body. */
+export type UnregisterPushRequest = {
+  token: string;
+};
+
 /** POST /api/auth/native request body. */
 export type LoginRequest = {
   email: string;

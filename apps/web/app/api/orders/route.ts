@@ -11,6 +11,7 @@ import { issueCancelToken } from "@/lib/cancelToken";
 import { requireAuth } from "@/lib/utils/apiAuth";
 import { attachPhoneHash } from "@/lib/diner";
 import { recomputeTasteVector } from "@/lib/taste";
+import { notifyRestaurant } from "@/lib/expoPush";
 
 export async function GET(request: Request) {
   // Authenticated. Restaurants see only their own orders (restaurantId is
@@ -198,6 +199,18 @@ export async function POST(request: Request) {
       order._id.toString(),
       order.createdAt
     );
+
+    // Fan out a push notification to every staff phone registered for
+    // this restaurant. Fire-and-forget — the order response doesn't wait
+    // for Expo's push service to round-trip.
+    notifyRestaurant({
+      restaurantId,
+      title: `New order — Table ${tableSlug}`,
+      body: `${orderData.items.length} item${orderData.items.length === 1 ? "" : "s"} · ₹${Math.round(breakdown.finalAmount)}`,
+      data: { orderId: order._id.toString(), type: "new-order" },
+    }).catch((err) => {
+      console.warn("[orders] notifyRestaurant failed:", err?.message);
+    });
 
     return NextResponse.json(
       { success: true, order, cancelToken },
