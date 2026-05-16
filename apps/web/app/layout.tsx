@@ -4,6 +4,7 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import RootLayoutClient from "@/components/RootLayoutClient";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import { THEME_INIT_SCRIPT } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +41,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          // Sets html.dark / html.light before paint to prevent FOUC.
+          // Only affects the landing surface via ThemeProvider wiring downstream.
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

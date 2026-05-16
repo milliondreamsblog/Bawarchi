@@ -46,7 +46,13 @@
       "Bash(curl -s -X POST http://localhost:3000/api/native/push/register -H 'Content-Type: application/json' -d '{\"token\":\"ExponentPushToken[abc]\"}' -w '  HTTP %{http_code}\\\\n')",
       "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H \"Content-Type: application/json\" -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}')",
       "Bash(pnpm --filter @bawarchie/restaurant add expo-notifications expo-device)",
-      "Skill(design-system)"
+      "Skill(design-system)",
+      "Bash(git -C \"C:/Users/Akshat Darshi/Desktop/cohort assigment/FinalYearProject/bawarchie/orderbyqr\" add \"apps/web/app/\\(legal\\)/privacy/page.tsx\" \"apps/web/app/\\(legal\\)/refund/page.tsx\" \"apps/web/app/\\(legal\\)/shipping/page.tsx\" \"apps/web/app/\\(legal\\)/terms/page.tsx\")",
+      "Bash(git -C 'C:/Users/Akshat Darshi/Desktop/cohort assigment/FinalYearProject/bawarchie/orderbyqr' commit -m ' *)",
+      "Bash(git -C \"C:/Users/Akshat Darshi/Desktop/cohort assigment/FinalYearProject/bawarchie/orderbyqr\" status --short)",
+      "Bash(git -C \"C:/Users/Akshat Darshi/Desktop/cohort assigment/FinalYearProject/bawarchie/orderbyqr\" push staging main)",
+      "Bash(git -C \"C:/Users/Akshat Darshi/Desktop/cohort assigment/FinalYearProject/bawarchie/orderbyqr\" show prod/main:package.json)",
+      "Bash(git -C \"C:/Users/Akshat Darshi/Desktop/cohort assigment/FinalYearProject/bawarchie/orderbyqr\" ls-tree prod/main)"
     ]
   }
 }

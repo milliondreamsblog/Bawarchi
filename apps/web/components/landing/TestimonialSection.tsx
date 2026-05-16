@@ -2,15 +2,15 @@ import { ThumbsUp, Star } from "lucide-react";
 
 export default function TestimonialsSection() {
     return (
-        <section id="testimonials" className="relative py-24 bg-gradient-to-b from-[#0A0F0D] to-black">
+        <section id="testimonials" className="relative py-24 bg-gradient-to-b from-[var(--bg)] to-[var(--bg-alt)] text-[var(--text)]">
             <div className="container max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 mb-6">
-                        <ThumbsUp className="w-4 h-4 text-green-400" />
-                        <span className="text-sm font-medium text-green-400">TRUSTED BY RESTAURANTS</span>
+                        <ThumbsUp className="w-4 h-4 text-[var(--accent)]" />
+                        <span className="text-sm font-medium text-[var(--accent)]">TRUSTED BY RESTAURANTS</span>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-bold mb-6">What Restaurant Owners Say</h2>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                    <p className="text-xl text-[var(--text-muted)] max-w-2xl mx-auto">
                         Join 50+ restaurants already transforming their business
                     </p>
                 </div>
@@ -39,19 +39,19 @@ export default function TestimonialsSection() {
                             improvement: "₹2,000 monthly savings"
                         }
                     ].map((testimonial, index) => (
-                        <div key={index} className="p-6 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl">
+                        <div key={index} className="p-6 bg-[var(--soft)] border border-[var(--border)] rounded-2xl">
                             <div className="flex items-center gap-2 mb-4">
                                 {[...Array(testimonial.rating)].map((_, i) => (
                                     <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                                 ))}
                             </div>
-                            <p className="text-gray-300 italic mb-6">&quot;{testimonial.text}&quot;</p>
+                            <p className="text-[var(--text-muted)] italic mb-6">&quot;{testimonial.text}&quot;</p>
                             <div className="flex items-center justify-between">
                                 <div>
                                     <div className="font-bold">{testimonial.name}</div>
-                                    <div className="text-sm text-gray-500">{testimonial.role}</div>
+                                    <div className="text-sm text-[var(--text-faint)]">{testimonial.role}</div>
                                 </div>
-                                <div className="text-sm font-semibold text-green-400">{testimonial.improvement}</div>
+                                <div className="text-sm font-semibold text-[var(--accent)]">{testimonial.improvement}</div>
                             </div>
                         </div>
                     ))}
@@ -67,8 +67,8 @@ export default function TestimonialsSection() {
                             { value: "24h", label: "Average Setup" }
                         ].map((stat, index) => (
                             <div key={index} className="text-center">
-                                <div className="text-4xl font-bold text-white mb-2">{stat.value}</div>
-                                <div className="text-gray-400 text-sm">{stat.label}</div>
+                                <div className="text-4xl font-bold text-[var(--text)] mb-2">{stat.value}</div>
+                                <div className="text-[var(--text-muted)] text-sm">{stat.label}</div>
                             </div>
                         ))}
                     </div>
@@ -76,4 +76,4 @@ export default function TestimonialsSection() {
             </div>
         </section>
     );
-} 
+}

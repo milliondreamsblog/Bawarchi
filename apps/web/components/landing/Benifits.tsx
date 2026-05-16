@@ -2,15 +2,15 @@ import { Target, TrendingUp, Users, Shield, Smartphone, CreditCard, BarChart } f
 
 export default function BenefitsSection() {
   return (
-    <section id="benefits" className="relative py-24 bg-gradient-to-b from-black to-[#0A0F0D]">
+    <section id="benefits" className="relative py-24 bg-gradient-to-b from-[var(--bg-alt)] to-[var(--bg)] text-[var(--text)]">
       <div className="container max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 mb-6">
-            <Target className="w-4 h-4 text-green-400" />
-            <span className="text-sm font-medium text-green-400">BENEFITS FOR RESTAURANTS</span>
+            <Target className="w-4 h-4 text-[var(--accent)]" />
+            <span className="text-sm font-medium text-[var(--accent)]">BENEFITS FOR RESTAURANTS</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Run Your Restaurant Faster & Smarter</h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+          <p className="text-xl text-[var(--text-muted)] max-w-3xl mx-auto">
             Boost customer satisfaction and increase revenue without extra staff
           </p>
         </div>
@@ -54,15 +54,15 @@ export default function BenefitsSection() {
               stat: "Smart decisions"
             }
           ].map((benefit, index) => (
-            <div key={index} className="group p-6 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl hover:border-green-500/30 transition-all">
+            <div key={index} className="group p-6 bg-[var(--soft)] border border-[var(--border)] rounded-2xl hover:border-green-500/30 transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <benefit.icon className="w-6 h-6 text-green-400" />
+                  <benefit.icon className="w-6 h-6 text-[var(--accent)]" />
                 </div>
-                <span className="text-sm font-semibold text-green-400">{benefit.stat}</span>
+                <span className="text-sm font-semibold text-[var(--accent)]">{benefit.stat}</span>
               </div>
               <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{benefit.description}</p>
+              <p className="text-[var(--text-muted)] text-sm leading-relaxed">{benefit.description}</p>
             </div>
           ))}
         </div>

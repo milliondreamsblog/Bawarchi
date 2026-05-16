@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function Footer() {
     return (
-        <footer className="relative py-12 border-t border-white/10 bg-black">
+        <footer className="relative py-12 border-t border-[var(--border)] bg-[var(--bg-alt)] text-[var(--text)]">
             <div className="container max-w-7xl mx-auto px-6">
                 <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
                     {/* Brand Section */}
@@ -21,57 +21,57 @@ export default function Footer() {
                                 />
                             </div>
                         </Link>
-                        <p className="text-gray-400 text-sm mb-6 max-w-md">
+                        <p className="text-[var(--text-muted)] text-sm mb-6 max-w-md">
                             Revolutionizing restaurant industry with cutting-edge QR ordering solutions
                         </p>
-                        <p className="text-gray-600 text-xs">
+                        <p className="text-[var(--text-faint)] text-xs">
                             Made with ❤️ for restaurant owners
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="text-white font-semibold mb-6 text-lg">Quick Links</h4>
+                        <h4 className="text-[var(--text)] font-semibold mb-6 text-lg">Quick Links</h4>
                         <ul className="space-y-2">
-                            <li><Link href="#how-it-works" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">How it Works</Link></li>
-                            <li><Link href="#pricing" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Pricing</Link></li>
-                            <li><Link href="#testimonials" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Testimonials</Link></li>
-                            <li><Link href="#faq" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">FAQ</Link></li>
-                            <li><Link href="/about" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">About Us</Link></li>
+                            <li><Link href="#how-it-works" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">How it Works</Link></li>
+                            <li><Link href="#pricing" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Pricing</Link></li>
+                            <li><Link href="#testimonials" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Testimonials</Link></li>
+                            <li><Link href="#faq" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">FAQ</Link></li>
+                            <li><Link href="/about" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">About Us</Link></li>
                         </ul>
                     </div>
 
                     {/* Legal */}
                     <div>
-                        <h4 className="text-white font-semibold mb-6 text-lg">Legal</h4>
+                        <h4 className="text-[var(--text)] font-semibold mb-6 text-lg">Legal</h4>
                         <ul className="space-y-2">
-                            <li><Link href="/terms" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Terms &amp; Conditions</Link></li>
-                            <li><Link href="/privacy" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Privacy Policy</Link></li>
-                            <li><Link href="/refund" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Refund &amp; Cancellation</Link></li>
-                            <li><Link href="/shipping" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Delivery Policy</Link></li>
-                            <li><Link href="/contact" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Contact Us</Link></li>
+                            <li><Link href="/terms" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Terms &amp; Conditions</Link></li>
+                            <li><Link href="/privacy" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Privacy Policy</Link></li>
+                            <li><Link href="/refund" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Refund &amp; Cancellation</Link></li>
+                            <li><Link href="/shipping" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Delivery Policy</Link></li>
+                            <li><Link href="/contact" className="text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors text-sm block py-1">Contact Us</Link></li>
                         </ul>
                     </div>
 
                     {/* Contact Section */}
                     <div>
-                        <h4 className="text-white font-semibold mb-6 text-lg">Contact Us</h4>
-                        <ul className="space-y-4 text-sm text-gray-400">
+                        <h4 className="text-[var(--text)] font-semibold mb-6 text-lg">Contact Us</h4>
+                        <ul className="space-y-4 text-sm text-[var(--text-muted)]">
                             <li className="flex items-start gap-3">
-                                <Phone className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                                <Phone className="w-4 h-4 text-[var(--accent)] flex-shrink-0 mt-0.5" />
                                 <div className="space-y-1">
-                                    <a href="tel:+918318365594" className="hover:text-green-400 transition-colors">+91 8318365594</a> <b>, </b>
-                                    <a href="tel:+919129601109" className="hover:text-green-400 transition-colors">+91 9129601109</a>
+                                    <a href="tel:+918318365594" className="hover:text-[var(--accent)] transition-colors">+91 8318365594</a> <b>, </b>
+                                    <a href="tel:+919129601109" className="hover:text-[var(--accent)] transition-colors">+91 9129601109</a>
                                 </div>
                             </li>
                             <li className="flex items-start gap-3">
-                                <svg className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-[var(--accent)] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <a href="mailto:adityaproworks@gmail.com" className="hover:text-green-400 transition-colors">adityaproworks@gmail.com</a>
+                                <a href="mailto:adityaproworks@gmail.com" className="hover:text-[var(--accent)] transition-colors">adityaproworks@gmail.com</a>
                             </li>
                             <li className="flex items-start gap-3">
-                                <MapPinHouse className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                                <MapPinHouse className="w-4 h-4 text-[var(--accent)] flex-shrink-0 mt-0.5" />
                                 <span>Awas Vikas - 3, Kalyanpur, Kanpur Nagar - 208018, Uttar Pradesh, India</span>
                             </li>
                         </ul>
@@ -79,13 +79,13 @@ export default function Footer() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="pt-8 border-t border-white/10">
+                <div className="pt-8 border-t border-[var(--border)]">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <p className="text-gray-500 text-sm text-center md:text-left">
+                        <p className="text-[var(--text-faint)] text-sm text-center md:text-left">
                             © {new Date().getFullYear()} Bawarchie. All rights reserved.
                         </p>
                         <div className="text-center md:text-right">
-                            <p className="text-gray-600 text-xs">
+                            <p className="text-[var(--text-faint)] text-xs">
                                 Transforming dining experiences, one QR code at a time.
                             </p>
                         </div>

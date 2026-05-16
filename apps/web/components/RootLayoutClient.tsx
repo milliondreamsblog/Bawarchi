@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 // Routes whose pages render their own chrome (or are app-internal) and
 // should NOT be wrapped with the landing-page Header + Footer.
@@ -36,11 +37,15 @@ export default function RootLayoutClient({
         pathname?.startsWith(p)
     );
 
+    if (skipLandingChrome) {
+        return <>{children}</>;
+    }
+
     return (
-        <>
-            {!skipLandingChrome && <Header />}
+        <ThemeProvider>
+            <Header />
             {children}
-            {!skipLandingChrome && <Footer />}
-        </>
+            <Footer />
+        </ThemeProvider>
     );
 }

@@ -2,6 +2,49 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Landing theme tokens ───────────────────────────────────── */
+/* The landing page is theme-aware via these CSS vars. Greens
+   stay constant (brand accents); only surfaces/text flip.
+   Scoped to `landing-dark` / `landing-light` (not `dark`) so the
+   admin-side zustand theme store can keep owning `html.dark`
+   without collisions. Default (no class) = dark, matching the
+   historical look so SSR before the FOUC script runs is correct. */
+:root,
+html.landing-dark {
+  --bg: #0A0F0D;
+  --bg-alt: #000000;
+  --surface: #0F1612;
+  --text: #FFFFFF;
+  --text-muted: #9CA3AF;
+  --text-faint: #6B7280;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --soft: rgba(255, 255, 255, 0.05);
+  --grid-line: rgba(128, 128, 128, 0.07);
+  --scrim: rgba(0, 0, 0, 0.80);
+  /* Accent green is theme-aware so it stays legible on both surfaces. */
+  --accent: #4ade80;        /* green-400 — works on dark */
+  --accent-strong: #22c55e; /* green-500 */
+  --accent-hover: #86efac;  /* green-300 */
+}
+
+html.landing-light {
+  --bg: #FFFFFF;
+  --bg-alt: #F4F4F4;
+  --surface: #FFFFFF;
+  --text: #0A0F0D;
+  --text-muted: #57534E;
+  --text-faint: #78716C;
+  --border: rgba(10, 15, 13, 0.10);
+  --border-strong: rgba(10, 15, 13, 0.18);
+  --soft: rgba(10, 15, 13, 0.04);
+  --grid-line: rgba(10, 15, 13, 0.05);
+  --scrim: rgba(10, 15, 13, 0.45);
+  --accent: #16a34a;        /* green-600 — readable on white */
+  --accent-strong: #15803d; /* green-700 */
+  --accent-hover: #15803d;
+}
+
 /* ── Print / PDF Receipt styles ─────────────────────────────── */
 @media print {
   /* Hide everything by default */

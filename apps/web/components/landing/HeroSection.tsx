@@ -4,20 +4,22 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ArrowRight, CheckCircle, TrendingUp, Clock } from "lucide-react";
 import Image from "next/image";
+import { useTheme } from "@/components/ThemeProvider";
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
+  const { theme } = useTheme();
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setIsVisible(true), []);
 
   return (
-    <section className="relative pt-28 min-h-screen flex items-center overflow-hidden bg-[#0A0F0D] text-white">
+    <section className="relative pt-28 min-h-screen flex items-center overflow-hidden bg-[var(--bg)] text-[var(--text)]">
 
       {/* Premium Background Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-green-500/10 rounded-full blur-[120px] animate-pulse-slow"></div>
         <div className="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-emerald-800/10 rounded-full blur-[120px]"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--grid-line)_1px,transparent_1px),linear-gradient(to_bottom,var(--grid-line)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
       </div>
 
       <style jsx global>{`
@@ -57,13 +59,14 @@ export default function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              <span className="text-xs font-bold text-green-400 tracking-wider uppercase">50+ Restaurant Alreday Using it</span>
+              <span className="text-xs font-bold text-[var(--accent)] tracking-wider uppercase">50+ Restaurant Alreday Using it</span>
             </div>
 
             {/* Orynth Badge */}
             <a href="https://orynth.dev/projects/bawarchie" target="_blank" rel="noopener" className="inline-flex">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://orynth.dev/api/badge/bawarchie?theme=dark&style=minimal"
+                src={`https://orynth.dev/api/badge/bawarchie?theme=${theme}&style=minimal`}
                 alt="Featured on Orynth"
                 className="h-8 w-auto"
               />
@@ -73,30 +76,30 @@ export default function HeroSection() {
           {/* Headline */}
           <h1 className="text-5xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
             Stop Losing Money on{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-red-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-red-600">
               Slow Service
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl text-gray-400 leading-relaxed max-w-xl">
-            Customers order in <span className="text-white font-semibold">30 seconds</span>.
+          <p className="text-xl text-[var(--text-muted)] leading-relaxed max-w-xl">
+            Customers order in <span className="text-[var(--text)] font-semibold">30 seconds</span>.
             Payments verified instantly. Zero order mistakes.
-            <span className="text-green-400 font-semibold"> All from their phone.</span>
+            <span className="text-[var(--accent)] font-semibold"> All from their phone.</span>
           </p>
 
-          {/* Key Benefits - Clean Cards */}
+          {/* Key Benefits */}
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="group p-5 bg-gradient-to-br from-green-500/5 to-transparent border border-green-500/20 rounded-2xl hover:border-green-500/40 transition-all backdrop-blur-sm">
-              <TrendingUp className="w-8 h-8 text-green-400 mb-3" />
-              <h3 className="text-2xl font-bold text-white mb-1">3x Faster</h3>
-              <p className="text-sm text-gray-500">Table Turnover</p>
+              <TrendingUp className="w-8 h-8 text-[var(--accent)] mb-3" />
+              <h3 className="text-2xl font-bold text-[var(--text)] mb-1">3x Faster</h3>
+              <p className="text-sm text-[var(--text-faint)]">Table Turnover</p>
             </div>
 
             <div className="group p-5 bg-gradient-to-br from-green-500/5 to-transparent border border-green-500/20 rounded-2xl hover:border-green-500/40 transition-all backdrop-blur-sm">
-              <CheckCircle className="w-8 h-8 text-green-400 mb-3" />
-              <h3 className="text-2xl font-bold text-white mb-1">100%</h3>
-              <p className="text-sm text-gray-500">Order Accuracy</p>
+              <CheckCircle className="w-8 h-8 text-[var(--accent)] mb-3" />
+              <h3 className="text-2xl font-bold text-[var(--text)] mb-1">100%</h3>
+              <p className="text-sm text-[var(--text-faint)]">Order Accuracy</p>
             </div>
           </div>
 
@@ -115,7 +118,7 @@ export default function HeroSection() {
 
             <Link
               href="#pricing"
-              className="inline-flex items-center justify-center px-8 py-4 text-gray-300 hover:text-white hover:bg-white/5 rounded-2xl border border-white/10 transition-all font-medium"
+              className="inline-flex items-center justify-center px-8 py-4 text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--soft)] rounded-2xl border border-[var(--border)] transition-all font-medium"
             >
               View Pricing
             </Link>
@@ -123,15 +126,15 @@ export default function HeroSection() {
 
           {/* Trust Bar */}
           <div className="flex flex-wrap gap-6 pt-2 text-sm">
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-[var(--text-muted)]">
               <CheckCircle className="w-4 h-4 text-green-500" />
               <span>Setup in 24 hours</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-[var(--text-muted)]">
               <CheckCircle className="w-4 h-4 text-green-500" />
               <span>No app download</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-[var(--text-muted)]">
               <CheckCircle className="w-4 h-4 text-green-500" />
               <span>50+ restaurants</span>
             </div>
@@ -143,25 +146,25 @@ export default function HeroSection() {
 
           <div className="relative w-full max-w-[550px] mx-auto h-[600px]">
 
-            {/* Main Phone Mockup */}
+            {/* Phone Mockup — bezel stays dark (phones are black); only the inner screen flips */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[560px] bg-[#0F1612] rounded-[3rem] border-8 border-gray-900 shadow-2xl overflow-hidden z-20">
 
               {/* Phone Screen */}
-              <div className="w-full h-full bg-gradient-to-b from-[#0A0F0D] to-[#0F1612] p-6 overflow-hidden">
+              <div className="w-full h-full bg-gradient-to-b from-[var(--bg)] to-[var(--surface)] p-6 overflow-hidden">
 
                 {/* Header */}
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30 mb-2">
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                    <span className="text-xs text-green-400 font-semibold">Table 7</span>
+                    <span className="text-xs text-[var(--accent)] font-semibold">Table 7</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white">Menu</h3>
+                  <h3 className="text-2xl font-bold text-[var(--text)]">Menu</h3>
                 </div>
 
                 {/* Menu Items */}
                 <div className="space-y-3">
                   {/* Item 1 */}
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 hover:border-white/20 transition-all">
+                  <div className="flex items-center gap-3 p-3 bg-[var(--soft)] rounded-xl border border-[var(--border)] hover:border-[var(--border-strong)] transition-all">
                     <div className="w-14 h-14 rounded-lg flex-shrink-0">
                       <Image
                         src="/paneer-tikka.png"
@@ -170,11 +173,11 @@ export default function HeroSection() {
                         alt={"Paneer Tikka"} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-white">Paneer Tikka</h4>
-                      <p className="text-xs text-gray-500">Spicy & Delicious</p>
+                      <h4 className="text-sm font-semibold text-[var(--text)]">Paneer Tikka</h4>
+                      <p className="text-xs text-[var(--text-faint)]">Spicy &amp; Delicious</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-green-400">₹280</p>
+                      <p className="text-sm font-bold text-[var(--accent)]">₹280</p>
                     </div>
                   </div>
 
@@ -188,14 +191,14 @@ export default function HeroSection() {
                         alt={"Dal Makhani"} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-white">Dal Makhani</h4>
-                      <p className="text-xs text-green-400 font-medium">✓ Added to cart</p>
+                      <h4 className="text-sm font-semibold text-[var(--text)]">Dal Makhani</h4>
+                      <p className="text-xs text-[var(--accent)] font-medium">✓ Added to cart</p>
                     </div>
-                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <CheckCircle className="w-5 h-5 text-[var(--accent)]" />
                   </div>
 
                   {/* Item 3 */}
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-3 p-3 bg-[var(--soft)] rounded-xl border border-[var(--border)]">
                     <div className="w-14 h-14 rounded-lg flex-shrink-0">
                       <Image
                         src="/naan.png"
@@ -203,11 +206,11 @@ export default function HeroSection() {
                         width={200}
                         alt={"naan"} /></div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-white">Garlic Naan</h4>
-                      <p className="text-xs text-gray-500">Fresh & Hot</p>
+                      <h4 className="text-sm font-semibold text-[var(--text)]">Garlic Naan</h4>
+                      <p className="text-xs text-[var(--text-faint)]">Fresh &amp; Hot</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-gray-400">₹60</p>
+                      <p className="text-sm font-bold text-[var(--text-muted)]">₹60</p>
                     </div>
                   </div>
                 </div>
@@ -221,19 +224,19 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Floating Card 3 - Live Stats */}
-            <div className="absolute left-4 bottom-12 bg-[#0F1612]/95 backdrop-blur-xl border border-blue-500/40 p-5 rounded-2xl shadow-2xl shadow-blue-900/20 w-48 z-10">
+            {/* Floating Card - Live Stats */}
+            <div className="absolute left-4 bottom-12 bg-[var(--surface)]/95 backdrop-blur-xl border border-blue-500/40 p-5 rounded-2xl shadow-2xl shadow-blue-900/20 w-48 z-10">
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-blue-400" />
-                    <p className="text-xs text-gray-500">Avg Order Time</p>
+                    <Clock className="w-3.5 h-3.5 text-blue-500" />
+                    <p className="text-xs text-[var(--text-faint)]">Avg Order Time</p>
                   </div>
-                  <p className="text-3xl font-bold text-blue-400">28s</p>
+                  <p className="text-3xl font-bold text-blue-500">28s</p>
                 </div>
-                <div className="pt-3 border-t border-white/10">
-                  <p className="text-xs text-gray-500 mb-1">Today&apos;s Orders</p>
-                  <p className="text-2xl font-bold text-green-400">47</p>
+                <div className="pt-3 border-t border-[var(--border)]">
+                  <p className="text-xs text-[var(--text-faint)] mb-1">Today&apos;s Orders</p>
+                  <p className="text-2xl font-bold text-[var(--accent)]">47</p>
                 </div>
               </div>
             </div>
@@ -243,15 +246,6 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
-
-      {/* Bottom Wave */}
-      {/* <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path d="M0 20L60 25C120 30 240 40 360 43C480 46 600 42 720 35C840 28 960 18 1080 15C1200 12 1320 16 1380 18L1440 20V60H1380C1320 60 1200 60 1080 60C960 60 840 60 720 60C600 60 480 60 360 60C240 60 120 60 60 60H0V20Z" 
-                fill="#111827" 
-                fillOpacity="0.5"/>
-        </svg>
-      </div> */}
     </section>
   );
 }

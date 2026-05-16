@@ -1,21 +1,39 @@
 import Constants from "expo-constants";
-import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 import { api } from "@/lib/api";
 
-/**
- * Foreground notification UX: show the banner, play sound, don't bump
- * the icon badge (badges are for unread counts; we don't track those).
- */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// expo-notifications has no web implementation, and since SDK 53 it also
+// throws at import time when running inside Expo Go on Android/iOS.
+// We lazy-load it in a try/catch so the rest of the app can still work
+// (push notifications will simply be disabled in unsupported environments).
+let Notifications: typeof import("expo-notifications") | null = null;
+
+if (Platform.OS !== "web") {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    Notifications = require("expo-notifications") as typeof import("expo-notifications");
+
+    /**
+     * Foreground notification UX: show the banner, play sound, don't bump
+     * the icon badge (badges are for unread counts; we don't track those).
+     */
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  } catch (err) {
+    console.warn(
+      "[push] expo-notifications unavailable (Expo Go?), push disabled:",
+      (err as Error).message
+    );
+    Notifications = null;
+  }
+}
 
 /**
  * Register the device for push notifications:
@@ -33,7 +51,7 @@ Notifications.setNotificationHandler({
 export async function registerForPushAsync(
   authToken: string | null
 ): Promise<string | null> {
-  if (!authToken) return null;
+  if (!authToken || !Notifications) return null;
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("orders", {

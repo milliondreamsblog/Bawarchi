@@ -61,63 +61,60 @@ export default function FAQsection() {
     }
   ];
 
-
   return (
-    <main className="bg-[#0A0F0D] text-white min-h-screen">
-      <section id="faq" className="py-20 ">
-        <div className="container max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Frequently Asked Questions</h2>
-            <p className="text-gray-400 text-xl">
-              Everything you need to know about our pricing plans
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors"
-              >
-                <button
-                  onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-black/5 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <HelpCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                    <span className="text-lg font-medium text-left">{faq.question}</span>
-                  </div>
-                  {expandedFAQ === index ? (
-                    <ChevronUp className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                  )}
-                </button>
-
-                {expandedFAQ === index && (
-                  <div className="px-6 pb-6 animate-fadeIn">
-                    <div className="pl-9 border-l-2 border-green-500/30 ml-1">
-                      <p className="text-gray-300 leading-relaxed">{faq.answer}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12 pt-8 border-t border-white/10">
-            <p className="text-gray-400">
-              Still have questions?{" "}
-              <a
-                href="https://cal.com/bawarchie"
-                className="text-green-400 hover:text-green-300 font-medium underline underline-offset-2"
-              >
-                Schedule a demo
-              </a>
-            </p>
-          </div>
+    <section id="faq" className="py-20 bg-[var(--bg)] text-[var(--text)]">
+      <div className="container max-w-4xl mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Frequently Asked Questions</h2>
+          <p className="text-[var(--text-muted)] text-xl">
+            Everything you need to know about our pricing plans
+          </p>
         </div>
-      </section>
-    </main>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="bg-[var(--soft)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--border-strong)] transition-colors"
+            >
+              <button
+                onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
+                className="w-full flex items-center justify-between p-6 text-left hover:bg-[var(--soft)] transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <HelpCircle className="w-5 h-5 text-[var(--accent)] flex-shrink-0" />
+                  <span className="text-lg font-medium text-left">{faq.question}</span>
+                </div>
+                {expandedFAQ === index ? (
+                  <ChevronUp className="w-5 h-5 text-[var(--accent)] flex-shrink-0" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" />
+                )}
+              </button>
+
+              {expandedFAQ === index && (
+                <div className="px-6 pb-6 animate-fadeIn">
+                  <div className="pl-9 border-l-2 border-green-500/30 ml-1">
+                    <p className="text-[var(--text-muted)] leading-relaxed">{faq.answer}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-12 pt-8 border-t border-[var(--border)]">
+          <p className="text-[var(--text-muted)]">
+            Still have questions?{" "}
+            <a
+              href="https://cal.com/bawarchie"
+              className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium underline underline-offset-2"
+            >
+              Schedule a demo
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }

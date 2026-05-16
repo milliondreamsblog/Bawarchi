@@ -11,7 +11,7 @@ import FAQsection from "@/components/landing/FAQ";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#0A0F0D] text-white font-sans antialiased">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans antialiased">
       <HeroSection />
       {/* <ProblemSection /> */}
       <SolutionSection />
