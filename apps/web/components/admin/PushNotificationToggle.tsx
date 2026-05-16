@@ -70,7 +70,7 @@ export default function PushNotificationToggle({ restaurantId }: PushNotificatio
       // Subscribe to push manager
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidData.vapidPublicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidData.vapidPublicKey) as any,
       });
 
       // Send subscription to backend

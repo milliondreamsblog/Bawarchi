@@ -520,7 +520,7 @@ export default function RestaurantItemsPage() {
                 </>
             )}
 
-            <style jsx global>{`
+            <style>{`
                 .input {
                     width: 100%;
                     background: white;
