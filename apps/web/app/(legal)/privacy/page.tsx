@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     "How Bawarchie collects, uses, stores, and protects your personal data, in line with the Digital Personal Data Protection Act, 2023.",
 };
 
-const EFFECTIVE_DATE = "16 May 2026";
+const EFFECTIVE_DATE = "22 November 2025";
 
 export default function PrivacyPage() {
   return (

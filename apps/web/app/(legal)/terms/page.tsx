@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     "Terms and conditions for using the Bawarchie QR-based dine-in ordering platform.",
 };
 
-const EFFECTIVE_DATE = "16 May 2026";
+const EFFECTIVE_DATE = "22 November 2025";
 
 export default function TermsPage() {
   return (

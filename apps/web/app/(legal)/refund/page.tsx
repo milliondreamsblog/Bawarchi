@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     "How cancellations and refunds work for orders placed through the Bawarchie platform.",
 };
 
-const EFFECTIVE_DATE = "16 May 2026";
+const EFFECTIVE_DATE = "22 November 2025";
 
 export default function RefundPage() {
   return (

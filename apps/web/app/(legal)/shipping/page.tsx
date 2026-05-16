@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     "How orders placed through Bawarchie reach the customer — all dine-in, no delivery.",
 };
 
-const EFFECTIVE_DATE = "16 May 2026";
+const EFFECTIVE_DATE = "22 November 2025";
 
 export default function ShippingPage() {
   return (
