@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db.js";
 import Order from "@/lib/models/Order.js";
 import Table from "@/lib/models/Table.js";
-import { auth } from "@/lib/auth";
+import { getSessionFromRequest } from "@/lib/session";
 import { requireAuth } from "@/lib/utils/apiAuth";
 import { verifyCancelToken } from "@/lib/cancelToken";
 
@@ -35,10 +35,11 @@ export async function GET(
 
     // Authorization: either the diner who owns the order (via cancel token
     // bound to this specific orderId+createdAt — also serves as a read token
-    // for /order-success) or an admin for the owning restaurant.
-    const session = await auth();
-    const role = (session?.user as any)?.role as string | undefined;
-    const sessionId = (session?.user as any)?.id as string | undefined;
+    // for /order-success) or an admin for the owning restaurant. Admin auth
+    // accepts NextAuth cookies (web) and Bearer JWT (native).
+    const session = await getSessionFromRequest(request);
+    const role = session?.role;
+    const sessionId = session?.id;
 
     // Normalize the order's restaurantId regardless of populate state.
     const ridRaw: any = (order as any).restaurantId;

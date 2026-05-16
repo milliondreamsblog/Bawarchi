@@ -30,19 +30,20 @@ async function resolveSession() {
     if (!payload) {
       return { error: UNAUTHORIZED("Invalid token"), session: null };
     }
-    return {
-      error: null as null,
-      session: {
-        user: {
-          id: payload.sub,
-          email: payload.email,
-          name: payload.name,
-          role: payload.role,
-          slug: payload.slug,
-        },
-        expires: "",
-      } as unknown as Awaited<ReturnType<typeof auth>>,
+    // Cast through `any` so callers see the same `{ user: { id, role, ... } }`
+    // shape they get on the cookie path without us having to depend on
+    // NextAuth's exact Session type (which is a union with middleware sigs).
+    const session = {
+      user: {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        role: payload.role,
+        slug: payload.slug,
+      },
+      expires: "",
     };
+    return { error: null as null, session: session as any };
   }
 
   const session = await auth();

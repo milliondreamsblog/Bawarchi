@@ -1,8 +1,10 @@
 import type { OrderListItem, OrdersListResponse, OrderStatus } from "@bawarchie/types";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -40,6 +42,7 @@ function formatRelative(iso: string): string {
 
 export default function OrdersScreen() {
   const { token } = useAuth();
+  const router = useRouter();
   const [orders, setOrders] = useState<OrderListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -108,14 +111,25 @@ export default function OrdersScreen() {
               tintColor={brand.navy}
             />
           }
-          renderItem={({ item }) => <OrderCard order={item} />}
+          renderItem={({ item }) => (
+            <OrderCard
+              order={item}
+              onPress={() => router.push(`/orders/${item._id}` as never)}
+            />
+          )}
         />
       )}
     </View>
   );
 }
 
-function OrderCard({ order }: { order: OrderListItem }) {
+function OrderCard({
+  order,
+  onPress,
+}: {
+  order: OrderListItem;
+  onPress: () => void;
+}) {
   const status = STATUS_STYLES[order.status] ?? STATUS_STYLES.pending;
   const amount = order.finalAmount ?? order.total;
   const lines = order.items
@@ -123,7 +137,10 @@ function OrderCard({ order }: { order: OrderListItem }) {
     .join(" · ");
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+    >
       <View style={styles.cardTop}>
         <View>
           <Text style={styles.cardTable}>Table {order.tableSlug}</Text>
@@ -139,7 +156,7 @@ function OrderCard({ order }: { order: OrderListItem }) {
       <View style={styles.cardBottom}>
         <Text style={styles.cardAmount}>{formatINR(amount)}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -182,6 +199,7 @@ const styles = StyleSheet.create({
     borderColor: brand.stoneBorder,
     gap: 10,
   },
+  cardPressed: { opacity: 0.75 },
   cardTop: {
     flexDirection: "row",
     justifyContent: "space-between",

@@ -67,6 +67,8 @@ export type OrderListItem = {
   cancelledBy?: "customer" | "admin";
   cancellationReason?: string;
   customerPhone?: string | null;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
   restaurantId: string;
   createdAt: string;
   updatedAt?: string;

@@ -1,4 +1,5 @@
 import type { OrderListItem, OrdersListResponse, OrderStatus } from "@bawarchie/types";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -38,6 +39,7 @@ function formatRelative(iso: string): string {
 
 export default function KitchenScreen() {
   const { token } = useAuth();
+  const router = useRouter();
   const [orders, setOrders] = useState<OrderListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -140,6 +142,7 @@ export default function KitchenScreen() {
               order={item}
               busy={!!updating[item._id]}
               onAction={(next) => updateStatus(item._id, next)}
+              onOpen={() => router.push(`/orders/${item._id}` as never)}
             />
           )}
         />
@@ -152,16 +155,21 @@ function KitchenCard({
   order,
   busy,
   onAction,
+  onOpen,
 }: {
   order: OrderListItem;
   busy: boolean;
   onAction: (next: OrderStatus) => void;
+  onOpen: () => void;
 }) {
   const status = STATUS_LABEL[order.status] ?? STATUS_LABEL.pending;
 
   return (
     <View style={styles.card}>
-      <View style={styles.cardTop}>
+      <Pressable
+        onPress={onOpen}
+        style={({ pressed }) => [styles.cardTop, pressed && styles.cardTopPressed]}
+      >
         <View>
           <Text style={styles.cardTable}>Table {order.tableSlug}</Text>
           <Text style={styles.cardTime}>
@@ -172,7 +180,7 @@ function KitchenCard({
         <View style={[styles.pill, { backgroundColor: status.bg }]}>
           <Text style={[styles.pillText, { color: status.fg }]}>{status.label}</Text>
         </View>
-      </View>
+      </Pressable>
 
       <View style={styles.itemsBlock}>
         {order.items.map((it, idx) => (
@@ -300,6 +308,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
+  cardTopPressed: { opacity: 0.7 },
   cardTable: { color: brand.navy, fontSize: 16, fontWeight: "700" },
   cardTime: { color: brand.stoneMuted, fontSize: 12, marginTop: 2 },
   itemsBlock: { gap: 6 },
