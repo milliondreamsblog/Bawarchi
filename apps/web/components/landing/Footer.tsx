@@ -6,7 +6,7 @@ export default function Footer() {
     return (
         <footer className="relative py-12 border-t border-white/10 bg-black">
             <div className="container max-w-7xl mx-auto px-6">
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12">
+                <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
                     {/* Brand Section */}
                     <div className="lg:col-span-2">
                         <Link href="/" className="inline-flex items-center mb-6">
@@ -37,6 +37,19 @@ export default function Footer() {
                             <li><Link href="#pricing" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Pricing</Link></li>
                             <li><Link href="#testimonials" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Testimonials</Link></li>
                             <li><Link href="#faq" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">FAQ</Link></li>
+                            <li><Link href="/about" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">About Us</Link></li>
+                        </ul>
+                    </div>
+
+                    {/* Legal */}
+                    <div>
+                        <h4 className="text-white font-semibold mb-6 text-lg">Legal</h4>
+                        <ul className="space-y-2">
+                            <li><Link href="/terms" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Terms &amp; Conditions</Link></li>
+                            <li><Link href="/privacy" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Privacy Policy</Link></li>
+                            <li><Link href="/refund" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Refund &amp; Cancellation</Link></li>
+                            <li><Link href="/shipping" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Delivery Policy</Link></li>
+                            <li><Link href="/contact" className="text-gray-400 hover:text-green-400 transition-colors text-sm block py-1">Contact Us</Link></li>
                         </ul>
                     </div>
 

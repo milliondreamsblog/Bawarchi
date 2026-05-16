@@ -116,8 +116,11 @@ async function main() {
   console.log(`Loaded ${personas.length} persona(s)${sampleN ? ` (--sample ${sampleN})` : ""}`);
 
   const totalEvals = personas.reduce((s, p) => s + p.targetRestaurantSlugs.length, 0);
-  const estimatedCost = totalEvals * COST_PER_CALL;
-  console.log(`Total evaluations: ${totalEvals}`);
+  // Each evaluation makes 3 judge calls: system retrieval + random baseline + popularity baseline.
+  const JUDGE_CALLS_PER_EVAL = 3;
+  const totalJudgeCalls = totalEvals * JUDGE_CALLS_PER_EVAL;
+  const estimatedCost = totalJudgeCalls * COST_PER_CALL;
+  console.log(`Total evaluations: ${totalEvals}  (= ${totalJudgeCalls} judge calls: system + random + popularity)`);
   console.log(`Estimated cost: ${fmtUsd(estimatedCost)}`);
   if (estimatedCost > 2 && !confirmFlag && !dryRun) {
     console.error(

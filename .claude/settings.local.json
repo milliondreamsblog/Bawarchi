@@ -45,7 +45,8 @@
       "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H 'Content-Type: application/json' -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}' -w '\\\\n  HTTP %{http_code}\\\\n')",
       "Bash(curl -s -X POST http://localhost:3000/api/native/push/register -H 'Content-Type: application/json' -d '{\"token\":\"ExponentPushToken[abc]\"}' -w '  HTTP %{http_code}\\\\n')",
       "Bash(curl -s -X POST http://localhost:3000/api/auth/native -H \"Content-Type: application/json\" -d '{\"email\":\"papa@Bawarchie.com\",\"password\":\"papa123\"}')",
-      "Bash(pnpm --filter @bawarchie/restaurant add expo-notifications expo-device)"
+      "Bash(pnpm --filter @bawarchie/restaurant add expo-notifications expo-device)",
+      "Skill(design-system)"
     ]
   }
 }
