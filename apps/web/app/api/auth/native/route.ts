@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { ApiResponse, LoginRequest, LoginResponse } from "@bawarchie/types";
 import connectDB from "@/lib/db.js";
 import Restaurant from "@/lib/models/Restaurant.js";
-import { verifyPassword } from "@/lib/utils/password";
+import { hashPassword, verifyPassword } from "@/lib/utils/password";
 import { signNativeToken } from "@/lib/jwt";
 
 type RestaurantDoc = {
@@ -55,8 +55,11 @@ export async function POST(
       );
     }
 
-    const isValid = await verifyPassword(password, restaurant.password);
-    if (!isValid) {
+    const { valid, needsRehash } = await verifyPassword(
+      password,
+      restaurant.password
+    );
+    if (!valid) {
       return NextResponse.json(
         { success: false, error: "Invalid credentials" },
         { status: 401 }
@@ -68,6 +71,20 @@ export async function POST(
         { success: false, error: `Account status: ${restaurant.status}` },
         { status: 403 }
       );
+    }
+
+    // Self-heal legacy plaintext rows on successful native login.
+    if (needsRehash) {
+      hashPassword(password)
+        .then((hash) =>
+          Restaurant.findByIdAndUpdate(restaurant._id, { password: hash })
+        )
+        .catch((err) => {
+          console.warn(
+            `[auth-native] failed to rehash password for ${restaurant._id}:`,
+            err?.message
+          );
+        });
     }
 
     const user = {

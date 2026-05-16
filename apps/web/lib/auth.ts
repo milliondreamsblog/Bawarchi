@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import connectDB from "@/lib/db.js";
 import Restaurant from "@/lib/models/Restaurant.js";
-import { verifyPassword } from "@/lib/utils/password";
+import { hashPassword, verifyPassword } from "@/lib/utils/password";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -43,18 +43,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const isValid = await verifyPassword(
+        const { valid, needsRehash } = await verifyPassword(
           credentials.password as string,
           restaurant.password
         );
 
-        if (!isValid) {
+        if (!valid) {
           return null;
         }
 
         // Check if restaurant is approved
         if (restaurant.status !== "approved") {
           throw new Error(`Account status: ${restaurant.status}`);
+        }
+
+        // Self-heal: if this row was still plaintext, bcrypt-hash the
+        // password we just verified and persist it. Fire-and-forget so a
+        // DB hiccup doesn't fail an otherwise-valid login.
+        if (needsRehash) {
+          hashPassword(credentials.password as string)
+            .then((hash) =>
+              Restaurant.findByIdAndUpdate(restaurant._id, { password: hash })
+            )
+            .catch((err) => {
+              console.warn(
+                `[auth] failed to rehash password for ${restaurant._id}:`,
+                err?.message
+              );
+            });
         }
 
         return {

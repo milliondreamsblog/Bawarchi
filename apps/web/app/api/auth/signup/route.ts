@@ -45,12 +45,14 @@ export async function POST(request: Request) {
       counter++;
     }
 
-    // Create restaurant with pending status
+    // Create restaurant with pending status. NOTE: store the hashed
+    // password, not the request-body one — this was a regression that
+    // left every signup as plaintext until we landed bcrypt.
     const restaurant = await Restaurant.create({
       name,
       slug,
       email,
-      password,
+      password: hashedPassword,
       owner,
       phone,
       address,
