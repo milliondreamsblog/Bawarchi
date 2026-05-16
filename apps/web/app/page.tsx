@@ -5,7 +5,9 @@ import PricingSection from "@/components/landing/PricingSection";
 import TestimonialsSection from "@/components/landing/TestimonialSection";
 import FinalCTASection from "@/components/landing/CTAsection";
 import FAQsection from "@/components/landing/FAQ";
-import Footer from "@/components/landing/Footer";
+
+// Note: <Footer /> is rendered globally by RootLayoutClient for all
+// non-admin / non-legal routes — do NOT add it here, you'll get duplicates.
 
 export default function HomePage() {
   return (
@@ -18,7 +20,6 @@ export default function HomePage() {
       <TestimonialsSection />
       <FAQsection />
       <FinalCTASection />
-      <Footer />
     </div>
   );
 }
