@@ -125,7 +125,19 @@ export default function RazorpayCheckout({ tableSlug, restaurantId, dinerId, onS
                                     window.location.href = `/order-success?orderId=${orderResult.order._id}`;
                                 }
                             } else {
-                                alert("Order creation failed. Please contact support.");
+                                // Payment was captured by Razorpay but order persist failed.
+                                // Surface the server-side reason so the diner (and support)
+                                // can act on it instead of a generic "contact support".
+                                console.error("[orders] POST failed after payment", {
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    serverError: orderResult.error,
+                                });
+                                alert(
+                                    `Payment was received but we couldn't save your order.\n\n` +
+                                    `Reason: ${orderResult.error || "Unknown error"}\n\n` +
+                                    `Please screenshot this and share with support along with payment ID:\n${response.razorpay_payment_id}`
+                                );
                             }
                         } else {
                             alert("Payment verification failed!");
