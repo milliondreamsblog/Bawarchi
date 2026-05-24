@@ -9,6 +9,7 @@ import Cart from "@/components/Cart";
 import RazorpayCheckout from "@/components/RazorpayCheckout";
 import { useCartStore } from "@/lib/store/useCartStore";
 import MenuAIChat from "@/components/MenuAIChat";
+import AIWelcomeScreen from "@/components/AIWelcomeScreen";
 
 interface MenuItem {
     _id: string;
@@ -65,6 +66,12 @@ export default function TableMenuPage() {
     const [forYouSource, setForYouSource] = useState<"taste" | "popular" | null>(null);
     const [forYouLoading, setForYouLoading] = useState(false);
     const [forYouConfidence, setForYouConfidence] = useState<number>(0);
+
+    // AI-first entry: full-screen welcome shown on first scan per restaurant.
+    // Diner can skip to the grid or send a query that's handed off to MenuAIChat.
+    const [aiWelcomeOpen, setAiWelcomeOpen] = useState(false);
+    const [aiInitialMessage, setAiInitialMessage] = useState<string | null>(null);
+    const [aiPanelDefaultOpen, setAiPanelDefaultOpen] = useState(false);
 
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
@@ -197,6 +204,31 @@ export default function TableMenuPage() {
         addItem({ itemId: item._id, name: item.name, price: item.price }, qty);
     };
 
+    // Show the AI welcome on first scan per restaurant. Stored flag means
+    // returning diners skip straight to the menu — they can still tap the
+    // floating AI button. If localStorage is unavailable, we show it once
+    // per page-load (acceptable fallback).
+    useEffect(() => {
+        if (!restaurant?._id) return;
+        const KEY = `bawarchie:aiWelcomeSeen:${restaurant._id}`;
+        try {
+            const seen = localStorage.getItem(KEY);
+            if (!seen) {
+                setAiWelcomeOpen(true);
+                localStorage.setItem(KEY, "1");
+            }
+        } catch {
+            setAiWelcomeOpen(true);
+        }
+    }, [restaurant?._id]);
+
+    const handleWelcomeShowMenu = () => setAiWelcomeOpen(false);
+    const handleWelcomeStartChat = (msg: string) => {
+        setAiInitialMessage(msg);
+        setAiPanelDefaultOpen(true);
+        setAiWelcomeOpen(false);
+    };
+
     const filteredSections = useMemo(() => {
         const q = search.trim().toLowerCase();
         return (menu?.sections ?? [])
@@ -308,6 +340,16 @@ export default function TableMenuPage() {
                             className="w-full bg-white/95 text-stone-900 placeholder:text-stone-400 rounded-full pl-11 pr-4 py-3 text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-[#86A6DE]"
                         />
                     </div>
+
+                    {/* Re-open the full-screen AI welcome — discoverable after skipping */}
+                    <button
+                        onClick={() => setAiWelcomeOpen(true)}
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/15 hover:bg-white/15 hover:border-[#86A6DE] text-white text-sm font-medium transition-all"
+                    >
+                        <Sparkles className="w-3.5 h-3.5 text-[#86A6DE]" />
+                        Ask the AI waiter
+                        <span className="text-[#86A6DE]">→</span>
+                    </button>
                 </div>
             </header>
 
@@ -505,12 +547,24 @@ export default function TableMenuPage() {
                 </div>
             )}
 
-            {/* AI Waiter Chat */}
+            {/* AI Waiter Chat (floating popup — always mounted once restaurant resolves) */}
             {restaurant && (
                 <MenuAIChat
                     restaurantId={restaurant._id}
                     dinerId={dinerId}
                     onAddToCart={handleAddToCart}
+                    defaultOpen={aiPanelDefaultOpen}
+                    initialMessage={aiInitialMessage}
+                />
+            )}
+
+            {/* AI-first entry screen — sits above everything when active */}
+            {aiWelcomeOpen && restaurant && (
+                <AIWelcomeScreen
+                    restaurantName={restaurant.name}
+                    tableLabel={table?.tableNumber ? `Table ${table.tableNumber}` : undefined}
+                    onShowMenu={handleWelcomeShowMenu}
+                    onStartChat={handleWelcomeStartChat}
                 />
             )}
 

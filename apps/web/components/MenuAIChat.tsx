@@ -32,6 +32,10 @@ interface MenuAIChatProps {
   restaurantId: string;
   dinerId?: string | null;
   onAddToCart: (item: MenuItem, qty?: number) => void;
+  defaultOpen?: boolean;
+  // If set, panel opens and this message is auto-sent once on mount.
+  // Used by AIWelcomeScreen to hand off the diner's first query.
+  initialMessage?: string | null;
 }
 
 const QUICK_PROMPTS = [
@@ -41,14 +45,15 @@ const QUICK_PROMPTS = [
   "Low calorie meal ideas",
 ];
 
-export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuAIChatProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function MenuAIChat({ restaurantId, dinerId, onAddToCart, defaultOpen = false, initialMessage = null }: MenuAIChatProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const initialSentRef = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -123,6 +128,18 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
     }
   };
 
+  // Hand-off from AIWelcomeScreen: open the panel and dispatch the diner's
+  // first query exactly once. Guarded by a ref so prop changes / re-renders
+  // can't replay it.
+  useEffect(() => {
+    if (initialMessage && !initialSentRef.current) {
+      initialSentRef.current = true;
+      setIsOpen(true);
+      void sendMessage(initialMessage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage]);
+
   const handleAddToCart = (item: MenuItem) => {
     onAddToCart(item);
     setAddedItems((prev) => new Set(prev).add(item._id));
@@ -140,7 +157,7 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
       {/* Floating AI Chat Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="fixed bottom-6 right-6 z-[60] w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-200"
+        className="fixed bottom-6 right-6 z-[60] w-14 h-14 bg-gradient-to-br from-[#324F7B] to-[#5067AA] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-200"
         aria-label="AI Food Assistant"
         title="Chat with AI Waiter"
       >
@@ -161,7 +178,7 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
           style={{ maxHeight: "70vh" }}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-3 flex items-center justify-between">
+          <div className="bg-[#324F7B] text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +187,7 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
               </div>
               <div>
                 <p className="font-semibold text-sm">AI Waiter</p>
-                <p className="text-xs text-purple-200">Ask me anything about the menu</p>
+                <p className="text-xs text-[#86A6DE]">Ask me anything about the menu</p>
               </div>
             </div>
             <button
@@ -197,7 +214,7 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
                     <button
                       key={prompt}
                       onClick={() => sendMessage(prompt)}
-                      className="w-full text-left text-sm bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 px-3 py-2 rounded-lg transition-colors"
+                      className="w-full text-left text-sm bg-white border border-stone-200 text-[#324F7B] hover:bg-[#86A6DE]/10 hover:border-[#86A6DE] px-3 py-2 rounded-lg transition-colors"
                     >
                       {prompt}
                     </button>
@@ -211,7 +228,7 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
                 <div
                   className={`max-w-[85%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-purple-600 text-white rounded-br-sm"
+                      ? "bg-[#324F7B] text-white rounded-br-sm"
                       : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-sm"
                   }`}
                 >
@@ -221,12 +238,12 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
                 {/* Cart action confirmation */}
                 {msg.cartActions && msg.cartActions.length > 0 && (
                   <div className="w-full mt-1.5">
-                    <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 flex flex-wrap gap-1.5">
-                      <span className="text-xs font-semibold text-green-700 w-full mb-0.5">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 flex flex-wrap gap-1.5">
+                      <span className="text-xs font-semibold text-emerald-700 w-full mb-0.5">
                         ✓ Added to cart:
                       </span>
                       {msg.cartActions.map((a, i) => (
-                        <span key={i} className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                        <span key={i} className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-0.5 rounded-full">
                           {a.qty > 1 ? `${a.qty}× ` : ""}{a.name}
                         </span>
                       ))}
@@ -245,7 +262,7 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm text-gray-900 truncate">{item.name}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-green-600 font-semibold text-sm">₹{item.price}</span>
+                            <span className="text-[#324F7B] font-semibold text-sm">₹{item.price}</span>
                             {item.calories && (
                               <span className="text-gray-400 text-xs">{item.calories} kcal</span>
                             )}
@@ -255,8 +272,8 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
                           onClick={() => handleAddToCart(item)}
                           className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                             addedItems.has(item._id)
-                              ? "bg-green-100 text-green-700"
-                              : "bg-purple-600 text-white hover:bg-purple-700"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-[#324F7B] text-white hover:bg-[#283f63]"
                           }`}
                         >
                           {addedItems.has(item._id) ? "Added!" : "+ Add"}
@@ -271,9 +288,9 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
             {loading && (
               <div className="flex items-start">
                 <div className="bg-white rounded-xl rounded-bl-sm px-4 py-3 shadow-sm border border-gray-100 flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="w-1.5 h-1.5 bg-[#86A6DE] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-1.5 h-1.5 bg-[#86A6DE] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-1.5 h-1.5 bg-[#86A6DE] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             )}
@@ -296,13 +313,13 @@ export default function MenuAIChat({ restaurantId, dinerId, onAddToCart }: MenuA
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about the menu..."
-                className="flex-1 bg-gray-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-300 transition-all"
+                className="flex-1 bg-stone-100 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#86A6DE] transition-all"
                 disabled={loading}
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="w-9 h-9 bg-purple-600 text-white rounded-xl flex items-center justify-center hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                className="w-9 h-9 bg-[#324F7B] text-white rounded-xl flex items-center justify-center hover:bg-[#283f63] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
