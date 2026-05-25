@@ -11,9 +11,11 @@ import {
 } from "react-native";
 
 import { brand } from "@/constants/brand";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -103,6 +105,13 @@ export default function LoginScreen() {
           </Pressable>
         </View>
 
+        <Pressable
+          onPress={() => router.push("/forgot-password")}
+          style={styles.forgotButton}
+        >
+          <Text style={styles.forgotText}>Forgot password?</Text>
+        </Pressable>
+
         <Text style={styles.footnote}>
           Need an account? Register on the web at /auth/signup. Pending
           approvals are handled by the super admin.
@@ -178,6 +187,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: 0.3,
+  },
+  forgotButton: {
+    alignSelf: "center",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  forgotText: {
+    color: brand.blue,
+    fontSize: 14,
+    fontWeight: "600",
   },
   footnote: {
     marginTop: "auto",

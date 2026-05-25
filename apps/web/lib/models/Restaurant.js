@@ -16,6 +16,8 @@ const RestaurantSchema = new Schema({
     address: { type: String },
     razorpayKeyId: { type: String },
     razorpayKeySecret: { type: String },
+    resetToken: { type: String, default: null, index: true },
+    resetTokenExpiry: { type: Date, default: null },
     gstPercentage: {
         type: Number,
         default: 0,

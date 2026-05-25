@@ -164,10 +164,10 @@ export function useProtectedRoute() {
 
   useEffect(() => {
     if (loading) return;
-    const onLoginScreen = segments[0] === "login";
-    if (!user && !onLoginScreen) {
+    const onAuthScreen = segments[0] === "login" || segments[0] === "forgot-password";
+    if (!user && !onAuthScreen) {
       router.replace("/login");
-    } else if (user && onLoginScreen) {
+    } else if (user && onAuthScreen) {
       router.replace("/orders");
     }
   }, [user, loading, segments, router]);
